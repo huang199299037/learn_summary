@@ -1,4 +1,4 @@
-# Python基础
+Python基础
 
 ## 一、定义变量
 
@@ -514,7 +514,7 @@ print(name[::2])  # aceg
 print(name[:-1])  # abcdef, 负1表示倒数第一个数据
 print(name[-4:-1])  # def
 print(name[::-1])  # gfedcba
-print(name[-4:-1:-1])  # gfedcba
+print(name[-4:-1:-1]) 
 如果选取方向(开始下标到结束下标的方向)和步长方向相反则无法选取到数据
 ```
 
@@ -1162,8 +1162,8 @@ while i < len(name_list):
 ``` python
 name_list = ['Tom', 'Lily', 'Rose']
 
-for i in name_list:
-    print(i)
+for value in name_list:
+    print(value)
 ```
 
 **获取下标**
@@ -1925,7 +1925,7 @@ def 函数名(参数):
 > 注意：
 
    	1. 不同的需求，参数可有可无。
-   	        	2. 在Python中，函数必须==先定义后使用==。
+   	2. 在Python中，函数必须==先定义后使用==。
 
 ### 14.3 变量作用域
 
