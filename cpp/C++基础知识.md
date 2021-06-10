@@ -1612,9 +1612,7 @@ int main() {
 	}
 	//释放数组 delete 后加 []
 	delete[] arr;
-
 	system("pause");
-
 	return 0;
 }
 ```
