@@ -2195,13 +2195,14 @@ void test02() {
 	Person p2 = Person(10); 
 	Person p3 = Person(p2);
 	//Person(10)单独写就是匿名对象  当前行结束之后，马上析构
+    //注意2：不能利用 拷贝构造函数 初始化匿名对象 编译器认为是对象声明
+	//Person p5(p4);
 
 	//2.3 隐式转换法
 	Person p4 = 10; // Person p4 = Person(10); 
 	Person p5 = p4; // Person p5 = Person(p4); 
 
-	//注意2：不能利用 拷贝构造函数 初始化匿名对象 编译器认为是对象声明
-	//Person p5(p4);
+	
 }
 
 int main() {
@@ -5483,14 +5484,13 @@ int main() {
 ```c++
 template<typename T>
 类
-12
 ```
 
 **解释：**
 
 template — 声明创建模板
 
-typename — 表面其后面的符号是一种数据类型，可以用class代替
+typename — 表明其后面的符号是一种数据类型，可以用class代替
 
 T — 通用的数据类型，名称可以替换，通常为大写字母
 
@@ -6352,7 +6352,7 @@ void test01()
 	cout << "str3 = " << s3 << endl;
 
 	string s4(10, 'a');
-	cout << "str3 = " << s3 << endl;
+	cout << "str4 = " << s4 << endl;
 }
 
 int main() {
@@ -6775,7 +6775,7 @@ int main() {
 
 - `vector<T> v;` //采用模板实现类实现，默认构造函数
 - `vector(v.begin(), v.end());` //将v[begin(), end())区间中的元素拷贝给本身。
-- `vector(n, elem);` //构造函数将n个elem拷贝给本身。
+- `vector(n, elem);` //构造函数将n个elem拷贝给本身。（默认elem为0）
 - `vector(const vector &vec);` //拷贝构造函数。
 
 **示例：**
@@ -8152,7 +8152,7 @@ int main() {
 - pop_back();//删除容器中最后一个元素
 - push_front(elem);//在容器开头插入一个元素
 - pop_front();//从容器开头移除第一个元素
-- insert(pos,elem);//在pos位置插elem元素的拷贝，返回新数据的位置。
+- insert(pos,elem);//在pos位置插入elem元素的拷贝，返回新数据的位置。
 - insert(pos,n,elem);//在pos位置插入n个elem数据，无返回值。
 - insert(pos,beg,end);//在pos位置插入[beg,end)区间的数据，无返回值。
 - clear();//移除容器的所有数据
@@ -11252,4 +11252,871 @@ int main() {
 
 - 求差集的两个集合必须的有序序列
 - 目标容器开辟空间需要从**两个容器取较大值**
+
+# Problem
+
+## const
+
+**const修饰成员函数**
+
+(1) const修饰的成员函数不能修改任何的成员变量(**mutable修饰的变量除外**)
+
+(2) const成员函数不能调用非const成员函数，因为非const成员函数可以修改成员变量
+
+```cpp
+#include <iostream>
+using namespace std;
+class Point{
+    public :
+    Point(int _x):x(_x){}
+
+    void testConstFunction(int _x) const{
+
+        ///错误，在const成员函数中，不能修改任何类成员变量
+        x=_x;
+
+        ///错误，const成员函数不能调用非onst成员函数，因为非const成员函数可以修改成员变量
+        modify_x(_x);
+    }
+
+    void modify_x(int _x){
+        x=_x;
+    }
+
+    int x;
+};
+```
+
+## 函数声明
+
+```
+一、C与C++的细微区别
+
+在函数声明中：
+
+无论是C还是在C++，都可以省略形式参数名。
+但是，通常都不建议省略形式参数名。
+
+在函数定义中：
+
+1. 当需要使用形式参数的时候，显然，必须给形式参数命名。
+2. 当不需要使用形式参数的时候，C与C++有微小差异：
+
+—— C不能省略形式参数名， 即使不使用。
+—— C++可以省略形式参数名，如果不使用。
+—— 并且在C++中，如果给不使用的形式参数命名，可能会得到一个警告。
+```
+
+## 函数指针
+
+1. 获取函数的地址
+2. 声明一个函数指针
+3. 使用函数指针来调用函数
+
+**获取函数指针：**
+
+函数的地址就是函数名，要将函数作为参数进行传递，必须传递函数名。
+
+**声明函数指针**
+
+声明指针时，必须指定指针指向的数据类型，同样，声明指向函数的指针时，必须指定指针指向的函数类型，这意味着声明应当指定函数的返回类型以及函数的参数列表。
+
+```cPP
+double cal(int);   // prototype
+double (*pf)(int);   // 指针pf指向的函数， 输入参数为int,返回值为double 
+pf = cal;    // 指针赋值
+```
+
+如果将指针作为函数的参数传递：
+
+```cpp
+void estimate(int lines, double (*pf)(int));  // 函数指针作为参数传递 
+```
+
+**使用指针调用函数**
+
+```cpp
+double y = cal(5);   // 通过函数调用
+double y = (*pf)(5);   // 通过指针调用 推荐的写法 
+double y = pf(5);     // 这样也对， 但是不推荐这样写 
+```
+
+函数指针的使用：
+
+```cpp
+#include <iostream>
+#include <algorithm>
+#include <cmath>
+ 
+using namespace std;
+ 
+double cal_m1(int lines)
+{
+	return 0.05 * lines;
+} 
+ 
+double cal_m2(int lines)
+{
+	return 0.5 * lines;
+}
+ 
+void estimate(int line_num, double (*pf)(int lines))
+{
+	cout << "The " << line_num << " need time is: " << (*pf)(line_num) << endl; 
+}
+ 
+ 
+ 
+int main(int argc, char *argv[])
+{
+	int line_num = 10;
+	// 函数名就是指针，直接传入函数名
+	estimate(line_num, cal_m1);
+	estimate(line_num, cal_m2); 
+	return 0;
+}
+```
+
+函数指针数组：
+这部分非常有意思：
+
+```cpp
+#include <iostream>
+#include <algorithm>
+#include <cmath>
+ 
+using namespace std;
+ 
+// prototype   实质上三个函数的参数列表是等价的 
+const double* f1(const double arr[], int n);
+const double* f2(const double [], int);
+const double* f3(const double* , int);
+ 
+ 
+ 
+int main(int argc, char *argv[])
+{
+	double a[3] = {12.1, 3.4, 4.5};
+	
+	// 声明指针
+	const double* (*p1)(const double*, int) = f1;
+	cout << "Pointer 1 : " << p1(a, 3) << " : " << *(p1(a, 3)) << endl;
+	cout << "Pointer 1 : " << (*p1)(a, 3) << " : " << *((*p1)(a, 3)) << endl;
+	
+	const double* (*parray[3])(const double *, int) = {f1, f2, f3};   // 声明一个指针数组，存储三个函数的地址 
+	cout << "Pointer array : " << parray[2](a, 3) << " : " << *(parray[2](a, 3)) << endl;
+	cout << "Pointer array : " << parray[2](a, 3) << " : " << *(parray[2](a, 3)) << endl;
+    cout << "Pointer array : " << (*parray[2])(a, 3) << " : " << *((*parray[2])(a, 3)) << endl;
+    
+	return 0;
+}
+ 
+ 
+const double* f1(const double arr[], int n)
+{
+	return arr;     // 首地址 
+} 
+ 
+const double* f2(const double arr[], int n)
+{
+	return arr+1;
+}
+ 
+const double* f3(const double* arr, int n)
+{
+	return arr+2;
+}
+ 
+```
+
+这里可以只用typedef来减少输入量：
+
+```cpp
+typedef const double* (*pf)(const double [], int);  // 将pf定义为一个类型名称；
+pf p1 = f1;
+pf p2 = f2;
+pf p3 = f3;
+```
+
+##  #ifndef/#pragma once
+
+```
+#ifndef起到的效果是防止一个源文件两次包含同一个头文件，而不是防止两个源文件包含同一个头文件。网上很多资料对这一细节的描述都是错误的。事实上，防止同一头文件被两个不同的源文件包含这种要求本身就是不合理的，头文件存在的价值就是被不同的源文件包含。 假如你有一个C源文件，它包含了多个头文件，比如头文件A和头文件B，而头文件B又包含了头文件A，则最终的效果是，该源文件包含了两次头文件A。如果你在头文件A里定义了结构体或者类类型（这是最常见的情况），那么问题来了，编译时会报大量的重复定义错误
+```
+
+```
+ 在C/C++中，为了避免同一个文件被include多次，有两种方式：一种是#ifndef方式，一种是#pragma once方式(在头文件的最开始加入)。
+ #ifndef的是方式是受C/C++语言标准支持。#ifndef方式依赖于宏名不能冲突。它不光可以保证同一个文件不会被包含多次，也能保证内容完全相同的两个文件不会被不小心同时包含。缺点是如果不同头文件中的宏名不小心”碰撞”，可能就会导致你看到头文件明明存在，编译器却硬说找不到声明的状况。由于编译器每次都需要打开头文件才能判定是否有重复定义，因此在编译大型项目时，#ifndef会使得编译时间相对较长，因此一些编译器逐渐开始支持#pragma once的方式。
+        #pragma once一般由编译器提供保证：同一个文件不会被包含多次。这里所说的”同一个文件”是指物理上的一个文件，而不是指内容相同的两个文件。无法对一个头文件中的一段代码作#pragma once声明，而只能针对文件。此方式不会出现宏名碰撞引发的奇怪问题，大型项目的编译速度也因此快一些。缺点是如果某个头文件有多份拷贝，此方法不能保证它们不被重复包含。在C/C++中，#pragma once是一个非标准但是被广泛支持的方式。
+
+        #pragma once方式产生于#ifndef之后。#ifndef方式受C/C++语言标准的支持，不受编译器的任何限制；而#pragma once方式有些编译器不支持(较老编译器不支持，如GCC 3.4版本之前不支持#pragmaonce)，兼容性不够好。#ifndef可以针对一个文件中的部分代码，而#pragma once只能针对整个文件。
+```
+
+格式
+
+```c++
+#ifndef   <标识 >   
+#define   <标识 >   
+......   
+......   
+#endif 
+```
+
+在理论上来说可以是自由命名的，但每个头文件的这个“标识”都应该是唯一的。标识的命名规则一般是头文件名全大写，前后加下划线，并把文件名中的“.”也变成下划线，如：stdio.h  
+
+```c++
+#ifndef   _STDIO_H_   
+#define   _STDIO_H_   
+......   
+#endif 
+```
+
+##  数组输出
+
+C++中输出数组数据分两类情况：字符型数组和非字符型数组
+
+当定义变量为字符型数组时，采用cout<<数组名; 系统会将数组当作字符串来输出，如：
+
+```cpp
+char str[10]={'1','2'};cout << str <<endl ; //输出12
+```
+
+如果想输出字符数组的地址，则需要进行强制转换，如：
+
+```cpp
+char str[10]={'1','2'};cout << static_cast < void *> (str) <<endl ; //按16进制输出str的地址，如：0012FF74
+```
+
+当定义变量为非字符符数组时，采用cout<<数组名; 系统会将数组名当作一个地址来输出，如：
+
+```cpp
+int a[10]={1,2,3};cout << a <<endl ;  //按16进制输出a的值（地址）  0012FF58
+```
+
+如果需要输出数组中的内容，则需要采用循环，逐个输出数组中的元素，如：
+
+```c++
+int a[10]={1,2,3}; //初始化前三个元素，其余元素为0 for( int i=0;i<10;i++ )cout << a[i] <<" ";cout <<endl ; //输出结果：1 2 3 0 0 0 0 0 0 0
+```
+
+## rand()
+
+C++中rand() 函数的用法
+
+1、rand()不需要参数，它会返回一个从0到最大随机数的任意整数，最大随机数的大小通常是固定的一个大整数。
+
+2、如果你要产生0~99这100个整数中的一个随机整数，可以表达为：int num = rand() % 100;  这样，num的值就是一个0~99中的一个随机数了。
+
+3、如果要产生1~100，则是这样：int num = rand() % 100 + 1;  
+
+4、总结来说，可以表示为：int num = rand() % n +a; 其中的a是起始值，n-1+a是终止值，n是整数的范围。
+
+5、一般性：rand() % (b-a+1)+ a ;    就表示  a~b 之间的一个随机整数。
+
+6、若要产生0\~1之间的小数，则可以先取得0\~10的整数，然后均除以10即可得到随机到十分位的10个随机小数。
+
+若要得到“随机到百分位”的随机小数，则需要先得到0~100的10个整数，然后均除以100，其它情况依 此类推。
+
+7、通常rand()产生的随机数在每次运行的时候都是与上一次相同的，这样是为了便于程序的调试。若要产生每次不同的随机数，则可以使用srand( seed )函数进行产生随机化种子，随着seed的不同，就能够产生不同的随机数。
+
+8、还可以包含time.h头文件，然后使用srand(time(0))来使用当前时间使随机数发生器随机化，这样就可以保证每两次运行时可以得到不同的随机数序列，同时这要求程序的两次运行的间隔超过1秒。
+
+```cpp
+#include<iostream>
+#include<time.h>
+using namespace std;
+#include "vector.h"
+int main(){
+    Vector<int> vector;
+    
+    srand((unsigned)time(NULL)); 
+    int array[]={0,1,2,3,4,5,6,7};
+    int lo=2;
+    int hi=8;
+    int* array_copy=array+lo;
+    for (int i = hi-lo; i >0; i--){
+        swap(array_copy[i-1],array_copy[rand()%i]);
+    }
+    return 0;
+}
+```
+
+## map、set/unorder_set unorder_map
+
+```
+set与map底层实现是红黑树树
+unordered_set与unordered_map底层实现是哈希表
+```
+
+## string/char
+
+### string转char*
+
+主要有三种方法可以将str转换为char*类型，分别是：data()、c_str()、copy()。
+其中，copy()可能会报安全性错误，自行解决即可。
+
+**3.1 data()方法**
+
+```cpp
+string str = "hello";
+//使用char * p=(char*)str.data()效果相同
+const char* p = str.data();
+```
+
+**3.2 c_str()方法**
+
+```cpp
+string str=“world”;
+//使用char * p=(char*)str.c_str()效果相同
+const char *p = str.c_str();
+```
+
+**3.3 copy()方法**
+
+```cpp
+string str="world";
+char p[50];
+//s.copy(cstr, n, pos)       从字符数组cstr的pos位置开始，复制n个字符到字符串s中
+str.copy(p, 5, 0);         
+*(p+5)=‘\0’;                 //添加结束符
+```
+
+### char * 转string
+
+可以直接赋值。
+
+```cpp
+string s;
+char *p = "helloworld";
+s = p;
+```
+
+### string转char[]
+
+for循环遍历输入。
+
+```cpp
+string pp = "helloworld";
+char p[20];
+int i;
+for( i=0;i<pp.length();i++)
+    p[i] = pp[i];
+p[i] = '\0';    //添加结束符
+```
+
+### char[]转string
+
+可以直接赋值。
+
+```cpp
+string s;
+char p[20] = "helloworld";
+s = p;
+```
+
+### char[]转char*
+
+可以直接赋值。
+
+```cpp
+char pp[20] = "helloworld";
+char* p = pp;
+```
+
+### char*转char[]
+
+主要有两种方法可以将char*转换为char[]类型，分别是：strcpy()、循环遍历。
+其中，strcpy()可能会报安全性错误，自行解决即可
+
+**strcpy()方法**
+
+```cpp
+char arr[20];
+char* tmp = "helloworld";
+strcpy(arr, tmp);
+```
+
+ **循环遍历**
+
+```cpp
+char arr[20];
+char* tmp = "helloworld";
+int i = 0;
+while (*tmp != '\0')
+	arr[i++] = *tmp++;
+arr[i] = '\0';       //添加结束符
+```
+
+## String全部替换
+
+```cpp
+
+int main(){
+ string a;/////指定串，可根据要求替换
+ string b;////要查找的串，可根据要求替换
+ string c;
+ cin>>a>>b>>c;
+ int pos;
+ pos = a.find(b);////查找指定的串
+ while (pos != -1)
+ {
+  a.replace(pos,b.length(),c);////用新的串替换掉指定的串
+
+  pos = a.find(b);//////继续查找指定的串，直到所有的都找到为止
+ }
+ cout<<a<<endl;
+ return 0;
+} 
+```
+
+## c++ to_string、stoi()、atoi()使用
+
+### to_string
+
+将数值类型转化为字符串类型
+
+```c++
+#include<cstring> //头文件
+int a = 4;
+double b = 3.14;
+string str1, str2;
+str1 = to_string(a);
+str2 = to_string(b);
+```
+
+### stoi和atoi
+
+atoi()的参数是 const char* ,因此对于一个字符串str我们必须调用 c_str()的方法把这个string转换成 const char类型的,而stoi()的参数是const string,不需要转化为 const char*；
+
+stoi()会做范围检查，默认范围是在int的范围内的，如果超出范围的话则会runtime error！
+而atoi()不会做范围检查，如果超出范围的话，超出上界，则输出上界，超出下界，则输出下界；
+
+```c++
+#include<cstring> //头文件
+string s1("01234567");
+char s2[10] ="789456123" ;
+int a = stoi(s1);
+int b = atoi(s2);
+int c = atoi(s1.c_str());
+cout << a << endl;
+cout << b << endl;
+cout << c << endl;
+//取部分字符串
+int num = stoi(s1.substr(2,3)); //从第二位取三个
+cout<<num<<endl;
+```
+
+## C++:cin、cin.getline()、getline()的用法
+
+cin 接收一个字符串，遇“空格”、“TAB”、“回车”就结束
+
+```c++
+#include <iostream>
+using namespace std;
+main ()
+{
+char a[20];
+cin>>a;
+cout<<a<<endl;
+}
+```
+
+cin.getline()   用法:接收一个字符串，可以接收空格并输出 
+
+```c++
+#include <iostream>
+using namespace std;
+main ()
+{
+char m[20];
+cin.getline(m,5);
+cout<<m<<endl;
+}
+1、cin.getline()实际上有三个参数，cin.getline(接收字符串的变量,接收字符个数,结束字符)
+2、当第三个参数省略时，系统默认为'\0'
+3、如果将例子中cin.getline()改为cin.getline(m,5,'a');当输入jlkjkljkl时输出jklj，输入jkaljkljkl时，输出jk
+    
+输入:1234567890123
+输出:1 2 3 4 5 6 7 8 9 _ （第10位存放字符串结束符'\0'）
+```
+
+ getline()用法：接收一个字符串，可以接收空格并输出，需包含“#include<string>”
+
+```c++
+#include<iostream>
+#include<string>
+using namespace std;
+main ()
+{
+string str;
+getline(cin,str);
+cout<<str<<endl;
+}
+```
+
+## C++ 使用 stringstream与getline()分割字符串
+
+### stringstream
+
+头文件 #include
+stringstream 可以使string与各种内置类型数据之间的转换，本文不做讲解
+本文主要利用其流的特性；
+基本语法
+
+```c++
+//输入
+stringstream ss1;
+ss1<< "qwe";
+
+//输出
+string str;
+stringstream ss2("qwe")；
+ss2 >>str ;
+```
+
+### getline()
+
+头文件：
+getline()的原型是istream& getline ( istream &is , string &str , char delim );
+其中 istream &is 表示一个输入流，
+例如，可使用cin；
+string str ; getline(cin ,str)
+也可以使用 stringstream
+stringstream ss("test#") ; getline(ss,str)
+char delim表示遇到这个字符停止读入，通常系统默认该字符为’\n’，也可以自定义字符
+
+### 字符串分割
+
+当我们直接利用getline（），自定义字符，从cin流中分割字符，例如
+输入 “one#two”
+
+```c++
+string str;		
+ss << str2;
+while (getline(cin, str, '#'))
+	cout << str<< endl;
+system("pause");
+return 0;
+```
+
+输出结果为
+`one`
+后面的 two并**没有输出**；
+此时如果我们是用stringstream 流
+例如
+
+```c++
+int main()
+{
+	string str;	
+	string str_cin("one#two#three");
+	stringstream ss;
+	ss << str_cin;
+	while (getline(ss, str, '#'))
+		cout << str<< endl;
+	system("pause");
+	return 0;
+}
+```
+
+```
+one
+two
+three
+```
+
+### c++ 实现 split
+
+```c++
+vector<string> split(string str, char del) {
+	stringstream ss(str);
+	string temp;
+	vector<string> ret;
+	while (getline(ss, temp, del)) {
+		ret.push_back(temp);
+	}
+	return ret;
+}
+int main()
+{
+	string str_cin("one#two#three");
+	vector<string> res= split(str_cin, '#');
+	for (auto c : res)
+		cout << c << endl;
+	system("pause");
+	return 0;
+}
+```
+
+## stringstream常见用法介绍
+
+###  概述
+
+<sstream> 定义了三个类：istringstream、ostringstream 和 stringstream，分别用来进行流的输入、输出和输入输出操作。本文以 stringstream 为主，介绍流的输入和输出操作。
+
+<sstream> 主要用来进行数据类型转换，由于 <sstream> 使用 string 对象来代替字符数组（snprintf方式），就避免缓冲区溢出的危险；而且，因为传入参数和目标对象的类型会被自动推导出来，所以不存在错误的格式化符的问题。简单说，相比c库的数据类型转换而言，<sstream> 更加安全、自动和直接。
+
+### 数据类型转换
+
+这里展示一个代码示例，该示例介绍了将 int 类型转换为 string 类型的过程。示例代码（stringstream_test1.cpp）如下：
+
+```c++
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <stdio.h>
+ 
+using namespace std;
+ 
+int main()
+{
+    stringstream sstream;
+    string strResult;
+    int nValue = 1000;
+ 
+    // 将int类型的值放入输入流中
+    sstream << nValue;
+    // 从sstream中抽取前面插入的int类型的值，赋给string类型
+    sstream >> strResult;
+ 
+    cout << "[cout]strResult is: " << strResult << endl;
+    printf("[printf]strResult is: %s\n", strResult.c_str());
+ 
+    return 0;
+}
+```
+
+### 多个字符串拼接
+
+本示例介绍在 stringstream 中存放多个字符串，实现多个字符串拼接的目的（其实完全可以使用 string 类实现），同时，介绍 stringstream 的清空方法。
+
+```c++
+#include <string>
+#include <sstream>
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    stringstream sstream;
+ 
+    // 将多个字符串放入 sstream 中
+    sstream << "first" << " " << "string,";
+    sstream << " second string";
+    cout << "strResult is: " << sstream.str() << endl;
+ 
+    // 清空 sstream
+    sstream.str("");
+    sstream << "third string";
+    cout << "After clear, strResult is: " << sstream.str() << endl;
+ 
+    return 0;
+}
+```
+
+从上述代码执行结果能够知道：
+
+可以使用 str() 方法，将 stringstream 类型转换为 string 类型；
+可以将多个字符串放入 stringstream 中，实现字符串的拼接目的；
+如果想清空 stringstream，必须使用 sstream.str(""); 方式；clear() 方法适用于进行多次数据类型转换的场景。详见示例2.3
+
+### stringstream的清空
+
+清空 stringstream 有两种方法：clear() 方法以及 str("") 方法，这两种方法有不同的使用场景。str("") 方法的使用场景，在上面的示例中已经介绍了，这里介绍 clear() 方法的使用场景。示例代码（stringstream_test3.cpp）如下：
+
+```c++
+#include <sstream>
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    stringstream sstream;
+    int first, second;
+ 
+    // 插入字符串
+    sstream << "456";
+    // 转换为int类型
+    sstream >> first;
+    cout << first << endl;
+ 
+    // 在进行多次类型转换前，必须先运行clear()
+    sstream.clear();
+ 
+    // 插入bool值
+    sstream << true;
+    // 转换为int类型
+    sstream >> second;
+    cout << second << endl;
+ 
+    return 0;
+}
+```
+
+在本示例涉及的场景下（多次数据类型转换），必须使用 clear() 方法清空 stringstream，不使用 clear() 方法或使用 str("") 方法，都不能得到数据类型转换的正确结果。下图分别是未使用 clear() 方法、使用 str("") 方法时的运行结果：
+
+## string充当栈
+
+```c++
+string stk;
+stk.pop_back();
+stk.push_back();
+stk.bakc();
+```
+
+## 数组初始化
+
+做全局变量
+
+```c++
+int sum[1000006];//初始化设默认值为0
+```
+
+做局部变量
+**默认值只能设为0**，且**只有在初始化时，才能设为0**（sum[100]={0};这么写就是错的）；
+如果设为1，则只是sum[0]是1，其他默认全为0；
+
+```c++
+int sum[100]={0};//只能设为0
+int sum[N]={0} // 动态数组不能初始化
+```
+
+
+
+### memset
+
+```
+头文件：cstring 或 memory
+
+话说刚开始使用memset的时候一直以为memset是对每一个int赋值的，心里想有了memset还要for循环对数组进行初始化干嘛。但其实memset这个函数的作用是将数字以单个字节逐个拷贝的方式放到指定的内存中去
+```
+
+```
+memset(dp,0,sizeof(dp));  
+
+int类型的变量一般占用4个字节，对每一个字节赋值0的话就变成了“00000000 00000000 000000000 00000000” （即10进制数中的0）
+
+赋值为-1的话，放的是 “11111111 11111111 11111111 11111111 ”（十进制的-1）
+
+这样你可能以为如果你赋值1的话会让整个dp数组里的每一个int变成1，其实不然。
+memset(dp,1,sizeof(dp));  
+
+以上代码执行后，dp数组的内容为 00000001 00000001 00000001 00000001 转化为十进制后不为1
+我们在很多程序中都会看到memset(a,127,sizeof(a));这样的代码，127是什么特别的数字呢？通过基础的进制转换可以得知127的二进制表示是01111111，那么在dp数组里放的内容就是“01111111 01111111 01111111 01111111”，（10进制的2139062143），这样就实现了将数组里的全部元素初始化为一个很大的数的目的了，在最短路径问题以及其他很多算法中都是需要用到的。值得注意的是，int类型的范围为2^31-1，大约是2147483647的样子（如果我没有记错的话），所以初始化int类型的数组也可以使用127这个数值。
+如果是128呢？因为128的二进制是10000000，那么放的内容就是10000000 10000000 10000000 10000000，经过计算可得这个数是-2139062144。这样就可以将数组初始化为一个很小的数了。
+```
+
+fill(beg,end,newValue)和fill_n(beg,num,newValue)的特点
+1：迭代器类型 fill----前向迭代器，fill_n-----输出迭代器
+2：返回值类型：void
+3：算法功能：fill----将区间[beg,end)赋予新值newValue,fill_n-----将beg开头的区间的前sum个元素赋值为newValue
+4：复杂度：线性复杂度
+5:对于fill_n()调用者必须保证目标区间有足够的空间，否则应使用插入迭代器
+
+```c++
+#include<iostream>
+#include<vector>
+#include<functional>
+using namespace std;
+int main()
+{
+	vector<int>c1 = { 1,2,3,4,5 };
+	
+	cout << "c1:";
+	copy(c1.begin(), c1.end(), ostream_iterator<int>(cout, " "));
+	cout << endl;
+
+	fill(c1.begin(), c1.end(), 9);
+
+	cout << "c1:";
+	copy(c1.begin(), c1.end(), ostream_iterator<int>(cout, " "));
+	cout << endl;
+}	
+```
+
+```c++
+#include<iostream>
+#include<vector>
+#include<functional>
+using namespace std;
+
+int main()
+{
+	vector<int>c1 = { 1,2,3,4,5 };
+	
+	cout << "c1:";
+	copy(c1.begin(), c1.end(), ostream_iterator<int>(cout, " "));
+	cout << endl;
+	
+	fill_n(ostream_iterator<int>(cout," "),3,5); //向输出流迭代器传入3个5
+	cout << endl;
+
+	fill_n(c1.begin(), 3, 9);//将[beg,beg+3)区间的元素改为9
+	fill_n(back_inserter(c1), 6,1);  //向c1尾部添加6个1
+	cout << "c1:";
+	copy(c1.begin(), c1.end(), ostream_iterator<int>(cout, " "));
+	cout << endl;	
+}
+
+```
+
+## 字符串判断
+
+**1.isalpha**
+
+isalpha()用来判断一个字符是否为字母，如果是字符则返回非零，否则返回零
+
+```c++
+cout << isalpha('a');//返回非零
+cout << isalpha('2');//返回0
+```
+
+**2.isalnum**
+
+isalnum()用来判断一个字符是否为数字或者字母，也就是说判断一个字符是否属于a\~z||A\~Z||0~9。
+
+```c++
+cout << isalnum('a');//输出非零
+cout << isalnum('2');//非零
+cout << isalnum('.');//零
+```
+
+**3.islower**
+
+islower()用来判断一个字符是否为小写字母，也就是是否属于a~z。
+
+```c++
+cout << islower('a');//非零
+cout << islower('2');//输出0
+cout << islower('A');//输出0
+```
+
+**4.isupper**
+
+isupper()和islower相反，用来判断一个字符是否为大写字母。
+
+```cpp
+cout << isupper('a');//返回0
+cout << isupper('2');//返回0
+cout << isupper('A');//返回非零
+```
+
+**5.isdigit**
+
+i用来判断一个字符是否为数字。
+
+```c++
+cout<< isdigit('1')
+cout<< isdigit('a')
+```
+
+**6.toupper**
+
+转换成大写字母
+
+**7.tolower**
+
+转换成小写字母。
 
