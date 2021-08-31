@@ -11501,6 +11501,8 @@ int a[10]={1,2,3}; //初始化前三个元素，其余元素为0 for( int i=0;i<
 
 ## rand()
 
+> 范围：0~32767
+
 C++中rand() 函数的用法
 
 1、rand()不需要参数，它会返回一个从0到最大随机数的任意整数，最大随机数的大小通常是固定的一个大整数。
@@ -11540,6 +11542,125 @@ int main(){
     return 0;
 }
 ```
+
+## mt19937随机数
+
+> 范围：无限制，但是可以自己设定。 头文件\#include <random> 
+
+```c++
+// 无范围
+#include <iostream>
+#include <chrono>
+#include <random>
+using namespace std;
+int main()
+{
+    // 随机数种子
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    mt19937 rand_num(seed);	 // 大随机数
+	cout << rand_num() << endl;
+	return 0;
+}
+```
+
+```c++
+// 有范围
+#include <iostream>
+#include <chrono>
+#include <random>
+using namespace std;
+int main()
+{
+	// 随机数种子
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	mt19937 rand_num(seed);  // 大随机数
+	uniform_int_distribution<long long> dist(0, 1000000000);  // 给定范围
+	cout << dist(rand_num) << endl;
+	return 0;
+}
+uniform_int_distribution 这个类是随机数分布类，限定随机数生成的区间，使用方式：static uniform_int_distribution<unsigned> u(L,R);即生成的随机数在L ~ R之间。
+```
+
+```c++
+#include<iostream>
+using namespace std;
+#include<vector>
+#include <random>
+
+class Solution
+{
+private:
+    mt19937 gen;
+    uniform_int_distribution<int> dis;
+    vector<int> pre;
+
+public:
+    Solution(vector<int> &w) : gen(random_device{}()), dis(1, accumulate(w.begin(), w.end(), 0))
+    {
+        partial_sum(w.begin(), w.end(), back_inserter(pre));
+    }
+
+    int pickIndex()
+    {
+        int x = dis(gen);
+        return lower_bound(pre.begin(), pre.end(), x) - pre.begin();
+    }
+};
+在C++中，你可以通过直接调用一个类的构造函数来构造一个临时对象，在这种情况下使用大括号初始化。换句话说，表达式std::random_device{}返回一个临时的，默认构造的random_device对象
+
+std::random_device重载括号操作符以赋予它类似于函数的语法。它更多或更少看起来像这样：
+
+class random_device { 
+    /*...*/ 
+public: 
+    uint32_t operator()() { 
+     return /*...*/; 
+    } 
+}; 
+然后其可在对象上被调用
+
+std::random_device device; 
+uint32_t value = device(); 
+
+累加求和
+int sum = accumulate(vec.begin() , vec.end() , 42); 
+accumulate带有三个形参：头两个形参指定要累加的元素范围，第三个形参则是累加的初值。
+// 前缀和
+partial_sum 算法默认计算局部和，每一次计算 第n项 与 前n项和 的和
+partial_sum(w.begin(), w.end(), back_inserter(pre));
+
+lower_bound( )和upper_bound( )都是利用二分查找的方法在一个排好序的数组中进行查找的。
+
+在从小到大的排序数组中，
+
+lower_bound( begin,end,num)：从数组的begin位置到end-1位置二分查找第一个大于或等于num的数字，找到返回该数字的地址，不存在则返回end。通过返回的地址减去起始地址begin,得到找到数字在数组中的下标。
+
+upper_bound( begin,end,num)：从数组的begin位置到end-1位置二分查找第一个大于num的数字，找到返回该数字的地址，不存在则返回end。通过返回的地址减去起始地址begin,得到找到数字在数组中的下标。
+    
+在从大到小的排序数组中，重载lower_bound()和upper_bound()
+
+lower_bound( begin,end,num,greater<type>() ):从数组的begin位置到end-1位置二分查找第一个小于或等于num的数字，找到返回该数字的地址，不存在则返回end。通过返回的地址减去起始地址begin,得到找到数字在数组中的下标。
+
+upper_bound( begin,end,num,greater<type>() ):从数组的begin位置到end-1位置二分查找第一个小于num的数字，找到返回该数字的地址，不存在则返回end。通过返回的地址减去起始地址begin,得到找到数字在数组中的下标。
+
+除了普通迭代器，C++标准模板库还定义了几种特殊的迭代器，分别是插入迭代器、流迭代器、反向迭代器和移动迭代器，定义在<iterator>头文件中，下面主要介绍三种插入迭代器（back_inserter,inserter,front_inserter）的区别。
+首先，什么是插入迭代器？插入迭代器是指被绑定在一个容器上，可用来向容器插入元素的迭代器。
+back_inserter：创建一个使用push_back的迭代器
+inserter：此函数接受第二个参数，这个参数必须是一个指向给定容器的迭代器。元素将被插入到给定迭代器所表示的元素之前。
+front_inserter：创建一个使用push_front的迭代器（元素总是插入到容器第一个元素之前）
+由于list容器类型是双向链表，支持push_front和push_back操作，因此选择list类型来试验这三个迭代器。
+
+list<int> lst = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+list<int> lst2 ={10}, lst3={10},lst4={10};
+copy(lst.cbegin(), lst.cend(), back_inserter(lst2));
+//lst2包含10,1,2,3,4,5,6,7,8,9
+copy(lst.cbegin(), lst.cend(), inserter(lst3, lst3.begin()));
+//lst3包含1,2,3,4,5,6,7,8,9,10
+copy(lst.cbegin(), lst.cend(), front_inserter(lst4));
+//lst4包含9,8,7,6,5,4,3,2,1,10
+```
+
+
 
 ## map、set/unorder_set unorder_map
 
@@ -12011,7 +12132,7 @@ memset(dp,1,sizeof(dp));
 fill(beg,end,newValue)和fill_n(beg,num,newValue)的特点
 1：迭代器类型 fill----前向迭代器，fill_n-----输出迭代器
 2：返回值类型：void
-3：算法功能：fill----将区间[beg,end)赋予新值newValue,fill_n-----将beg开头的区间的前sum个元素赋值为newValue
+3：算法功能：fill----将区间[beg,end)赋予新值newValue,fill_n-----将beg开头的区间的前num个元素赋值为newValue
 4：复杂度：线性复杂度
 5:对于fill_n()调用者必须保证目标区间有足够的空间，否则应使用插入迭代器
 
@@ -12105,7 +12226,7 @@ cout << isupper('A');//返回非零
 
 **5.isdigit**
 
-i用来判断一个字符是否为数字。
+i用来判断一个字符是为数字。
 
 ```c++
 cout<< isdigit('1')
@@ -12119,4 +12240,249 @@ cout<< isdigit('a')
 **7.tolower**
 
 转换成小写字母。
+
+## 排序方式
+
+c++中提供了比较函数，就不需要我们来重新写比较函数了
+
+```c++
+less<type>()    //从小到大排序 <
+grater<type>()  //从大到小排序 >
+less_equal<type>()  //  <=
+gtater_equal<type>()//  >=
+//这四种函数
+```
+
+```c++
+// greater example
+    #include <iostream>     // std::cout
+    #include <functional>   // std::greater
+    #include <algorithm>    // std::sort
+
+    int main () {
+      int numbers[]={20,40,50,10,30};
+      std::sort (numbers, numbers+5, std::greater<int>());
+      for (int i=0; i<5; i++)
+        std::cout << numbers[i] << ' ';
+      std::cout << '\n';
+      return 0;
+    }
+```
+
+set集合默认排序方式 从小到大即less的，我们可以通过创建set的时候指定排序方式
+
+```c++
+set<int,greater<int>> m_set = { 1, 1, 5, 3, 2, 9, 6, 7, 7 };
+for each (auto var in m_set)
+{
+    cout << var << " ";
+}
+```
+
+另外如果嫌创建的比较繁琐我们可以用typedef来重命名
+
+```
+typedef std::set<int,std::greater<int>> IntSet;
+typedef std::set<int,std::less<int>> IntSet;
+IntSet my_set
+IntSet::iterator ipos;
+```
+
+## 优先队列
+
+priority_queue
+Class priority_queue<> 实现出一个 queue ，其中的元素依优先级被读取。它的接口和 queue 非常相近，亦即 push() 将会放入一个元素，top()/pop() 将会访问/移除下一个元素。然而这里所谓的“下一个元素”，并非第一个放入的元素，而是“优先级最高”的元素。换句话说，priority_queue 内的元素已经根据其值进行了排序。和往常一样，你可以通过 template 参数指定一个排序准则。==默认的排序准则是以 operator < 形成降序排列==，那么所谓“下一个元素”就是“数值最大的元素”。如果存在若干个数值最大的元素，我们无法确知究竟哪一个会入选。
+
+class priority_queue 定义如下：
+
+> namespace std{
+> template <typename T, typename Container = vector<T>,typename Compare = less<typename Container::value_type>>
+> class priority_queue;
+> }
+
+第一个 template 参数代表元素类型。带有默认值的第二个 template 参数定义 priority_queue 内部存放元素的实际容器，默认为 vector。带有默认值的第三个 template 参数定义出“用以查找下一个最高优先级元素”的排序准则，默认以 operator< 作为比较标准。
+
+priority_queue 只是很单纯地把各项操作转化为内部容器的对应调用。你可以使用任何 sequence 容器支持 priority_queue，只要它们支持：random-access iterator(随机访问迭代器) 和 front()、push_back() 、 pop_back()等操作就行。由于 priority_queue 需要用到 STL heap 算法，所以其内部容器必须支持 random access(随机访问)
+
+```c++
+template<typename Tp, typename Sequence = vector<Tp>, 
+			typename Compare  = less<typename Sequence::value_type> >
+    class priority_queue
+    {
+    public:
+      typedef typename	Sequence::value_type		value_type;
+      typedef typename	Sequence::reference		 reference;
+      typedef typename	Sequence::const_reference	   const_reference;
+      typedef typename	Sequence::size_type		 size_type;
+      typedef		Sequence			    container_type;
+      typedef	       Compare				    value_compare;
+    }
+```
+
+| 类型名称        | 定义                               |
+| --------------- | ---------------------------------- |
+| value_type      | 元素的类型                         |
+| reference       | 用以指向元素之reference类型        |
+| const_reference | 用以指向只读元素之reference类型    |
+| size_type       | 不带正负号的整数类型，用来表现大小 |
+| container_type  | 内部容器的类型                     |
+
+如你所见，priority_queue 实例默认有一个 vector 容器。函数对象类型 less 是一个默认的排序断言，定义在头文件 function 中，决定了容器中最大的元素会排在队列前面。fonction 中定义了 greater，用来作为模板的最后一个参数对元素排序，最小元素会排在队列前面。当然，如果指定模板的最后一个参数，就必须提供另外的两个模板类型参数。
+
+```c++
+//升序队列
+priority_queue <int,vector<int>,greater<int> > q;
+//降序队列
+priority_queue <int,vector<int>,less<int> >q;
+
+//greater和less是std实现的两个仿函数（就是使一个类的使用看上去像一个函数。其实现就是类中实现一个operator()，这个类就有了类似函数的行为，就是一个仿函数类了）
+
+```
+
+```c++
+#include<iostream>
+#include <queue>
+using namespace std;
+int main() 
+{
+    //对于基础类型 默认是大顶堆
+    priority_queue<int> a; 
+    //等同于 priority_queue<int, vector<int>, less<int> > a;
+    
+  
+    priority_queue<int, vector<int>, greater<int> > c;  //这样就是小顶堆
+    priority_queue<string> b;
+
+    for (int i = 0; i < 5; i++) 
+    {
+        a.push(i);
+        c.push(i);
+    }
+    while (!a.empty()) 
+    {
+        cout << a.top() << ' ';
+        a.pop();
+    } 
+    cout << endl;
+
+    while (!c.empty()) 
+    {
+        cout << c.top() << ' ';
+        c.pop();
+    }
+    cout << endl;
+
+    b.push("abc");
+    b.push("abcd");
+    b.push("cbd");
+    while (!b.empty()) 
+    {
+        cout << b.top() << ' ';
+        b.pop();
+    } 
+    cout << endl;
+    return 0;
+}
+4 3 2 1 0
+0 1 2 3 4
+cbd abcd abc
+```
+
+```c++
+#include <iostream>
+#include <queue>
+using namespace std;
+
+//方法1
+struct tmp1 //运算符重载<
+{
+    int x;
+    tmp1(int a) {x = a;}
+    bool operator<(const tmp1& a) const
+    {
+        return x < a.x; //大顶堆
+    }
+};
+
+//方法2
+struct tmp2 //重写仿函数
+{
+    bool operator() (tmp1 a, tmp1 b) 
+    {
+        return a.x < b.x; //大顶堆
+    }
+};
+
+int main() 
+{
+    tmp1 a(1);
+    tmp1 b(2);
+    tmp1 c(3);
+    priority_queue<tmp1> d;
+    d.push(b);
+    d.push(c);
+    d.push(a);
+    while (!d.empty()) 
+    {
+        cout << d.top().x << '\n';
+        d.pop();
+    }
+    cout << endl;
+
+    priority_queue<tmp1, vector<tmp1>, tmp2> f;
+    f.push(c);
+    f.push(b);
+    f.push(a);
+    while (!f.empty()) 
+    {
+        cout << f.top().x << '\n';
+        f.pop();
+    }
+}
+3
+2
+1
+
+3
+2
+1
+```
+
+**下面为其成员函数:**
+
+- **empty**
+  判断容器是否为空
+
+> bool empty() const;
+
+- **size**
+  返回容器大小
+
+> size_type size() const;
+
+- **top**
+  返回队列顶层元素
+
+> const_reference top() const;
+
+- **push**
+  插入元素
+
+> void push (const value_type& val);
+> void push (value_type&& val);
+
+- **emplace**
+  构造和插入元素
+
+> template <class… Args> void emplace (Args&&… args);
+
+- **pop**
+  删除顶层元素
+
+> void pop();
+
+- **swap**
+  交换两个容器
+
+> void swap (priority_queue& x);
 
