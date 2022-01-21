@@ -36,7 +36,7 @@ yield
 
 **在 Python 里为了应对不同的业务需求，也把数据分为不同的类型。**
 
-![](images\python基础\数据类型.png)
+![](images\ `python基础\数据类型.png)
 
 > 检测数据类型的方法：`type()`
 

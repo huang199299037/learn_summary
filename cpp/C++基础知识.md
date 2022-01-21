@@ -1645,6 +1645,11 @@ int main() {
 
 	return 0;
 }
+
+a = 10 
+b = 10 
+a = 100
+b = 100
 ```
 
 ### 2.2 引用注意事项
@@ -7812,7 +7817,7 @@ int main() {
 大小操作：
 
 - `empty();` //判断堆栈是否为空
-- `size();` //返回栈的大小
+- `size();` //返回队列的大小
 
 **示例：**
 
@@ -11635,7 +11640,7 @@ lower_bound( )和upper_bound( )都是利用二分查找的方法在一个排好�
 
 lower_bound( begin,end,num)：从数组的begin位置到end-1位置二分查找第一个大于或等于num的数字，找到返回该数字的地址，不存在则返回end。通过返回的地址减去起始地址begin,得到找到数字在数组中的下标。
 
-upper_bound( begin,end,num)：从数组的begin位置到end-1位置二分查找第一个大于num的数字，找到返回该数字的地址，不存在则返回end。通过返回的地址减去起始地址begin,得到找到数字在数组中的下标。
+upper_bound( begin,end,num)：从数组的begin位置到end-1位置二分查找第一 个大于num的数字，找到返回该数字的地址，不存在则返回end。通过返回的地址减去起始地址begin,得到找到数字在数组中的下标。
     
 在从大到小的排序数组中，重载lower_bound()和upper_bound()
 
@@ -11687,7 +11692,7 @@ const char* p = str.data();
 **3.2 c_str()方法**
 
 ```cpp
-string str=“world”;
+string str="world";
 //使用char * p=(char*)str.c_str()效果相同
 const char *p = str.c_str();
 ```
@@ -11771,7 +11776,7 @@ arr[i] = '\0';       //添加结束符
 ## String全部替换
 
 ```cpp
-
+// 在a中查找b并全部替换成c
 int main(){
  string a;/////指定串，可根据要求替换
  string b;////要查找的串，可根据要求替换
@@ -11879,7 +11884,7 @@ cout<<str<<endl;
 
 ### stringstream
 
-头文件 #include
+头文件 #include<sstream>
 stringstream 可以使string与各种内置类型数据之间的转换，本文不做讲解
 本文主要利用其流的特性；
 基本语法
@@ -12084,7 +12089,7 @@ int main()
 string stk;
 stk.pop_back();
 stk.push_back();
-stk.bakc();
+stk.back();
 ```
 
 ## 数组初始化
@@ -12238,6 +12243,12 @@ cout<< isdigit('a')
 转换成大写字母
 
 **7.tolower**
+
+```c++
+string str= "THIS IS A STRING";
+for (int i=0; i <str.size(); i++)
+   str[i] = tolower(str[i]);
+```
 
 转换成小写字母。
 
@@ -12486,3 +12497,916 @@ int main()
 
 > void swap (priority_queue& x);
 
+## min_element(max_element)
+
+头文件<algorithm> 
+
+返回范围内的最小元素
+
+返回指向范围内最小值的元素的迭代器`[first,last)`。
+
+如果没有其他元素比一个元素最小，则该元素是最小的。如果有多个元素满足此条件，则迭代器返回指向此类元素中第一个的点。
+
+```c++
+#include <iostream>     // std::cout
+#include <algorithm>    // std::min_element, std::max_element
+
+bool myfn(int i, int j) { return i<j; }
+
+struct myclass {
+  bool operator() (int i,int j) { return i<j; }
+} myobj;
+
+int main () {
+  int myints[] = {3,7,2,5,6,4,9};
+
+  // using default comparison:
+  std::cout << "The smallest element is " << *std::min_element(myints,myints+7) << '\n';
+  std::cout << "The largest element is "  << *std::max_element(myints,myints+7) << '\n';
+
+  // using function myfn as comp:
+  std::cout << "The smallest element is " << *std::min_element(myints,myints+7,myfn) << '\n';
+  std::cout << "The largest element is "  << *std::max_element(myints,myints+7,myfn) << '\n';
+
+  // using object myobj as comp:
+  std::cout << "The smallest element is " << *std::min_element(myints,myints+7,myobj) << '\n';
+  std::cout << "The largest element is "  << *std::max_element(myints,myints+7,myobj) << '\n';
+
+  return 0;
+}
+```
+
+## lambda表达式(匿名函数)
+
+### 基本语法
+
+```
+[捕获值列表](参数列表)mutable(可选) 异常属性 -> 返回类型{
+	//函数体
+}
+[caputrue] (params) opt ->ret {body;}
+```
+
+- Lambda表达式以一对中括号开始
+- 和函数定义一样，有参数列表
+- 和正常的函数定义一样，有函数体，有return语句
+- Lambda表达式不需要说明返回值(相当于auto) 有特殊情况需要说明时，则使用箭头愈发的方式
+- 每一个Lambda表达式都有一个全局唯一的类型，要精准捕捉Lambda表达式到一个变量中，智能通过auto声明的方式
+
+```c++
+int c=[](int a,int b) -> int{
+        return a+b;
+    }(1,2);
+    cout<<c<<endl;
+auto d = [](int a, int b){
+    return a + b;
+}(1, 2);
+cout << d << endl;
+auto f = [](int a, int b)
+{
+  return a + b;
+};
+cout << f(1,2) << endl;
+3
+3
+
+```
+
+### mutable
+
+[t]按值捕获，可以获取外部t的值，t虽然被捕获但还是const类型，无法修改，需要使用mutable进行操作，由于是捕获值，相当于赋值操作，也是没办法修改外部的值，不同的匿名函数互相不影响，相当于各自拷贝一份。
+
+```c++
+int t=10;
+auto f1=[t]()mutable{
+return ++t;
+};
+auto f2 = [t]() mutable
+{
+return ++t;
+};
+cout<<f1()<<endl;
+cout<<f2()<<endl;
+cout<<t<<endl;
+cout << f1() << endl;
+cout << f2() << endl;
+cout << t << endl;
+11
+11
+10
+12
+12
+10
+```
+
+### 捕获值列表:
+
+1、空。没有使用任何函数对象参数。
+
+2、=。函数体内可以使用Lambda所在作用范围内所有可见的局部变量（包括Lambda所在类的this），并且是值传递方式（相当于编译器自动为我们按值传递了所有局部变量）。
+
+3、&。函数体内可以使用Lambda所在作用范围内所有可见的局部变量（包括Lambda所在类的this），并且是引用传递方式（相当于编译器自动为我们按引用传递了所有局部变量）。
+
+4、this。函数体内可以使用Lambda所在类中的成员变量。
+
+5、a。将a按值进行传递。按值进行传递时，函数体内不能修改传递进来的a的拷贝，因为默认情况下函数是const的。要修改传递进来的a的拷贝，可以添加mutable修饰符。
+
+6、&a。将a按引用进行传递。
+
+7、a, &b。将a按值进行传递，b按引用进行传递。
+
+8、=，&a, &b。除a和b按引用进行传递外，其他参数都按值进行传递。
+
+9、&, a, b。除a和b按值进行传递外，其他参数都按引用进行传递。
+
+## 函数对象包装器
+
+语法
+
+```c++
+function<返回值(参数列表)> 变量名 = 函数名;
+
+#include<functional>
+#include<iostream>
+using namespace std;
+void test(string s){
+    cout<<s<<endl;
+}
+int main(){
+    function<void(string)> f=test;
+    f("hello world");
+    return 0;
+}
+```
+
+支持四种函数封装
+
+```c++
+1、普通函数，如上
+2、匿名函数
+function<void(int)> f2=[](int n){
+        cout<<n<<endl;
+};
+f2(10);
+3、成员函数
+class Explicit
+{
+private:
+public:
+
+    void mytest(int a){
+        cout<<a<<endl;
+    }
+};
+int main()
+{
+    function<void(Explicit*,int)> f3=&Explicit::mytest;
+    Explicit t;
+    f3(&t,4);
+}
+4、仿函数 
+    重载()
+ int operator()(int a){
+        return a;
+ }
+function<int(Explicit*,int)> f4=&Explicit::operator();
+    cout<<f4(&t,123)<<endl;
+```
+
+**bind**
+
+```c++
+ void add(int a,int b,int c){
+    cout<<a<<b<<c<<endl;
+}
+ auto f5=bind(add,placeholders::_2,placeholders::_1,3);
+    f5(4,2);
+243n'g'luo'b
+```
+
+
+
+## Mutable
+
+**mutalbe**的中文意思是“可变的，易变的”，跟constant（既C++中的const）是反义词。
+
+在C++中，**mutable**也是为了突破const的限制而设置的。被**mutable**修饰的变量，将永远处于可变的状态，即使在一个const函数中。
+
+```
+const意思是“这个函数不修改对象内部状态”。为了保证这一点，编译器也会主动替你检查，确保你没有修改对象成员变量——否则内部状态就变了。mutable意思是“这个成员变量不算对象内部状态”。比如，你搞了个变量，用来统计某个对象的访问次数（比如供debug用）。它变成什么显然并不影响对象功用，但编译器并不知道：它仍然会阻止一个声明为const的函数修改这个变量。把这个计数变量声明为mutable，编译器就明白了：这个变量不算对象内部状态，修改它并不影响const语义，所以就不需要禁止const函数修改它了。
+```
+
+## char **
+
+### char * 与 char a[ ]
+
+```
+char  *s;
+char  a[ ] ;
+```
+
+- a代表字符串的首地址，而s 这个指针也保存字符串的地址（其实首地址），即第一个字符的地址，这个地址单元中的数据是一个字符，这也与 s 所指向的 char 一致。因此可以`s = a`;
+- 但是不能 a = s; 因为a的首地址存储着一个字符，但是s是一个指针（int类型），另外a是一个常量，所以不能修改
+
+```c++
+int main(void)
+{
+    char  a [ ] = "hello";
+    char *s =a;
+
+    for(int i= 0; i < strlen(a) ; i++)
+        printf("%c", s[i]);
+
+    printf("\n");
+
+    for(int i= 0; i < strlen(a) ; i++)
+        printf("%c", a[i]);
+
+    printf("\n");
+
+    printf("%s", s);
+
+    printf("\n");
+    printf("%s", a);
+
+    printf("\n---------------------\n");
+    
+    return 0;
+}
+```
+
+> char * 与 char a[ ] 的本质区别：
+
+- 当定义 char a[10 ] 时，编译器会给数组分配十个单元，每个单元的数据类型为字符。。
+- 而定义 char *s 时， 这是个**指针`变量`**，只占四个字节，32位，用来保存一个地址。
+- **char \*s 只是一个保存字符串首地址的指针变量**， char a[ ] 是许多连续的内存单元，单元中的元素为char
+
+### char ** 与char * a[ ]
+
+1、 char *a [ ] ;
+
+- 由于[ ] 的优先级高于`*` 所以a先和 [ ]结合，他是一个**数组**，数组中的元素才是`char *`，char * 是一个用来保存地址的变量变量
+
+```c++
+char *a[ ] = {"China","French","America","German"}
+sizeof(a) = 16;      指针变量占四个字节，那么四个元素就是16个字节
+```
+
+```c++
+#include <stdio.h>
+int main()
+{
+    char *a [ ] = {"China","French","America","German"};
+    printf("%p %p %p %p\n",a[0],a[1],a[2],a[3]);
+
+    return 0;
+}
+```
+
+- 可以看到数组中的四个元素保存了四个内存地址，这四个地址中就代表了四个字符串的首地址，而不是字符串本身
+- 因此sizeof(a)当然是16了
+- 注意这四个地址是不连续的，它是编译器为"China",“French”,“America”,“German” 分配的内存空间的地址， 所以，四个地址没有关联
+
+- 可以看到 0012FF38 0012FF3C 0012FF40 0012FF44,这四个是元素单元所在的地址，每个地址相差四个字节，这是由于每个元素是一个指针变量占四个字节
+
+2、 char **s;
+
+- char **为二级指针， s保存一级指针 char *的地址
+
+## 宏函数
+
+宏函数在预处理时会替换成相应的语句，十分像c++里面的模板
+
+优点：比正常函数更高效，因为不用栈帧的开销
+
+缺点：
+
+1. 没有类型检查
+2. 可能导致代码增加这样会导致源文件变得更大
+3. 没有返回值
+
+## 深入理解include预编译原理
+
+**什么情况不使用 include**
+
+```c++
+//a.c文件 
+ 
+void test_a() 
+{ 
+    return;  
+} 
+//b.c文件 
+ 
+void test_a();  // 函数声明 
+ 
+void test_b() 
+{ 
+    test_a();    // 由于上面已经声明了，所以可以使用 
+}
+```
+
+其实，这样的工程，可以不用使用 include 预编译命令。
+
+**什么情况使用 include**
+
+如果工程里面的函数特别多，那么按照上面的做法，则必须在每一个 .c 文件的开头列出所有本文件调用过的函数的声明，这样很不高效，而且一旦某个函数的形式发生变化，又得一个一个改 .c 开头的函数声明。 
+
+因此，#include 预编译命令诞生
+
+```c++
+//a.c文件 
+ 
+void test_a() 
+{ 
+     return;  
+} 
+ 
+//a.h文件 
+ 
+void test_a(); 
+ 
+//b.c文件 
+ 
+#include "a.h"    // 包含含有 test_a() 函数声明的头文件 
+ 
+void test_b() 
+{ 
+    test_a();         
+}
+```
+
+**include 起到什么效果**
+
+上述代码在编译器进行预编译的时候，**==遇到 #include "a.h" ，则会把整个 a.h 文件都copy到 b.c 的开头==**，因此，在实际编译 b.c 之前，b.c 已经被修改为了如下形式：
+
+```c++
+//b.c 预编译后的临时文件 
+ 
+void test_a(); 
+ 
+void test_b() 
+{ 
+    test_a();         
+}
+```
+
+由此可见，得到的效果和手动加 test_a() 函数声明时的效果相同。
+
+\#tips# 在Linux下，可以使用 gcc -E b.c 来查看预编译 b.c 后的效果
+
+## static 关键词的使用
+
+**什么叫函数重复定义**
+
+我们经常会遇到报错，说变量或者函数重复定义。那么，在此，首先我举例说明一下什么叫函数的重复定义。
+
+```c++
+//a.c文件 
+ 
+void test() 
+{ 
+    return; 
+} 
+ 
+//b.c文件 
+ 
+void test() 
+{ 
+    return; 
+}
+```
+
+那么，在编译的时候是不会报错的，但是，在链接的时候，会出现报错：
+
+multiple definition of `test'，因为在同一个工程里面出现了两个test函数的定义。
+
+**在.h里面写函数实现**
+
+如果在 .h 里面写了函数实现，会出现什么情况？
+
+```c++
+//a.h文件 
+ 
+void test_a() 
+{ 
+   return;     
+} 
+ 
+//b.c文件 
+ 
+#include "a.h" 
+ 
+void test_b() 
+{ 
+    test_a(); 
+}
+```
+
+预编译后，会发现，b.c 被修改为如下形式：
+
+```c++
+//b.c 预编译后的临时文件 
+ 
+void test_a() 
+{ 
+   return;     
+} 
+ 
+void test_b() 
+{ 
+    test_a(); 
+}
+```
+
+当然，这样目前是没有什么问题的，可以正常编译链接成功。但是，如果有一个 c.c 也包含的 a.h 的话，怎么办？
+
+```c++
+//c.c文件 
+ 
+#include "a.h" 
+ 
+void test_c() 
+{ 
+    test_a(); 
+}
+```
+
+同上，c.c 在预编译后，也形成了如下代码：
+
+```c++
+// c.c 预编译后的临时文件 
+ 
+void test_a() 
+{ 
+    return;     
+} 
+ 
+void test_c() 
+{ 
+    test_a(); 
+}
+```
+
+那么，在链接器进行链接（link）的时候，会报错：
+
+multiple definition of `test_a'
+
+因此，在 .h 里面写函数实现的弊端就暴露出来了。但是，经常会有这样的需求，将一个函数设置为 内联（inline） 函数，并且放在 .h 文件里面，那么，怎样才能防止出现上述 重复定义的报错呢？
+
+**static 关键词**
+
+应对上面的情况，static关键词很好地解决了这个问题。
+
+用static修饰函数，则表明该函数只能在本文件中使用，因此，当不同的文件中有相同的函数名被static修饰时，不会产生重复定义的报错。例如：
+
+```c++
+//a.c文件 
+ 
+static void test() 
+{ 
+    return; 
+} 
+ 
+void test_a() 
+{ 
+    test(); 
+} 
+ 
+//b.c文件 
+ 
+static void test() 
+{ 
+    return; 
+} 
+ 
+void test_b() 
+{ 
+    test(); 
+}
+```
+
+编译工程时不会报错，但是test()函数只能被 a.c 和 b.c 中的函数调用，不能被 c.c 等其他文件中的函数调用。
+
+那么，用static修饰 .h 文件中定义的函数，会有什么效果呢？
+
+```c++
+//a.h文件 
+ 
+static void test() 
+{ 
+    return; 
+} 
+ 
+//b.c文件 
+ 
+#include "a.h" 
+ 
+void test_b() 
+{ 
+    test(); 
+} 
+ 
+//c.c文件 
+ 
+#include "a.h" 
+ 
+void test_c() 
+{ 
+    test(); 
+}
+```
+
+这样的话，在预编译后，b.c 和 c.c 文件中，由于 #include "a.h" ，故在这两个文件开头都会定义 static void test() 函数，因此，test_b() 和 test_c() 均调用的是自己文件中的 static void test() 函数 ， 因此不会产生重复定义的报错。
+
+因此，**结论，在 .h 文件中定义函数的话，建议一定要加上 static 关键词修饰，这样，在被多个文件包含时，才不会产生重复定义的错误**。
+
+## 防止头文件重复包含
+
+经常写程序的人都知道，我们在写 .h 文件的时候，一般都会加上
+
+```
+#ifndef    XXX 
+#define   XXX  
+…… 
+#endif
+```
+
+这样做的目的是为了防止头文件的重复包含，具体是什么意思呢？
+
+它不是为了防止多个文件包含某一个头文件，而是为了防止一个头文件被同一个文件包含多次。具体说明如下：
+
+```c++
+//a.h文件 
+ 
+static void test_a() 
+{ 
+    return; 
+} 
+ 
+//b.c文件 
+ 
+#include "a.h" 
+ 
+void test_b() 
+{ 
+    test_a(); 
+} 
+ 
+//c.c 
+ 
+#include "a.h" 
+ 
+void test_c() 
+{ 
+    test_a(); 
+}
+```
+
+这样是没有问题的，但下面这种情况就会有问题
+
+```c++
+//a.h文件 
+ 
+static void test_a() 
+{ 
+    return; 
+} 
+ 
+//b.h文件 
+ 
+#include "a.h" 
+ 
+//c.h文件 
+ 
+#include "a.h" 
+ 
+//main.c文件 
+ 
+#include "b.h" 
+#include "c.h" 
+ 
+void main() 
+{ 
+    test_a(); 
+}
+```
+
+这样就不小心产生问题了，因为 b.h 和 c.h 都包含了 a.h，那么，在预编译main.c 文件的时候，会展开为如下形式：
+
+```c++
+//main.c 预编译之后的临时文件 
+ 
+static void test_a() 
+{ 
+    return; 
+} 
+ 
+static void test_a() 
+{ 
+    return; 
+} 
+ 
+void main() 
+{ 
+    test_a(); 
+}
+```
+
+在同一个 .c 里面，出现了两次 test_a() 的定义，因此，会出现重复定义的报错。
+
+但是，如果在 a.h 里面加上了
+
+```
+#ifndef    XXX 
+#define   XXX  
+…… 
+#endif
+```
+
+ 的话，就不会出现这个问题了。
+
+例如，上面的 a.h 改为：
+
+```c++
+//a.h 文件 
+ 
+#ifndef  A_H 
+#define A_H 
+ 
+static void test_a() 
+{ 
+    return; 
+} 
+ 
+#endif
+```
+
+预编译展开main.c则会出现：
+
+```c++
+//main.c 预编译后的临时文件 
+ 
+#ifndef A_H 
+#define A_H 
+ 
+static void test_a() 
+{ 
+    return; 
+} 
+ 
+#endif 
+ 
+#ifndef A_H 
+#define A_H 
+ 
+static void test_a() 
+{ 
+    return; 
+} 
+ 
+#endif 
+ 
+void main() 
+{ 
+    test_a(); 
+}
+```
+
+在编译main.c时，当遇到第二个 #ifndef A_H ，由于前面已经定义过 A_H，故此段代码被跳过不编译，因此，不会产生重复定义的报错。这就是 #ifndef……#define……#endif 的精髓所在。
+
+## typedef
+
+**用途一：**
+
+```
+定义一种类型的别名，而不只是简单的宏替换。可以用作同时声明指针型的多个对象。比如：
+char* pa, pb; // 这多数不符合我们的意图，它只声明了一个指向字符变量的指针， 
+// 和一个字符变量；
+以下则可行：
+typedef char* PCHAR; // 一般用大写
+PCHAR pa, pb; // 可行，同时声明了两个指向字符变量的指针
+虽然：
+char *pa, *pb;
+也可行，但相对来说没有用typedef的形式直观，尤其在需要大量指针的地方，typedef的方式更省事
+```
+
+**用途二：**
+
+用在旧的C的代码中（具体多旧没有查），帮助struct。以前的代码中，声明struct新对象时，必须要带上struct，即形式为： struct 结构名 对象名，如：
+
+```c++
+struct tagPOINT1  
+{  
+    int x;  
+    int y;  
+};  
+struct tagPOINT1 p1; 
+```
+
+而在C++中，则可以直接写：结构名 对象名，即：
+
+tagPOINT1 p1;
+
+估计某人觉得经常多写一个struct太麻烦了，于是就发明了：
+
+```c++
+typedef struct tagPOINT  
+{  
+    int x;  
+    int y;  
+}POINT;  
+POINT p1; // 这样就比原来的方式少写了一个struct，比较省事，尤其在大量使用的时候  
+```
+
+**用途三：**
+
+```
+用typedef来定义与平台无关的类型。
+比如定义一个叫 REAL 的浮点类型，在目标平台一上，让它表示最高精度的类型为：
+typedef long double REAL; 
+在不支持 long double 的平台二上，改为：
+typedef double REAL; 
+在连 double 都不支持的平台三上，改为：
+typedef float REAL; 
+也就是说，当跨平台时，只要改下 typedef 本身就行，不用对其他源码做任何修改。
+标准库就广泛使用了这个技巧，比如size_t。
+另外，因为typedef是定义了一种类型的新别名，不是简单的字符串替换，所以它比宏来得稳健（虽然用宏有时也可以完成以上的用途）。
+```
+
+## 0、 '0' 、 "0" 、 ’\0’ 区别
+
+①    ‘0’    代表    字符0  ，对应ASCII码值为   0x30 (也就是十进制 48)
+
+②    '\0'    代表     空字符(转义字符)【输出为空】， 对应ASCII码值为   0x00(也就是十进制 0)， 用作字符串结束符
+
+③     0    代表     数字0，  若把 数字0 赋值给 某个字符，对应ASCII码值为    0x00(也就是十进制0) 
+
+④     “0”  代表    一个字符串，  字符串中含有 2个字符，分别是 '0' 和  '\0'   
+
+下面补充说明（帮助理解）
+
+①   char  ch_0 = ‘0’;                   // 字符0 赋值给一个字符，实际赋的 码值 为 0x30，十进制48
+
+      std::cout << ch_0 << '\n';      // 输出的 是 码值0x30 对应的 字符 0， 界面上看到的是0
+    
+      std::cout << int(ch_0) << '\n';    // 输出的 是字符 ‘0’ 对应的码值  0x30，即十进制48  ，界面上看到的是 48
+
+②   char  ch_0 =  '\0';                 // 字符‘\0' 赋值给一个字符，实际赋的 码值 为 0x00，十进制0
+
+      std::cout << ch_0 << '\n';     // 输出的 是 码值0x00 对应的 空字符【NULL】， 界面上看到的是 空白，什么也看不见
+    
+      std::cout << int(ch_0) << '\n';    // 输出的 是字符 ‘\0’ 对应的码值  0x00，即十进制0  ，界面上看到的是 0
+
+③   char  ch_0 = 0;                    // 数字0 赋值给一个字符，实际赋的是 码值
+
+       std::cout << ch_0 << '\n';    // 输出的 是 码值0 对应的 字符，此处为 空白字符，即输出为空，界面上什么也看不见
+    
+      std::cout << int(ch_0) << '\n';    // 输出的 是码值  0x00，即十进制0  ，界面上看到的是0
+
+④   char ch_0[ ] = "0";               // 字符串 “0” 初始化字符数组
+
+      std::cout << sizeof(ch_0) << ‘\n’;     // 输出 ch_0 字节数， 界面显示 为2
+    
+      std::cout << ch_0[0] << '\n';             // 输出字符 ‘0’，界面上看到的是 0 
+    
+      std::cout << ch_0[1] << '\n';            // 输出字符 ‘\0’，界面上看到的是 空白
+    
+      std::cout << int( ch_0[0] )<< '\n';     // 输出字符 ‘0’ 对应的码值 0x30，界面上看到的是 48
+    
+      std::cout << int ( ch_0[1] )<< '\n';    // 输出字符 ‘\0’ 对应的码值 0x00，界面上看到的是 0
+
+##  extern修饰变量和函数
+
+在C语言中，修饰符extern用在变量或者函数的声明前，用来说明“此变量/函数是在别处定义的，要在此处引用”。extern声明不是定义，即不分配存储空间。
+
+## catch …
+
+```c++
+try
+{
+//to do
+}
+catch(std::exception &err)
+{
+    std::cout<<err.what()<<std::endl;
+}
+catch(...)
+{
+//这里会拦截住所有try里没有被前面捕获的错误，但是你不知道是什么错误
+//如果有前边的catch，这个...一般不会运行到
+  std::cout<<"未知错误"<<std::endl;
+}
+```
+
+## array
+
+array 容器是 [C++](http://m.biancheng.net/cplus/) 11 标准中新增的序列容器，简单地理解，它就是在 C++ 普通数组的基础上，添加了一些成员函数和全局函数。在使用上，它比普通数组更安全,且效率并没有因此变差。
+
+和其它容器不同，array 容器的大小是固定的，无法动态的扩展或收缩，这也就意味着，在使用该容器的过程无法借由增加或移除元素而改变其大小，它只允许访问或者替换存储的元素。
+
+array 容器以类模板的形式定义在 <array> 头文件，并位于命名空间 std 中，如下所示：
+
+```
+namespace std{    template <typename T, size_t N>    class array;}
+```
+
+因此，在使用该容器之前，代码中需引入 <array> 头文件，并默认使用 std 命令空间，如下所示：
+
+```
+#include <array>using namespace std;
+```
+
+在 array<T,N> 类模板中，T 用于指明容器中的存储的具体数据类型，N 用于指明容器的大小，需要注意的是，这里的 N 必须是常量，不能用变量表示。
+
+array 容器有多种初始化方式，如下代码展示了如何创建具有 10 个 double 类型元素的 array 容器：
+
+```
+std::array<double, 10> values;
+```
+
+> 提示，如果程序中已经默认指定了 std 命令空间，这里可以省略 std::。
+
+由此，就创建好了一个名为 values 的 array 容器，其包含 10 个浮点型元素。但是，由于未显式指定这 10 个元素的值，因此使用这种方式创建的容器中，各个元素的值是不确定的（array 容器不会做默认初始化操作）。
+
+通过如下创建 array 容器的方式，可以将所有的元素初始化为 0 或者和默认元素类型等效的值：
+
+```
+std::array<double, 10> values {};
+```
+
+使用该语句，容器中所有的元素都会被初始化为 0.0。
+
+当然，在创建 array 容器的实例时，也可以像创建常规数组那样对元素进行初始化：
+
+```
+std::array<double, 10> values {0.5,1.0,1.5,,2.0};
+```
+
+可以看到，这里只初始化了前 4 个元素，剩余的元素都会被初始化为 0.0除此之外，array 容器还提供有很多功能实用的成员函数，如表 2 所示。
+
+可以通过下标**[ ]**、**at()**、**front()**、**back()**、**data()**等函数访问array容器内的元素。
+
+| 成员函数            | 功能                                                         |
+| ------------------- | ------------------------------------------------------------ |
+| begin()             | 返回指向容器中第一个元素的随机访问迭代器。                   |
+| end()               | 返回指向容器最后一个元素之后一个位置的随机访问迭代器，通常和 begin() 结合使用。 |
+| rbegin()            | 返回指向最后一个元素的随机访问迭代器。                       |
+| rend()              | 返回指向第一个元素之前一个位置的随机访问迭代器。             |
+| cbegin()            | 和 begin() 功能相同，只不过在其基础上增加了 const 属性，不能用于修改元素。 |
+| cend()              | 和 end() 功能相同，只不过在其基础上，增加了 const 属性，不能用于修改元素。 |
+| crbegin()           | 和 rbegin() 功能相同，只不过在其基础上，增加了 const 属性，不能用于修改元素。 |
+| crend()             | 和 rend() 功能相同，只不过在其基础上，增加了 const 属性，不能用于修改元素。 |
+| size()              | 返回容器中当前元素的数量，其值始终等于初始化 array 类的第二个模板参数 N。 |
+| max_size()          | 返回容器可容纳元素的最大数量，其值始终等于初始化 array 类的第二个模板参数 N。 |
+| empty()             | 判断容器是否为空，和通过 size()==0 的判断条件功能相同，但其效率可能更快。 |
+| at(n)               | 返回容器中 n 位置处元素的引用，该函数自动检查 n 是否在有效的范围内，如果不是则抛出 out_of_range 异常。 |
+| front()             | 返回容器中第一个元素的直接引用，该函数不适用于空的 array 容器。 |
+| back()              | 返回容器中最后一个元素的直接应用，该函数同样不适用于空的 array 容器。 |
+| data()              | 返回一个指向容器首个元素的[指针](http://m.biancheng.net/c/80/)。利用该指针，可实现复制容器中所有元素等类似功能。 |
+| fill(val)           | 将 val 这个值赋值给容器中的每个元素。                        |
+| array1.swap(array2) | 交换 array1 和 array2 容器中的所有元素，但前提是它们具有相同的长度和类型。 |
+
+
+除此之外，C++ 11 标准库还新增加了 begin() 和 end() 这 2 个函数，和 array 容器包含的 begin() 和 end() 成员函数不同的是，标准库提供的这 2 个函数的操作对象，既可以是容器，还可以是普通数组。当操作对象是容器时，它和容器包含的 begin() 和 end() 成员函数的功能完全相同；如果操作对象是普通数组，则 begin() 函数返回的是指向数组第一个元素的指针，同样 end() 返回指向数组中最后一个元素之后一个位置的指针（注意不是最后一个元素）。
+
+另外，在 <array> 头文件中还重载了 get() 全局函数，该重载函数的功能是访问容器中指定的元素，并返回该元素的引用。
+
+正是由于 array 容器中包含了 at() 这样的成员函数，使得操作元素时比普通数组更安全。
+
+## vector比较
+
+- 如果vector里面的元素类型是简单类型（内置类型），可以直接使用“==”或者“!=”进行比较
+
+  ```c++
+  因为在STL里面，==和!=是可以直接使用的：
+  template< class T, class Alloc >
+  bool operator==( const vector<T,Alloc>& lhs,
+                   const vector<T,Alloc>& rhs );
+  
+  template< class T, class Alloc >
+  bool operator!=( const vector<T,Alloc>& lhs,
+                   const vector<T,Alloc>& rhs );
+  ```
+
+- 甚至可以使用“<=” “<” “>=” “>”比较两个vector大小：按照字典序排列
+
+  ```c++
+  template< class T, class Alloc >
+  bool operator<( const vector<T,Alloc>& lhs,
+                  const vector<T,Alloc>& rhs );
+  
+  template< class T, class Alloc >
+  bool operator<=( const vector<T,Alloc>& lhs,
+                   const vector<T,Alloc>& rhs );
+  
+  template< class T, class Alloc >
+  bool operator>( const vector<T,Alloc>& lhs,
+                  const vector<T,Alloc>& rhs );
+  
+  template< class T, class Alloc >
+  bool operator>=( const vector<T,Alloc>& lhs,
+                   const vector<T,Alloc>& rhs );
+  ```
+
+  
