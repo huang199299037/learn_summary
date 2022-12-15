@@ -74,20 +74,20 @@ print(type(g))  # <class 'dict'> -- 字典
 
 #### 3.1 格式化符号
 
-| 格式符号 |          转换          |
-| :------: | :--------------------: |
-|  **%s**  |         字符串         |
-|  **%d**  |   有符号的十进制整数   |
-|  **%f**  |         浮点数         |
-|    %c    |          字符          |
-|    %u    |    无符号十进制整数    |
-|    %o    |       八进制整数       |
-|    %x    | 十六进制整数（小写ox） |
-|    %X    | 十六进制整数（大写OX） |
-|    %e    | 科学计数法（小写'e'）  |
-|    %E    | 科学计数法（大写'E'）  |
-|    %g    |      %f和%e的简写      |
-|    %G    |      %f和%E的简写      |
+| 格式符号   | 转换           |
+|:------:|:------------:|
+| **%s** | 字符串          |
+| **%d** | 有符号的十进制整数    |
+| **%f** | 浮点数          |
+| %c     | 字符           |
+| %u     | 无符号十进制整数     |
+| %o     | 八进制整数        |
+| %x     | 十六进制整数（小写ox） |
+| %X     | 十六进制整数（大写OX） |
+| %e     | 科学计数法（小写'e'） |
+| %E     | 科学计数法（大写'E'） |
+| %g     | %f和%e的简写     |
+| %G     | %f和%E的简写     |
 
 > 技巧
 
@@ -166,27 +166,27 @@ print(type(password))
 
 ### 4.1 转换数据类型的函数
 
-|                函数                |                        说明                         |
-| :--------------------------------: | :-------------------------------------------------: |
-| ==int(x [,base ])== int(x,base=10) |                  将x转换为一个整数                  |
-|           ==float(x )==            |                 将x转换为一个浮点数                 |
-|       complex(real [,imag ])       |        创建一个复数，real为实部，imag为虚部         |
-|            ==str(x )==             |                将对象 x 转换为字符串                |
-|              repr(x )              |             将对象 x 转换为表达式字符串             |
-|           ==eval(str )==           | 用来计算在字符串中的有效Python表达式,并返回一个对象 |
-|           ==tuple(s )==            |               将序列 s 转换为一个元组               |
-|            ==list(s )==            |               将序列 s 转换为一个列表               |
-|              chr(x )               |           将一个整数转换为一个Unicode字符           |
-|              ord(x )               |           将一个字符转换为它的ASCII整数值           |
-|              hex(x )               |         将一个整数转换为一个十六进制字符串          |
-|              oct(x )               |          将一个整数转换为一个八进制字符串           |
-|              bin(x )               |          将一个整数转换为一个二进制字符串           |
+| 函数                                 | 说明                            |
+|:----------------------------------:|:-----------------------------:|
+| ==int(x [,base ])== int(x,base=10) | 将x转换为一个整数                     |
+| ==float(x )==                      | 将x转换为一个浮点数                    |
+| complex(real [,imag ])             | 创建一个复数，real为实部，imag为虚部        |
+| ==str(x )==                        | 将对象 x 转换为字符串                  |
+| repr(x )                           | 将对象 x 转换为表达式字符串               |
+| ==eval(str )==                     | 用来计算在字符串中的有效Python表达式,并返回一个对象 |
+| ==tuple(s )==                      | 将序列 s 转换为一个元组                 |
+| ==list(s )==                       | 将序列 s 转换为一个列表                 |
+| chr(x )                            | 将一个整数转换为一个Unicode字符           |
+| ord(x )                            | 将一个字符转换为它的ASCII整数值            |
+| hex(x )                            | 将一个整数转换为一个十六进制字符串             |
+| oct(x )                            | 将一个整数转换为一个八进制字符串              |
+| bin(x )                            | 将一个整数转换为一个二进制字符串              |
 
 ### 4.2 快速体验
 
 需求：input接收用户输入，用户输入“1”，将这个数据1转换成整型。
 
-``` python
+```python
 # 1. 接收用户输入
 num = input('请输入您的幸运数字：')
 
@@ -203,7 +203,7 @@ print(type(int(num)))
 
 ### 4.3 实验
 
-``` python
+```python
 # 1. float() -- 转换成浮点型
 num1 = 1
 print(float(num1))
@@ -237,24 +237,24 @@ print(type(eval(str3)))
 
 ### 5.1  算数运算符
 
-| 运算符 |  描述  | 实例                                                  |
-| :----: | :----: | ----------------------------------------------------- |
-|   +    |   加   | 1 + 1 输出结果为 2                                    |
-|   -    |   减   | 1-1 输出结果为 0                                      |
-|   *    |   乘   | 2 * 2 输出结果为 4                                    |
-|   /    |   除   | 10 / 2 输出结果为 5                                   |
-|   //   |  整除  | 9 // 4 输出结果为2                                    |
-|   %    |  取余  | 9 % 4 输出结果为 1                                    |
-|   **   |  指数  | 2 ** 4 输出结果为 16，即 2 * 2 * 2 * 2                |
-|   ()   | 小括号 | 小括号用来提高运算优先级，即 (1 + 2) * 3 输出结果为 9 |
+| 运算符 | 描述  | 实例                                 |
+|:---:|:---:| ---------------------------------- |
+| +   | 加   | 1 + 1 输出结果为 2                      |
+| -   | 减   | 1-1 输出结果为 0                        |
+| *   | 乘   | 2 * 2 输出结果为 4                      |
+| /   | 除   | 10 / 2 输出结果为 5                     |
+| //  | 整除  | 9 // 4 输出结果为2                      |
+| %   | 取余  | 9 % 4 输出结果为 1                      |
+| **  | 指数  | 2 ** 4 输出结果为 16，即 2 * 2 * 2 * 2    |
+| ()  | 小括号 | 小括号用来提高运算优先级，即 (1 + 2) * 3 输出结果为 9 |
 
 > 注意：混合运算优先级顺序：`()`高于 `**` 高于 `*` `/` `//` `%` 高于 `+` `-`
 
 ### 5.3 赋值运算符
 
-| 运算符 | 描述 | 实例                                |
-| ------ | ---- | ----------------------------------- |
-| =      | 赋值 | 将`=`右侧的结果赋值给等号左侧的变量 |
+| 运算符 | 描述  | 实例                  |
+| --- | --- | ------------------- |
+| =   | 赋值  | 将`=`右侧的结果赋值给等号左侧的变量 |
 
 - 单个变量赋值
 
@@ -280,17 +280,17 @@ print(a)
 print(b)
 ```
 
-### 5.3  复合赋值运算符 
+### 5.3  复合赋值运算符
 
-| 运算符 | 描述           | 实例                       |
-| ------ | -------------- | -------------------------- |
-| +=     | 加法赋值运算符 | c += a 等价于 c = c + a    |
-| -=     | 减法赋值运算符 | c -= a 等价于 c = c- a     |
-| *=     | 乘法赋值运算符 | c *= a 等价于 c = c * a    |
-| /=     | 除法赋值运算符 | c /= a 等价于 c = c / a    |
-| //=    | 整除赋值运算符 | c //= a 等价于 c = c // a  |
-| %=     | 取余赋值运算符 | c %= a 等价于 c = c % a    |
-| **=    | 幂赋值运算符   | c ** = a 等价于 c = c ** a |
+| 运算符 | 描述      | 实例                      |
+| --- | ------- | ----------------------- |
+| +=  | 加法赋值运算符 | c += a 等价于 c = c + a    |
+| -=  | 减法赋值运算符 | c -= a 等价于 c = c- a     |
+| *=  | 乘法赋值运算符 | c *= a 等价于 c = c * a    |
+| /=  | 除法赋值运算符 | c /= a 等价于 c = c / a    |
+| //= | 整除赋值运算符 | c //= a 等价于 c = c // a  |
+| %=  | 取余赋值运算符 | c %= a 等价于 c = c % a    |
+| **= | 幂赋值运算符  | c ** = a 等价于 c = c ** a |
 
 ```python
 a = 100
@@ -313,14 +313,14 @@ print(c)
 
 比较运算符也叫关系运算符， 通常用来判断。
 
-| 运算符 | 描述                                                         | 实例                                                        |
-| ------ | ------------------------------------------------------------ | ----------------------------------------------------------- |
-| ==     | 判断相等。如果两个操作数的结果相等，则条件结果为真(True)，否则条件结果为假(False) | 如a=3,b=3，则（a == b) 为 True                              |
-| !=     | 不等于 。如果两个操作数的结果不相等，则条件为真(True)，否则条件结果为假(False) | 如a=3,b=3，则（a == b) 为 True如a=1,b=3，则(a != b) 为 True |
-| >      | 运算符左侧操作数结果是否大于右侧操作数结果，如果大于，则条件为真，否则为假 | 如a=7,b=3，则(a > b) 为 True                                |
-| <      | 运算符左侧操作数结果是否小于右侧操作数结果，如果小于，则条件为真，否则为假 | 如a=7,b=3，则(a < b) 为 False                               |
-| >=     | 运算符左侧操作数结果是否大于等于右侧操作数结果，如果大于，则条件为真，否则为假 | 如a=7,b=3，则(a < b) 为 False如a=3,b=3，则(a >= b) 为 True  |
-| <=     | 运算符左侧操作数结果是否小于等于右侧操作数结果，如果小于，则条件为真，否则为假 | 如a=3,b=3，则(a <= b) 为 True                               |
+| 运算符 | 描述                                              | 实例                                                 |
+| --- | ----------------------------------------------- | -------------------------------------------------- |
+| ==  | 判断相等。如果两个操作数的结果相等，则条件结果为真(True)，否则条件结果为假(False) | 如a=3,b=3，则（a == b) 为 True                          |
+| !=  | 不等于 。如果两个操作数的结果不相等，则条件为真(True)，否则条件结果为假(False)  | 如a=3,b=3，则（a == b) 为 True如a=1,b=3，则(a != b) 为 True |
+| >   | 运算符左侧操作数结果是否大于右侧操作数结果，如果大于，则条件为真，否则为假           | 如a=7,b=3，则(a > b) 为 True                           |
+| <   | 运算符左侧操作数结果是否小于右侧操作数结果，如果小于，则条件为真，否则为假           | 如a=7,b=3，则(a < b) 为 False                          |
+| >=  | 运算符左侧操作数结果是否大于等于右侧操作数结果，如果大于，则条件为真，否则为假         | 如a=7,b=3，则(a < b) 为 False如a=3,b=3，则(a >= b) 为 True |
+| <=  | 运算符左侧操作数结果是否小于等于右侧操作数结果，如果小于，则条件为真，否则为假         | 如a=3,b=3，则(a <= b) 为 True                          |
 
 ```python
 a = 7
@@ -335,11 +335,11 @@ print(a >= b)  # True
 
 ### 5.5   逻辑运算符
 
-| 运算符 | 逻辑表达式 | 描述                                                         | 实例                                     |
-| ------ | ---------- | ------------------------------------------------------------ | ---------------------------------------- |
-| and    | x and y    | 布尔"与"：如果 x 为 False，x and y 返回 False，否则它返回 y 的值。 | True and False， 返回 False。            |
-| or     | x or y     | 布尔"或"：如果 x 是 True，它返回 True，否则它返回 y 的值。   | False or True， 返回 True。              |
-| not    | not x      | 布尔"非"：如果 x 为 True，返回 False 。如果 x 为 False，它返回 True。 | not True 返回 False, not False 返回 True |
+| 运算符 | 逻辑表达式   | 描述                                                 | 实例                                   |
+| --- | ------- | -------------------------------------------------- | ------------------------------------ |
+| and | x and y | 布尔"与"：如果 x 为 False，x and y 返回 False，否则它返回 y 的值。    | True and False， 返回 False。            |
+| or  | x or y  | 布尔"或"：如果 x 是 True，它返回 True，否则它返回 y 的值。             | False or True， 返回 True。              |
+| not | not x   | 布尔"非"：如果 x 为 True，返回 False 。如果 x 为 False，它返回 True。 | not True 返回 False, not False 返回 True |
 
 ```python
 a = 1
@@ -353,14 +353,14 @@ print(not (a > b))          # True
 
 ### 5.6 位运算符
 
-| 运算符 | 描述                                                         | 实例                                                         |
-| ------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| &      | 按位与运算符：参与运算的两个值,如果两个相应位都为1,则该位的结果为1,否则为0 | (a & b) 输出结果 12 ，二进制解释： 0000 1100                 |
-| \|     | 按位或运算符：只要对应的二个二进位有一个为1时，结果位就为1。 | (a \| b) 输出结果 61 ，二进制解释： 0011 1101                |
-| ^      | 按位异或运算符：当两对应的二进位相异时，结果为1              | (a ^ b) 输出结果 49 ，二进制解释： 0011 0001                 |
-| ~      | 按位取反运算符：对数据的每个二进制位取反,即把1变为0,把0变为1 。~x 类似于 -x-1 | (~a ) 输出结果 -61 ，二进制解释： 1100 0011，在一个有符号二进制数的补码形式。 |
-| <<     | 左移动运算符：运算数的各二进位全部左移若干位，由 << 右边的数字指定了移动的位数，高位丢弃，低位补0。 | a << 2 输出结果 240 ，二进制解释： 1111 0000                 |
-| >>     | 右移动运算符：把">>"左边的运算数的各二进位全部右移若干位，>> 右边的数字指定了移动的位数 | a >> 2 输出结果 15 ，二进制解释： 0000 1111                  |
+| 运算符 | 描述                                                   | 实例                                                |
+| --- | ---------------------------------------------------- | ------------------------------------------------- |
+| &   | 按位与运算符：参与运算的两个值,如果两个相应位都为1,则该位的结果为1,否则为0             | (a & b) 输出结果 12 ，二进制解释： 0000 1100                 |
+| \|  | 按位或运算符：只要对应的二个二进位有一个为1时，结果位就为1。                      | (a \| b) 输出结果 61 ，二进制解释： 0011 1101                |
+| ^   | 按位异或运算符：当两对应的二进位相异时，结果为1                             | (a ^ b) 输出结果 49 ，二进制解释： 0011 0001                 |
+| ~   | 按位取反运算符：对数据的每个二进制位取反,即把1变为0,把0变为1 。~x 类似于 -x-1       | (~a ) 输出结果 -61 ，二进制解释： 1100 0011，在一个有符号二进制数的补码形式。 |
+| <<  | 左移动运算符：运算数的各二进位全部左移若干位，由 << 右边的数字指定了移动的位数，高位丢弃，低位补0。 | a << 2 输出结果 240 ，二进制解释： 1111 0000                 |
+| >>  | 右移动运算符：把">>"左边的运算数的各二进位全部右移若干位，>> 右边的数字指定了移动的位数      | a >> 2 输出结果 15 ，二进制解释： 0000 1111                  |
 
 ### 5.7  三目运算符
 
@@ -368,13 +368,13 @@ print(not (a > b))          # True
 
 语法如下：
 
-``` python
+```python
 值1 if 条件 else 值2
 ```
 
 快速体验：
 
-``` python
+```python
 a = 1
 b = 2
 
@@ -386,7 +386,7 @@ print(c)
 
 数字之间的逻辑运算
 
-``` python
+```python
 a = 0
 b = 1
 c = 2
@@ -410,7 +410,7 @@ print(b or c)  # 1
 - 循环的作用：控制代码重复执行
 - while语法
 
-``` python
+```python
 while 条件:
     条件成立重复执行的代码1
     条件成立重复执行的代码2
@@ -430,7 +430,7 @@ while 条件1:
 
 - for循环语法
 
-``` python
+```python
 for 临时变量 in 序列:
     重复执行的代码1
     重复执行的代码2
@@ -451,14 +451,14 @@ for 临时变量 in 序列:
 
 - 一对引号字符串
 
-``` python
+```python
 name1 = 'Tom'
 name2 = "Rose"
 ```
 
 - 三引号字符串
 
-``` python
+```python
 name3 = ''' Tom '''
 name4 = """ Rose """
 a = ''' i am Tom, 
@@ -472,14 +472,14 @@ b = """ i am Rose,
 
 > 思考：如果创建一个字符串` I'm Tom`?
 
-``` python
+```python
 c = "I'm Tom"
 d = 'I\'m Tom'
 ```
 
 ### 7.2 字符串输出
 
-``` python
+```python
 print('hello world')
 
 name = 'Tom'
@@ -493,16 +493,16 @@ print(f'我的名字是{name}')
 
 **语法**
 
-``` python
+```python
 序列[开始位置下标:结束位置下标:步长]
 ```
 
 > 注意
 
-   	1. 不包含结束位置下标对应的数据， 正负整数均可；
-   	        	2. 步长是选取间隔，正负整数均可，默认步长为1。
+       1. 不包含结束位置下标对应的数据， 正负整数均可；
+                   2. 步长是选取间隔，正负整数均可，默认步长为1。
 
-``` python
+```python
 name = "abcdefg"
 
 print(name[2:5:1])  # cde
@@ -523,10 +523,9 @@ print(name[-4:-1:-1])
 所谓字符串查找方法即是查找子串在字符串中的位置或出现的次数。
 
 - find()：检测某个子串是否包含在这个字符串中，如果在返回这个子串开始的位置下标，否则则返回-1。
-
 1. 语法
 
-``` python
+```python
 字符串序列.find(子串, 开始位置下标, 结束位置下标)
 ```
 
@@ -534,7 +533,7 @@ print(name[-4:-1:-1])
 
 2. 快速体验
 
-``` python
+```python
 mystr = "hello world and itcast and itheima and Python"
 
 print(mystr.find('and'))  # 12
@@ -542,13 +541,10 @@ print(mystr.find('and', 15, 30))  # 23
 print(mystr.find('ands'))  # -1
 ```
 
-
-
 - index()：检测某个子串是否包含在这个字符串中，如果在返回这个子串开始的位置下标，否则则报异常。
-
 1. 语法
 
-``` python
+```python
 字符串序列.index(子串, 开始位置下标, 结束位置下标)
 ```
 
@@ -556,7 +552,7 @@ print(mystr.find('ands'))  # -1
 
 2. 快速体验
 
-``` python
+```python
 mystr = "hello world and itcast and itheima and Python"
 
 print(mystr.index('and'))  # 12
@@ -564,15 +560,14 @@ print(mystr.index('and', 15, 30))  # 23
 print(mystr.index('ands'))  # 报错
 ```
 
-
-
 - rfind()： 和find()功能相同，但查找方向为==右侧==开始。
-- rindex()：和index()功能相同，但查找方向为==右侧==开始。
-- count()：返回某个子串在字符串中出现的次数
 
+- rindex()：和index()功能相同，但查找方向为==右侧==开始。
+
+- count()：返回某个子串在字符串中出现的次数
 1. 语法
 
-``` python
+```python
 字符串序列.count(子串, 开始位置下标, 结束位置下标)
 ```
 
@@ -580,7 +575,7 @@ print(mystr.index('ands'))  # 报错
 
 2. 快速体验
 
-``` python
+```python
 mystr = "hello world and itcast and itheima and Python"
 
 print(mystr.count('and'))  # 3
@@ -593,10 +588,9 @@ print(mystr.count('and', 0, 20))  # 1
 所谓修改字符串，指的就是通过函数的形式修改字符串中的数据。
 
 - replace()：替换
-
 1. 语法
 
-``` python
+```python
 字符串序列.replace(旧子串, 新子串, 替换次数)
 ```
 
@@ -604,7 +598,7 @@ print(mystr.count('and', 0, 20))  # 1
 
 2. 快速体验
 
-``` python
+```python
 mystr = "hello world and itcast and itheima and Python"
 
 # 结果：hello world he itcast he itheima he Python
@@ -618,10 +612,9 @@ print(mystr)
 > 注意：数据按照是否能直接修改分为==可变类型==和==不可变类型==两种。字符串类型的数据修改的时候不能改变原有字符串，属于不能直接修改数据的类型即是不可变类型。
 
 - split()：按照指定字符分割字符串。
-
 1. 语法
 
-``` python
+```python
 字符串序列.split(分割字符, num)
 ```
 
@@ -629,7 +622,7 @@ print(mystr)
 
 2. 快速体验
 
-``` python
+```python
 mystr = "hello world and itcast and itheima and Python"
 
 # 结果：['hello world ', ' itcast ', ' itheima ', ' Python']
@@ -645,16 +638,15 @@ print(mystr.split(' ', 2))
 > 注意：如果分割字符是原有字符串中的子串，分割后则丢失该子串。
 
 - join()：用一个字符或子串合并字符串，即是将多个字符串合并为一个新的字符串。
-
 1. 语法
 
-``` python
+```python
 字符或子串.join(多字符串组成的序列)
 ```
 
 2. 快速体验
 
-``` python
+```python
 list1 = ['chuan', 'zhi', 'bo', 'ke']
 t1 = ('aa', 'b', 'cc', 'ddd')
 # 结果：chuan_zhi_bo_ke
@@ -665,7 +657,7 @@ print('...'.join(t1))
 
 - capitalize()：将字符串第一个字符转换成大写。
 
-``` python
+```python
 mystr = "hello world and itcast and itheima and Python"
 
 # 结果：Hello world and itcast and itheima and python
@@ -676,7 +668,7 @@ print(mystr.capitalize())
 
 - title()：将字符串每个单词首字母转换成大写。
 
-``` python
+```python
 mystr = "hello world and itcast and itheima and Python"
 
 # 结果：Hello World And Itcast And Itheima And Python
@@ -685,7 +677,7 @@ print(mystr.title())
 
 - lower()：将字符串中大写转小写。
 
-``` python
+```python
 mystr = "hello world and itcast and itheima and Python"
 
 # 结果：hello world and itcast and itheima and python
@@ -694,7 +686,7 @@ print(mystr.lower())
 
 - upper()：将字符串中小写转大写。
 
-``` python
+```python
 mystr = "hello world and itcast and itheima and Python"
 
 # 结果：HELLO WORLD AND ITCAST AND ITHEIMA AND PYTHON
@@ -710,6 +702,7 @@ print(mystr.upper())
 - ljust()：返回一个原字符串左对齐,并使用指定字符(默认空格)填充至对应长度 的新字符串。
 
 - rjust()：返回一个原字符串右对齐,并使用指定字符(默认空格)填充至对应长度 的新字符串，语法和ljust()相同。
+
 - center()：返回一个原字符串居中对齐,并使用指定字符(默认空格)填充至对应长度 的新字符串，语法和ljust()相同。
 
 ### 7.6 判断
@@ -717,16 +710,15 @@ print(mystr.upper())
 所谓判断即是判断真假，返回的结果是布尔型数据类型：True 或 False。
 
 - startswith()：检查字符串是否是以指定子串开头，是则返回 True，否则返回 False。如果设置开始和结束位置下标，则在指定范围内检查。
-
 1. 语法
 
-``` python
+```python
 字符串序列.startswith(子串, 开始位置下标, 结束位置下标)
 ```
 
 2. 快速体验
 
-``` python
+```python
 mystr = "hello world and itcast and itheima and Python   "
 
 # 结果：True
@@ -737,16 +729,15 @@ print(mystr.startswith('hello', 5, 20))
 ```
 
 - endswith()：：检查字符串是否是以指定子串结尾，是则返回 True，否则返回 False。如果设置开始和结束位置下标，则在指定范围内检查。
-
 1. 语法
 
-``` python
+```python
 字符串序列.endswith(子串, 开始位置下标, 结束位置下标)
 ```
 
 2. 快速体验
 
-``` python
+```python
 mystr = "hello world and itcast and itheima and Python"
 
 # 结果：True
@@ -761,7 +752,7 @@ print(mystr.endswith('Python', 2, 20))
 
 - isalpha()：如果字符串至少有一个字符并且所有字符都是字母则返回 True, 否则返回 False。
 
-``` python
+```python
 mystr1 = 'hello'
 mystr2 = 'hello12345'
 
@@ -774,7 +765,7 @@ print(mystr2.isalpha())
 
 - isdigit()：如果字符串只包含数字则返回 True 否则返回 False。
 
-``` python
+```python
 mystr1 = 'aaa12345'
 mystr2 = '12345'
 
@@ -787,7 +778,7 @@ print(mystr2.isdigit())
 
 - isalnum()：如果字符串至少有一个字符并且所有字符都是字母或数字则返 回 True,否则返回 False。
 
-``` python
+```python
 mystr1 = 'aaa12345'
 mystr2 = '12345-'
 
@@ -800,7 +791,7 @@ print(mystr2.isalnum())
 
 - isspace()：如果字符串中只包含空白，则返回 True，否则返回 False。
 
-``` python
+```python
 mystr1 = '1 2 3 4 5'
 mystr2 = '     '
 
@@ -823,7 +814,7 @@ print(mystr2.isspace())
 
 #### 8.1.1 下标
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 print(name_list[0])  # Tom
@@ -834,16 +825,15 @@ print(name_list[2])  # Rose
 #### 8.1.2 函数
 
 - index()：返回指定数据所在位置的下标 。
-
 1. 语法
 
-``` python
+```python
 列表序列.index(数据, 开始位置下标, 结束位置下标)
 ```
 
 2. 快速体验
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 print(name_list.index('Lily', 0, 2))  # 1
@@ -853,7 +843,7 @@ print(name_list.index('Lily', 0, 2))  # 1
 
 - count()：统计指定数据在当前列表中出现的次数。
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 print(name_list.count('Lily'))  # 1
@@ -861,7 +851,7 @@ print(name_list.count('Lily'))  # 1
 
 - len()：访问列表长度，即列表中数据的个数。
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 print(len(name_list))  # 3
@@ -871,7 +861,7 @@ print(len(name_list))  # 3
 
 - in：判断指定数据在某个列表序列，如果在返回True，否则返回False
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 # 结果：True
@@ -883,7 +873,7 @@ print('Lilys' in name_list)
 
 - not in：判断指定数据不在某个列表序列，如果不在返回True，否则返回False
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 # 结果：False
@@ -897,7 +887,7 @@ print('Lilys' not in name_list)
 
 需求：查找用户输入的名字是否已经存在。
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 name = input('请输入您要搜索的名字：')
@@ -913,16 +903,15 @@ else:
 作用：增加指定数据到列表中。
 
 - append()：列表结尾追加数据。
-
 1. 语法
 
-``` python
+```python
 列表序列.append(数据)
 ```
 
 2. 体验
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 name_list.append('xiaoming')
@@ -937,7 +926,7 @@ print(name_list)
 
 如果append()追加的数据是一个序列，则追加整个序列到列表
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 name_list.append(['xiaoming', 'xiaohong'])
@@ -947,7 +936,6 @@ print(name_list)
 ```
 
 - extend()：列表结尾追加数据，如果数据是一个序列，则将这个序列的数据逐一添加到列表。
-
 1. 语法
 
 ```python
@@ -955,7 +943,7 @@ print(name_list)
 ```
 
 2. 快速体验
-
+   
    2.1 单个数据
 
 ```python
@@ -967,7 +955,7 @@ name_list.extend('xiaoming')
 print(name_list)
 ```
 
-​	2.2 序列数据
+​    2.2 序列数据
 
 ```python
 name_list = ['Tom', 'Lily', 'Rose']
@@ -979,16 +967,15 @@ print(name_list)
 ```
 
 - insert()：指定位置新增数据。
-
 1. 语法
 
-``` python
+```python
 列表序列.insert(位置下标, 数据)
 ```
 
 2. 快速体验
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 name_list.insert(1, 'xiaoming')
@@ -1000,18 +987,17 @@ print(name_list)
 ### 8.3 删除
 
 - del
-
 1. 语法
 
-``` python
+```python
 del 目标 or del(目标)
 ```
 
 2. 快速体验
-
+   
    2.1 删除列表
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 # 结果：报错提示：name 'name_list' is not defined
@@ -1019,9 +1005,9 @@ del name_list
 print(name_list)
 ```
 
-​	2.2 删除指定数据
+​    2.2 删除指定数据
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 del name_list[0]
@@ -1031,16 +1017,15 @@ print(name_list)
 ```
 
 - pop()：删除指定下标的数据(默认为最后一个)，并返回该数据。
-
 1. 语法
 
-``` python
+```python
 列表序列.pop(下标)
 ```
 
 2. 快速体验
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 del_name = name_list.pop(1)
@@ -1053,16 +1038,15 @@ print(name_list)
 ```
 
 - remove()：移除列表中某个数据的第一个匹配项。
-
 1. 语法
 
-``` python
+```python
 列表序列.remove(数据)
 ```
 
 2. 快速体验
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 name_list.remove('Rose')
@@ -1073,7 +1057,7 @@ print(name_list)
 
 - clear()：清空列表
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 name_list.clear()
@@ -1084,7 +1068,7 @@ print(name_list) # 结果： []
 
 - 修改指定下标数据
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 name_list[0] = 'aaa'
@@ -1095,7 +1079,7 @@ print(name_list)
 
 - 逆置：reverse()
 
-``` python
+```python
 num_list = [1, 5, 2, 3, 6, 8]
 
 num_list.reverse()
@@ -1105,10 +1089,9 @@ print(num_list)
 ```
 
 - 排序：sort()
-
 1. 语法
 
-``` python
+```python
 列表序列.sort( key=None, reverse=False)
 ```
 
@@ -1116,7 +1099,7 @@ print(num_list)
 
 2. 快速体验
 
-``` python
+```python
 num_list = [1, 5, 2, 3, 6, 8]
 
 num_list.sort()
@@ -1129,7 +1112,7 @@ print(num_list)
 
 函数：copy()
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 name_li2 = name_list.copy()
@@ -1146,7 +1129,7 @@ print(name_li2)
 
 - 代码
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 i = 0
@@ -1159,7 +1142,7 @@ while i < len(name_list):
 
 - 代码
 
-``` python
+```python
 name_list = ['Tom', 'Lily', 'Rose']
 
 for value in name_list:
@@ -1179,13 +1162,13 @@ for index, value in enumerate(['A', 'B', 'C']):
 
 应用场景：要存储班级一、二、三三个班级学生姓名，且每个班级的学生姓名在一个列表。
 
-``` python
+```python
 name_list = [['小明', '小红', '小绿'], ['Tom', 'Lily', 'Rose'], ['张三', '李四', '王五']]
 ```
 
 > 思考： 如何查找到数据"李四"？
 
-``` python
+```python
 # 第一步：按下标查找到李四所在的列表
 print(name_list[2])
 
@@ -1197,7 +1180,7 @@ print(name_list[2][1])
 
 元组特点：定义元组使用==小括号==，且==逗号==隔开各个数据，数据可以是不同的数据类型。
 
-``` python
+```python
 # 多个数据元组
 t1 = (10, 20, 30)
 
@@ -1207,7 +1190,7 @@ t2 = (10,)
 
 > 注意：如果定义的元组只有一个数据，那么这个数据后面也要添加逗号，否则数据类型为唯一的这个数据的数据类型
 
-``` python
+```python
 t2 = (10,)
 print(type(t2))  # tuple
 
@@ -1222,48 +1205,42 @@ print(type(t4))  # str
 
 - 按下标查找数据
 
-``` python
+```python
 tuple1 = ('aa', 'bb', 'cc', 'bb')
 print(tuple1[0])  # aa
 ```
 
-
-
 - index()：查找某个数据，如果数据存在返回对应的下标，否则报错，语法和列表、字符串的index方法相同。
 
-``` python
+```python
 tuple1 = ('aa', 'bb', 'cc', 'bb')
 print(tuple1.index('aa'))  # 0
 ```
 
-
-
 - count()：统计某个数据在当前元组出现的次数。
 
-``` python
+```python
 tuple1 = ('aa', 'bb', 'cc', 'bb')
 print(tuple1.count('bb'))  # 2
 ```
 
-
-
 - len()：统计元组中数据的个数。
 
-``` python
+```python
 tuple1 = ('aa', 'bb', 'cc', 'bb')
 print(len(tuple1))  # 4
 ```
 
 > 注意：元组内的直接数据如果修改则立即报错
 
-``` python
+```python
 tuple1 = ('aa', 'bb', 'cc', 'bb')
 tuple1[0] = 'aaa'
 ```
 
 > 但是如果元组里面有列表，修改列表里面的数据则是支持的。
 
-``` python
+```python
 tuple2 = (10, 20, ['aa', 'bb', 'cc'], 50, 30)
 print(tuple2[2])  # 访问到列表
 
@@ -1282,7 +1259,7 @@ print(tuple2)
 - 数据为==键值对==形式出现
 - 各个键值对之间用==逗号==隔开
 
-``` python
+```python
 # 有数据字典
 dict1 = {'name': 'Tom', 'age': 20, 'gender': '男'}
 
@@ -1300,7 +1277,7 @@ dict3 = dict()
 
 > 注意：如果key存在则修改这个key对应的值；如果key不存在则新增此键值对。
 
-``` python
+```python
 dict1 = {'name': 'Tom', 'age': 20, 'gender': '男'}
 
 dict1['name'] = 'Rose'
@@ -1319,7 +1296,7 @@ print(dict1)
 
 - del() / del：删除字典或删除字典中指定键值对。
 
-``` python
+```python
 dict1 = {'name': 'Tom', 'age': 20, 'gender': '男'}
 
 del dict1['gender']
@@ -1329,7 +1306,7 @@ print(dict1)
 
 - clear()：清空字典
 
-``` python
+```python
 dict1 = {'name': 'Tom', 'age': 20, 'gender': '男'}
 
 dict1.clear()
@@ -1346,7 +1323,7 @@ print(dict1)  # {}
 
 #### 10.5.1 key值查找
 
-``` python
+```python
 dict1 = {'name': 'Tom', 'age': 20, 'gender': '男'}
 print(dict1['name'])  # Tom
 print(dict1['id'])  # 报错
@@ -1358,7 +1335,7 @@ print(dict1['id'])  # 报错
 
 - 语法
 
-``` python
+```python
 字典序列.get(key, 默认值)
 ```
 
@@ -1366,7 +1343,7 @@ print(dict1['id'])  # 报错
 
 - 快速体验
 
-``` python 
+```python
 dict1 = {'name': 'Tom', 'age': 20, 'gender': '男'}
 print(dict1.get('name'))  # Tom
 print(dict1.get('id', 110))  # 110
@@ -1375,21 +1352,21 @@ print(dict1.get('id'))  # None
 
 #### 10.5.3 keys()
 
-``` python
+```python
 dict1 = {'name': 'Tom', 'age': 20, 'gender': '男'}
 print(dict1.keys())  # dict_keys(['name', 'age', 'gender'])
 ```
 
 #### 10.5.4 values()
 
-``` python
+```python
 dict1 = {'name': 'Tom', 'age': 20, 'gender': '男'}
 print(dict1.values())  # dict_values(['Tom', 20, '男'])
 ```
 
 #### 10.5.5 items()
 
-``` python
+```python
 dict1 = {'name': 'Tom', 'age': 20, 'gender': '男'}
 print(dict1.items())  # dict_items([('name', 'Tom'), ('age', 20), ('gender', '男')])
 ```
@@ -1398,7 +1375,7 @@ print(dict1.items())  # dict_items([('name', 'Tom'), ('age', 20), ('gender', '�
 
 #### 10.6.1 遍历字典的key
 
-``` python
+```python
 dict1 = {'name': 'Tom', 'age': 20, 'gender': '男'}
 for key in dict1.keys():
     print(key)
@@ -1406,7 +1383,7 @@ for key in dict1.keys():
 
 #### 10.6.2 遍历字典的value
 
-``` python
+```python
 dict1 = {'name': 'Tom', 'age': 20, 'gender': '男'}
 for value in dict1.values():
     print(value)
@@ -1414,7 +1391,7 @@ for value in dict1.values():
 
 #### 10.6.3 遍历字典的元素
 
-``` python
+```python
 dict1 = {'name': 'Tom', 'age': 20, 'gender': '男'}
 for item in dict1.items():
     print(item)
@@ -1422,7 +1399,7 @@ for item in dict1.items():
 
 #### 10.6.4 遍历字典的键值对
 
-``` python
+```python
 dict1 = {'name': 'Tom', 'age': 20, 'gender': '男'}
 for key, value in dict1.items():
     print(f'{key} = {value}')
@@ -1434,7 +1411,7 @@ for key, value in dict1.items():
 
 创建集合使用`{}`或`set()`， 但是如果要创建空集合只能使用`set()`，因为`{}`用来创建空字典。
 
-``` python
+```python
 s1 = {10, 20, 30, 40, 50}
 print(s1)
 
@@ -1452,7 +1429,7 @@ print(type(s5))  # dict
 ```
 
 > 特点：
->
+> 
 > 1. 集合可以去掉重复数据；
 > 2. 集合数据是无序的，故不支持下标
 
@@ -1460,7 +1437,7 @@ print(type(s5))  # dict
 
 - add()
 
-``` python
+```python
 s1 = {10, 20}
 s1.add(100)
 s1.add(10)
@@ -1471,7 +1448,7 @@ print(s1)  # {100, 10, 20}
 
 - update(), 追加的数据是序列。
 
-``` python
+```python
 s1 = {10, 20}
 # s1.update(100)  # 报错
 s1.update([100, 200])
@@ -1483,7 +1460,7 @@ print(s1)
 
 - remove()，删除集合中的指定数据，如果数据不存在则报错。
 
-``` python
+```python
 s1 = {10, 20}
 
 s1.remove(10)
@@ -1495,7 +1472,7 @@ print(s1)
 
 - discard()，删除集合中的指定数据，如果数据不存在也不会报错。
 
-``` python
+```python
 s1 = {10, 20}
 
 s1.discard(10)
@@ -1507,7 +1484,7 @@ print(s1)
 
 - pop()，随机删除集合中的某个数据，并返回这个数据。
 
-``` python
+```python
 s1 = {10, 20, 30, 40, 50}
 
 del_num = s1.pop()
@@ -1520,7 +1497,7 @@ print(s1)
 - in：判断数据在集合序列
 - not in：判断数据不在集合序列
 
-``` python
+```python
 s1 = {10, 20, 30, 40, 50}
 
 print(10 in s1)
@@ -1531,16 +1508,16 @@ print(10 not in s1)
 
 ### 12.1 运算符
 
-| 运算符 |      描述      |      支持的容器类型      |
-| :----: | :------------: | :----------------------: |
-|   +    |      合并      |    字符串、列表、元组    |
-|   *    |      复制      |    字符串、列表、元组    |
-|   in   |  元素是否存在  | 字符串、列表、元组、字典 |
+| 运算符    | 描述      | 支持的容器类型      |
+|:------:|:-------:|:------------:|
+| +      | 合并      | 字符串、列表、元组    |
+| *      | 复制      | 字符串、列表、元组    |
+| in     | 元素是否存在  | 字符串、列表、元组、字典 |
 | not in | 元素是否不存在 | 字符串、列表、元组、字典 |
 
 #### 12.1.1 +
 
-``` python
+```python
 # 1. 字符串 
 str1 = 'aa'
 str2 = 'bb'
@@ -1563,7 +1540,7 @@ print(t3)  # (10, 20, 100, 200)
 
 #### 12.1.2  *
 
-``` python
+```python
 # 1. 字符串
 print('-' * 10)  # ----------
 
@@ -1578,7 +1555,7 @@ print(t1 * 4)  # ('world', 'world', 'world', 'world')
 
 #### 12.1.3 in或not in
 
-``` python
+```python
 # 1. 字符串
 print('a' in 'abcd')  # True
 print('a' not in 'abcd')  # False
@@ -1596,18 +1573,18 @@ print('aa' not in t1)  # True
 
 #### 12.2.1 公共方法
 
-| 函数                    | 描述                                                         |
-| ----------------------- | ------------------------------------------------------------ |
-| len()                   | 计算容器中元素个数                                           |
-| del 或 del()            | 删除                                                         |
-| max()                   | 返回容器中元素最大值                                         |
-| min()                   | 返回容器中元素最小值                                         |
-| range(start, end, step) | 生成从start到end的数字，步长为 step，供for循环使用           |
+| 函数                      | 描述                                                              |
+| ----------------------- | --------------------------------------------------------------- |
+| len()                   | 计算容器中元素个数                                                       |
+| del 或 del()             | 删除                                                              |
+| max()                   | 返回容器中元素最大值                                                      |
+| min()                   | 返回容器中元素最小值                                                      |
+| range(start, end, step) | 生成从start到end的数字，步长为 step，供for循环使用                               |
 | enumerate()             | 函数用于将一个可遍历的数据对象(如列表、元组或字符串)组合为一个索引序列，同时列出数据和数据下标，一般用在 for 循环当中。 |
 
 #### 12.2.2 len()
 
-``` python
+```python
 # 1. 字符串
 str1 = 'abcdefg'
 print(len(str1))  # 7
@@ -1631,7 +1608,7 @@ print(len(dict1))  # 2
 
 #### 12.2.3 del()
 
-``` python
+```python
 # 1. 字符串
 str1 = 'abcdefg'
 del str1
@@ -1645,7 +1622,7 @@ print(list1)  # [20, 30, 40]
 
 #### 12.2.4 max()
 
-``` python
+```python
 # 1. 字符串
 str1 = 'abcdefg'
 print(max(str1))  # g
@@ -1657,7 +1634,7 @@ print(max(list1))  # 40
 
 #### 12.2.5 min()
 
-``` python
+```python
 # 1. 字符串
 str1 = 'abcdefg'
 print(min(str1))  # a
@@ -1669,7 +1646,7 @@ print(min(list1))  # 10
 
 #### 12.2.6 range()
 
-``` python
+```python
 # 1 2 3 4 5 6 7 8 9
 for i in range(1, 10, 1):
     print(i)
@@ -1689,7 +1666,7 @@ for i in range(10):
 
 - 语法
 
-``` python
+```python
 enumerate(可遍历对象, start=0)
 ```
 
@@ -1697,7 +1674,7 @@ enumerate(可遍历对象, start=0)
 
 - 快速体验
 
-``` python
+```python
 list1 = ['a', 'b', 'c', 'd', 'e']
 
 for i in enumerate(list1):
@@ -1713,7 +1690,7 @@ for index, char in enumerate(list1, start=1):
 
 作用：将某个序列转换成元组
 
-``` python
+```python
 list1 = [10, 20, 30, 40, 50, 20]
 s1 = {100, 200, 300, 400, 500}
 
@@ -1725,7 +1702,7 @@ print(tuple(s1))
 
 作用：将某个序列转换成列表
 
-``` python
+```python
 t1 = ('a', 'b', 'c', 'd', 'e')
 s1 = {100, 200, 300, 400, 500}
 
@@ -1737,7 +1714,7 @@ print(list(s1))
 
 作用：将某个序列转换成集合
 
-``` python
+```python
 list1 = [10, 20, 30, 40, 50, 20]
 t1 = ('a', 'b', 'c', 'd', 'e')
 
@@ -1747,8 +1724,8 @@ print(set(t1))
 
 > 注意：
 
-   	1. 集合可以快速完成列表去重
-   	        	2. 集合不支持下标
+       1. 集合可以快速完成列表去重
+                   2. 集合不支持下标
 
 ## 十三、推导式
 
@@ -1768,7 +1745,7 @@ print(set(t1))
 
 - while循环实现
 
-``` python
+```python
 # 1. 准备一个空列表
 list1 = []
 
@@ -1783,7 +1760,7 @@ print(list1)
 
 - for循环实现
 
-``` python
+```python
 list1 = []
 for i in range(10):
     list1.append(i)
@@ -1793,7 +1770,7 @@ print(list1)
 
 - 列表推导式实现
 
-``` python 
+```python
 list1 = [i for i in range(10)]
 print(list1)
 ```
@@ -1804,14 +1781,14 @@ print(list1)
 
 - 方法一：range()步长实现
 
-``` python
+```python
 list1 = [i for i in range(0, 10, 2)]
 print(list1)
 ```
 
 - 方法二：if实现
 
-``` python
+```python
 list1 = [i for i in range(10) if i % 2 == 0]
 print(list1)
 ```
@@ -1820,13 +1797,13 @@ print(list1)
 
 需求：创建列表如下：
 
-``` html
+```html
 [(1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
 ```
 
 - 代码如下：
 
-``` python
+```python
 list1 = [(i, j) for i in range(1, 3) for j in range(3)]
 print(list1)
 ```
@@ -1835,7 +1812,7 @@ print(list1)
 
 思考：如果有如下两个列表：
 
-``` python
+```python
 list1 = ['name', 'age', 'gender']
 list2 = ['Tom', 20, 'man']
 ```
@@ -1850,14 +1827,14 @@ list2 = ['Tom', 20, 'man']
 
 1. 创建一个字典：字典key是1-5数字，value是这个数字的2次方。
 
-``` python
+```python
 dict1 = {i: i**2 for i in range(1, 5)}
 print(dict1)  # {1: 1, 2: 4, 3: 9, 4: 16}
 ```
 
 2. 将两个列表合并为一个字典
 
-``` python 
+```python
 list1 = ['name', 'age', 'gender']
 list2 = ['Tom', 20, 'man']
 
@@ -1867,7 +1844,7 @@ print(dict1)
 
 3. 提取字典中目标数据
 
-``` python
+```python
 counts = {'MBP': 268, 'HP': 125, 'DELL': 201, 'Lenovo': 199, 'acer': 99}
 
 # 需求：提取上述电脑数量大于等于200的字典数据
@@ -1879,20 +1856,20 @@ print(count1)  # {'MBP': 268, 'DELL': 201}
 
 需求：创建一个集合，数据为下方列表的2次方。
 
-``` python
+```python
 list1 = [1, 1, 2]
 ```
 
 代码如下：
 
-``` python
+```python
 list1 = [1, 1, 2]
 set1 = {i ** 2 for i in list1}
 print(set1)  # {1, 4}
 ```
 
 > 注意：集合有数据去重功能。
-**总结**
+> **总结**
 
 ```
 # 列表推导式
@@ -1909,7 +1886,7 @@ print(set1)  # {1, 4}
 
 ### 14.1 定义函数
 
-``` python
+```python
 def 函数名(参数):
     代码1
     代码2
@@ -1918,14 +1895,14 @@ def 函数名(参数):
 
 ### 14.2 调用函数
 
-``` python
+```python
 函数名(参数)
 ```
 
 > 注意：
 
-   	1. 不同的需求，参数可有可无。
-   	2. 在Python中，函数必须==先定义后使用==。
+       1. 不同的需求，参数可有可无。
+       2. 在Python中，函数必须==先定义后使用==。
 
 ### 14.3 变量作用域
 
@@ -1935,7 +1912,7 @@ def 函数名(参数):
 
 所谓局部变量是定义在函数体内部的变量，即只在函数体内部生效。
 
-``` python
+```python
 def testA():
     a = 100
 
@@ -1958,7 +1935,7 @@ print(a)  # 报错：name 'a' is not defined
 
 答：将这个数据存储在一个全局变量里面。
 
-``` python
+```python
 # 定义全局变量a
 a = 100
 
@@ -1977,7 +1954,7 @@ testB()  # 100
 
 思考：`testB`函数需求修改变量a的值为200，如何修改程序？
 
-``` python
+```python
 a = 100
 
 
@@ -2003,7 +1980,7 @@ print(f'全局变量a = {a}')  # 全局变量a = 100
 
 思考：如何在函数体内部修改全局变量？
 
-``` python 
+```python
 a = 100
 
 
@@ -2027,7 +2004,7 @@ print(f'全局变量a = {a}')  # 全局变量a = 200
 
 思考：如果一个函数如些两个return (如下所示)，程序如何执行？
 
-``` python 
+```python
 def return_num():
     return 1
     return 2
@@ -2041,7 +2018,7 @@ print(result)  # 1
 
 思考：如果一个函数要有多个返回值，该如何书写代码？
 
-``` python
+```python
 def return_num():
     return 1, 2
 
@@ -2051,7 +2028,7 @@ print(result)  # (1, 2)
 ```
 
 > 注意：
->
+> 
 > 1. `return a, b`写法，返回多个数据的时候，默认是元组类型。
 > 2. return后面可以连接列表、元组或字典，以返回多个值。
 
@@ -2061,7 +2038,7 @@ print(result)  # (1, 2)
 
 位置参数：调用函数时根据函数定义的参数位置来传递参数。
 
-``` python
+```python
 def user_info(name, age, gender):
     print(f'您的名字是{name}, 年龄是{age}, 性别是{gender}')
 
@@ -2075,7 +2052,7 @@ user_info('TOM', 20, '男')
 
 函数调用，通过“键=值”形式加以指定。可以让函数更加清晰、容易使用，同时也清除了参数的顺序需求。
 
-``` python
+```python
 def user_info(name, age, gender):
     print(f'您的名字是{name}, 年龄是{age}, 性别是{gender}')
 
@@ -2090,7 +2067,7 @@ user_info('小明', gender='男', age=16)
 
 缺省参数也叫默认参数，用于定义函数，为参数提供默认值，调用函数时可不传该默认参数的值（注意：所有位置参数必须出现在默认参数前，包括函数定义和调用）。
 
-``` python
+```python
 def user_info(name, age, gender='男'):
     print(f'您的名字是{name}, 年龄是{age}, 性别是{gender}')
 
@@ -2107,7 +2084,7 @@ user_info('Rose', 18, '女')
 
 - 包裹位置传递
 
-``` python
+```python
 def user_info(*args):
     print(args)
 
@@ -2122,7 +2099,7 @@ user_info('TOM', 18)
 
 - 包裹关键字传递
 
-``` python
+```python
 def user_info(**kwargs):
     print(kwargs)
 
@@ -2139,7 +2116,7 @@ user_info(name='TOM', age=18, id=110)
 
 - 拆包：元组
 
-``` python
+```python
 def return_num():
     return 100, 200
 
@@ -2151,7 +2128,7 @@ print(num2)  # 200
 
 - 拆包：字典
 
-``` python
+```python
 dict1 = {'name': 'TOM', 'age': 18}
 a, b = dict1
 
@@ -2171,7 +2148,7 @@ print(dict1[b])  # 18
 
 借助第三变量存储数据。
 
-``` python
+```python
 # 1. 定义中间变量
 c = 0
 
@@ -2190,7 +2167,7 @@ print(b)  # 10
 
 - 方法二
 
-``` python
+```python
 a, b = 1, 2
 a, b = b, a
 print(a)  # 2
@@ -2342,13 +2319,13 @@ print(students)
 
 在Python中，`abs()`函数可以完成对数字求绝对值计算。
 
-``` python
+```python
 abs(-10)  # 10
 ```
 
 `round()`函数可以完成对数字的四舍五入计算。
 
-``` python
+```python
 round(1.2)  # 1
 round(1.9)  # 2
 ```
@@ -2357,7 +2334,7 @@ round(1.9)  # 2
 
 - 方法1
 
-``` python
+```python
 def add_num(a, b):
     return abs(a) + abs(b)
 
@@ -2368,7 +2345,7 @@ print(result)  # 3
 
 - 方法2
 
-``` python
+```python
 def sum_num(a, b, f):
     return f(a) + f(b)
 
@@ -2389,7 +2366,7 @@ map(func, lst)，将传入的函数变量func作用到lst变量的每个元素�
 
 需求：计算`list1`序列中各个数字的2次方。
 
-``` python
+```python
 list1 = [1, 2, 3, 4, 5]
 
 
@@ -2411,7 +2388,7 @@ reduce(func，lst)，其中func必须有两个参数。每次func计算的结果
 
 需求：计算`list1`序列中各个数字的累加和。
 
-``` python
+```python
 import functools
 
 list1 = [1, 2, 3, 4, 5]
@@ -2430,7 +2407,7 @@ print(result)  # 15
 
 filter(func, lst)函数用于过滤序列, 过滤掉不符合条件的元素, 返回一个 filter 对象。如果要转换为列表, 可以使用 list() 来转换。
 
-``` python
+```python
 list1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 
@@ -2446,8 +2423,6 @@ print(list(result))  # [2, 4, 6, 8, 10]
 
 ## 十五、文件
 
-
-
 ### 15.1 文件操作步骤
 
 1. 打开文件
@@ -2460,7 +2435,7 @@ print(list(result))  # [2, 4, 6, 8, 10]
 
 在python，使用open函数，可以打开一个已经存在的文件，或者创建一个新文件，语法如下：
 
-``` python
+```python
 open(name, mode)
 ```
 
@@ -2470,24 +2445,24 @@ mode：设置打开文件的模式(访问模式)：只读、写入、追加等�
 
 ##### 15.1.1.1 打开文件模式
 
-| 模式 | 描述                                                         |
-| :--: | ------------------------------------------------------------ |
-|  r   | 文件不存在就报错，以只读方式打开文件。文件的指针将会放在文件的开头。这是默认模式。 |
-|  rb  | 以二进制格式打开一个文件用于只读。文件指针将会放在文件的开头。这是默认模式。 |
-|  r+  | 打开一个文件用于读写。文件指针将会放在文件的开头。           |
-| rb+  | 以二进制格式打开一个文件用于读写。文件指针将会放在文件的开头。 |
-|  w   | 打开一个文件只用于写入。如果该文件已存在则打开文件，并从开头开始编辑，即原有内容会被删除。如果该文件不存在，创建新文件。 |
-|  wb  | 以二进制格式打开一个文件只用于写入。如果该文件已存在则打开文件，并从开头开始编辑，即原有内容会被删除。如果该文件不存在，创建新文件。 |
-|  w+  | 打开一个文件用于读写。如果该文件已存在则打开文件，并从开头开始编辑，即原有内容会被删除。如果该文件不存在，创建新文件。 |
-| wb+  | 以二进制格式打开一个文件用于读写。如果该文件已存在则打开文件，并从开头开始编辑，即原有内容会被删除。如果该文件不存在，创建新文件。 |
-|  a   | 打开一个文件用于追加。如果该文件已存在，文件指针将会放在文件的结尾。也就是说，新的内容将会被写入到已有内容之后。如果该文件不存在，创建新文件进行写入。 |
-|  ab  | 以二进制格式打开一个文件用于追加。如果该文件已存在，文件指针将会放在文件的结尾。也就是说，新的内容将会被写入到已有内容之后。如果该文件不存在，创建新文件进行写入。 |
-|  a+  | 打开一个文件用于读写。如果该文件已存在，文件指针将会放在文件的结尾。文件打开时会是追加模式。如果该文件不存在，创建新文件用于读写。 |
-| ab+  | 以二进制格式打开一个文件用于追加。如果该文件已存在，文件指针将会放在文件的结尾。如果该文件不存在，创建新文件用于读写。 |
+| 模式  | 描述                                                                                |
+|:---:| --------------------------------------------------------------------------------- |
+| r   | 文件不存在就报错，以只读方式打开文件。文件的指针将会放在文件的开头。这是默认模式。                                         |
+| rb  | 以二进制格式打开一个文件用于只读。文件指针将会放在文件的开头。这是默认模式。                                            |
+| r+  | 打开一个文件用于读写。文件指针将会放在文件的开头。                                                         |
+| rb+ | 以二进制格式打开一个文件用于读写。文件指针将会放在文件的开头。                                                   |
+| w   | 打开一个文件只用于写入。如果该文件已存在则打开文件，并从开头开始编辑，即原有内容会被删除。如果该文件不存在，创建新文件。                      |
+| wb  | 以二进制格式打开一个文件只用于写入。如果该文件已存在则打开文件，并从开头开始编辑，即原有内容会被删除。如果该文件不存在，创建新文件。                |
+| w+  | 打开一个文件用于读写。如果该文件已存在则打开文件，并从开头开始编辑，即原有内容会被删除。如果该文件不存在，创建新文件。                       |
+| wb+ | 以二进制格式打开一个文件用于读写。如果该文件已存在则打开文件，并从开头开始编辑，即原有内容会被删除。如果该文件不存在，创建新文件。                 |
+| a   | 打开一个文件用于追加。如果该文件已存在，文件指针将会放在文件的结尾。也就是说，新的内容将会被写入到已有内容之后。如果该文件不存在，创建新文件进行写入。       |
+| ab  | 以二进制格式打开一个文件用于追加。如果该文件已存在，文件指针将会放在文件的结尾。也就是说，新的内容将会被写入到已有内容之后。如果该文件不存在，创建新文件进行写入。 |
+| a+  | 打开一个文件用于读写。如果该文件已存在，文件指针将会放在文件的结尾。文件打开时会是追加模式。如果该文件不存在，创建新文件用于读写。                 |
+| ab+ | 以二进制格式打开一个文件用于追加。如果该文件已存在，文件指针将会放在文件的结尾。如果该文件不存在，创建新文件用于读写。                       |
 
 ##### 15.1.1.2 快速体验
 
-``` python
+```python
 f = open('test.txt', 'w')
 ```
 
@@ -2499,13 +2474,13 @@ f = open('test.txt', 'w')
 
 - 语法
 
-``` python
+```python
 对象对象.write('内容')
 ```
 
 - 体验
 
-``` python
+```python
 # 1. 打开文件
 f = open('test.txt', 'w')
 
@@ -2517,15 +2492,15 @@ f.close()
 ```
 
 > 注意：
->
-> 1. `w	`和`a`模式：如果文件不存在则创建该文件；如果文件存在，`w`模式先清空再写入，`a`模式直接末尾追加。
+> 
+> 1. `w    `和`a`模式：如果文件不存在则创建该文件；如果文件存在，`w`模式先清空再写入，`a`模式直接末尾追加。
 > 2. `r`模式：如果文件不存在则报错。
 
 ##### 15.1.2.2 读
 
 - read()
 
-``` python
+```python
 文件对象.read(num)  返回值是str类型
 
 f = open("test.txt")
@@ -2545,7 +2520,7 @@ a
 
 readlines可以按照行的方式把整个文件中的内容进行一次性读取，并且返回的是一个列表，其中每一行的数据为一个元素。
 
-``` python
+```python
 f = open('test.txt')
 content = f.readlines()
 #会读取换行符
@@ -2560,7 +2535,7 @@ f.lose()
 
 readline()一次读取一行内容。
 
-``` python
+```python
 f = open('test.txt')
 
 content = f.readline()
@@ -2579,12 +2554,12 @@ f.close()
 
 语法如下：
 
-``` python
+```python
 文件对象.seek(偏移量, 起始位置)
 ```
 
 > 起始位置：
->
+> 
 > - 0：文件开头
 > - 1：当前位置
 > - 2：文件结尾
@@ -2609,17 +2584,17 @@ f.close()
 
 1. 接收用户输入目标文件名
 
-``` python
+```python
 old_name = input('请输入您要备份的文件名：')
 ```
 
 2. 规划备份文件名
-
+   
    2.1 提取目标文件后缀
-
+   
    2.2 组织备份的文件名，xx[备份]后缀
 
-``` python
+```python
 # 2.1 提取文件后缀点的下标
 index = old_name.rfind('.')
 
@@ -2635,14 +2610,14 @@ new_name = old_name[:index] + '[备份]' + old_name[index:]
 ```
 
 3. 备份文件写入数据
-
+   
    3.1 打开源文件 和 备份文件
-
+   
    3.2 将源文件数据写入备份文件
-
+   
    3.3 关闭文件
 
-``` python
+```python
 # 3.1 打开文件
 old_f = open(old_name, 'rb')
 new_f = open(new_name, 'wb')
@@ -2665,7 +2640,7 @@ new_f.close()
 
 答：添加条件判断即可。
 
-``` python
+```python
 old_name = input('请输入您要备份的文件名：')
 
 index = old_name.rfind('.')
@@ -2695,55 +2670,55 @@ new_f.close()
 
 1. 导入os模块
 
-``` python
+```python
 import os
 ```
 
 2. 使用`os`模块相关功能
 
-``` python
+```python
 os.函数名()
 ```
 
 #### 15.3.1 文件重命名
 
-``` python
+```python
 os.rename(目标文件名, 新文件名)
 ```
 
 #### 15.3.2 删除文件
 
-``` python
+```python
 os.remove(目标文件名)
 ```
 
 #### 15.3.3 创建文件夹
 
-``` python
+```python
 os.mkdir(文件夹名字)
 ```
 
 #### 15.3.4 删除文件夹
 
-``` python
+```python
 os.rmdir(文件夹名字)
 ```
 
 #### 15.3.5 获取当前目录
 
-``` python
+```python
 os.getcwd()
 ```
 
 #### 15.3.6 改变默认目录
 
-``` python
+```python
 os.chdir(目录) 切换文件夹
 ```
 
 #### 15.3.7 获取目录列表
 
-``` python
+```python
 os.listdir(目录) 当前目录列表，当前目录列表自列表无法获取
 ```
 
@@ -2782,7 +2757,7 @@ class 类名():
 
 - 体验
 
-``` python
+```python
 class Washer():
     def wash(self):
         print('我会洗衣服')
@@ -2792,7 +2767,7 @@ class Washer():
 
 不由任意内置类型派生出的类，称之为经典类
 
-``` python
+```python
 class 类名:
     代码
     ......
@@ -2804,13 +2779,13 @@ class 类名:
 
 - 语法
 
-``` python
+```python
 对象名 = 类名()
 ```
 
 - 体验
 
-``` python
+```python
 # 创建对象
 haier1 = Washer()
 
@@ -2827,7 +2802,7 @@ haier1.wash()
 
 self指的是调用该函数的对象。
 
-``` python
+```python
 # 1. 定义类
 class Washer():
     def wash(self):
@@ -2861,13 +2836,13 @@ print(haier2)
 
 - 语法
 
-``` python
+```python
 对象名.属性名 = 值
 ```
 
 - 体验
 
-``` python
+```python
 haier1.width = 500
 haier1.height = 800
 ```
@@ -2876,13 +2851,13 @@ haier1.height = 800
 
 - 语法
 
-``` python
+```python
 对象名.属性名
 ```
 
 - 体验
 
-``` python
+```python
 print(f'haier1洗衣机的宽度是{haier1.width}')
 print(f'haier1洗衣机的高度是{haier1.height}')
 ```
@@ -2891,13 +2866,13 @@ print(f'haier1洗衣机的高度是{haier1.height}')
 
 - 语法
 
-``` python
+```python
 self.属性名
 ```
 
 - 体验
 
-``` python
+```python
 # 定义类
 class Washer():
     def print_info(self):
@@ -2929,9 +2904,9 @@ haier1.print_info()
 
 ==`__init__()`方法的作用：初始化对象。==
 
-``` python
+```python
 class Washer():
-    
+
     # 定义初始化功能的函数
     def __init__(self):
         # 添加实例属性
@@ -2949,7 +2924,7 @@ haier1.print_info()
 ```
 
 > 注意：
->
+> 
 > - `__init__()`方法，在创建一个对象时默认被调用，不需要手动调用
 > - `__init__(self)`中的self参数，不需要开发者传递，python解释器会自动把当前的对象引用传递过去。
 
@@ -2959,7 +2934,7 @@ haier1.print_info()
 
 答：传参数。
 
-``` python
+```python
 class Washer():
     def __init__(self, width, height):
         self.width = width
@@ -2982,7 +2957,7 @@ haier2.print_info()
 
 当使用print输出对象的时候，默认打印对象的内存地址。如果类定义了`__str__`方法，那么就会打印从在这个方法中 return 的数据。
 
-``` python
+```python
 class Washer():
     def __init__(self, width, height):
         self.width = width
@@ -3001,7 +2976,7 @@ print(haier1)
 
 当删除对象时，python解释器也会默认调用`__del__()`方法。
 
-``` python
+```python
 class Washer():
     def __init__(self, width, height):
         self.width = width
@@ -3021,7 +2996,7 @@ del haier1
 
 只继承一个父类
 
-``` python
+```python
 # 1. 师父类
 class Master(object):
     def __init__(self):
@@ -3030,7 +3005,7 @@ class Master(object):
     def make_cake(self):
         print(f'运用{self.kongfu}制作煎饼果子')
 
-        
+
 # 2. 徒弟类
 class Prentice(Master):
     pass
@@ -3048,7 +3023,7 @@ daqiu.make_cake()
 
 所谓多继承意思就是一个类同时继承了多个父类。
 
-``` python
+```python
 class Master(object):
     def __init__(self):
         self.kongfu = '[古法煎饼果子配方]'
@@ -3079,7 +3054,7 @@ daqiu.make_cake()
 
 ### 16.7 子类重写父类同名方法和属性
 
-``` python
+```python
 class Master(object):
     def __init__(self):
         self.kongfu = '[古法煎饼果子配方]'
@@ -3118,7 +3093,7 @@ print(Prentice.__mro__)
 
 > 故事：很多顾客都希望也能吃到古法和黑马的技术的煎饼果子。
 
-``` python
+```python
 class Master(object):
     def __init__(self):
         self.kongfu = '[古法煎饼果子配方]'
@@ -3169,7 +3144,7 @@ daqiu.make_cake()
 
 > 故事：N年后，daqiu老了，想要把所有技术传承给自己的徒弟。
 
-``` python
+```python
 class Master(object):
     def __init__(self):
         self.kongfu = '[古法煎饼果子配方]'
@@ -3215,12 +3190,11 @@ xiaoqiu.make_cake()
 xiaoqiu.make_school_cake()
 
 xiaoqiu.make_master_cake()
-
 ```
 
 ### 16.10 super()调用父类方法
 
-``` python
+```python
 class Master(object):
     def __init__(self):
         self.kongfu = '[古法煎饼果子配方]'
@@ -3297,7 +3271,7 @@ daqiu.make_old_cake()
 
 设置私有权限的方法：在属性名和方法名 前面 加上两个下划线 __。
 
-``` python
+```python
 class Master(object):
     def __init__(self):
         self.kongfu = '[古法煎饼果子配方]'
@@ -3360,7 +3334,7 @@ xiaoqiu = Tusun()
 
 在Python中，一般定义函数名`get_xx`用来获取私有属性，定义`set_xx`用来修改私有属性值。
 
-``` python
+```python
 class Master(object):
     def __init__(self):
         self.kongfu = '[古法煎饼果子配方]'
@@ -3437,7 +3411,7 @@ print(xiaoqiu.get_money())
 
 #### 16.12.2 体验多态
 
-``` python
+```python
 class Dog(object):
     def work(self):  # 父类提供统一的方法，哪怕是空方法
         print('指哪打哪...')
@@ -3475,7 +3449,7 @@ daqiu.work_with_dog(dd)
 - 类属性就是 **类对象** 所拥有的属性，它被 **该类的所有实例对象 所共有**。
 - 类属性可以使用 **类对象** 或 **实例对象** 访问。
 
-``` python
+```python
 class Dog(object):
     tooth = 10
 
@@ -3489,7 +3463,7 @@ print(xiaohei.tooth)  # 10
 ```
 
 > 类属性的优点
->
+> 
 > - **记录的某项数据 始终保持一致时**，则定义类属性。
 > - **实例属性** 要求 **每个对象** 为其 **单独开辟一份内存空间** 来记录数据，而 **类属性** 为全类所共有 ，**仅占用一份内存**，**更加节省内存空间**。
 
@@ -3497,7 +3471,7 @@ print(xiaohei.tooth)  # 10
 
 类属性只能通过类对象修改，不能通过实例对象修改，如果通过实例对象修改类属性，表示的是创建了一个实例属性。
 
-``` python
+```python
 class Dog(object):
     tooth = 10
 
@@ -3520,7 +3494,7 @@ print(xiaohei.tooth)  # 12
 
 #### 16.13.2 实例属性
 
-``` python
+```python
 class Dog(object):
     def __init__(self):
         self.age = 5
@@ -3548,7 +3522,7 @@ wangcai.info_print()  # 5
 - 当方法中 **需要使用类对象** (如访问私有类属性等)时，定义类方法
 - 类方法一般和类属性配合使用
 
-``` python
+```python
 class Dog(object):
     __tooth = 10
 
@@ -3574,7 +3548,7 @@ print(result)  # 10
 - 当方法中 **既不需要使用实例对象**(如实例对象，实例属性)，**也不需要使用类对象** (如类属性、类方法、创建实例等)时，定义静态方法
 - **取消不需要的参数传递**，有利于 **减少不必要的内存占用和性能消耗**
 
-``` python
+```python
 class Dog(object):
     @staticmethod
     def info_print():
@@ -3593,7 +3567,7 @@ Dog.info_print()
 
 #### 17.1.1 语法
 
-``` python
+```python
 try:
     可能发生错误的代码
 except:
@@ -3604,7 +3578,7 @@ except:
 
 需求：尝试以`r`模式打开文件，如果文件不存在，则以`w`方式打开。
 
-``` python
+```python
 try:
     f = open('test.txt', 'r')
 except:
@@ -3615,7 +3589,7 @@ except:
 
 ##### 17.1.3.1 语法
 
-``` python
+```python
 try:
     可能发生错误的代码
 except 异常类型:
@@ -3624,7 +3598,7 @@ except 异常类型:
 
 ##### 17.1.3.2 体验
 
-``` python
+```python
 try:
     print(num)
 except NameError:
@@ -3632,7 +3606,7 @@ except NameError:
 ```
 
 > 注意：
->
+> 
 > 1. 如果尝试执行的代码的异常类型和要捕获的异常类型不一致，则无法捕获异常。
 > 2. 一般try下方只放一行尝试执行的代码。
 
@@ -3640,7 +3614,7 @@ except NameError:
 
 当捕获多个异常时，可以把要捕获的异常类型的名字，放到except 后，并使用元组的方式进行书写。
 
-``` python
+```python
 try:
     print(1/0)
 
@@ -3650,7 +3624,7 @@ except (NameError, ZeroDivisionError):
 
 ##### 17.1.3.4 捕获异常描述信息
 
-``` python
+```python
 try:
     print(num)
 except (NameError, ZeroDivisionError) as result:
@@ -3661,7 +3635,7 @@ except (NameError, ZeroDivisionError) as result:
 
 Exception是所有程序异常类的父类。
 
-``` python
+```python
 try:
     print(num)
 except Exception as result:
@@ -3672,7 +3646,7 @@ except Exception as result:
 
 else表示的是如果没有异常要执行的代码。
 
-``` python
+```python
 try:
     print(1)
 except Exception as result:
@@ -3685,7 +3659,7 @@ else:
 
 finally表示的是无论是否异常都要执行的代码，例如关闭文件。
 
-``` python
+```python
 try:
     f = open('test.txt', 'r')
 except Exception as result:
@@ -3702,11 +3676,11 @@ finally:
 
 需求：
 
-​	1. 尝试只读方式打开test.txt文件，如果文件存在则读取文件内容，文件不存在则提示用户即可。
+​    1. 尝试只读方式打开test.txt文件，如果文件存在则读取文件内容，文件不存在则提示用户即可。
 
-​	2. 读取内容要求：尝试循环读取内容，读取过程中如果检测到用户意外终止程序，则`except`捕获异常并提示用户。
+​    2. 读取内容要求：尝试循环读取内容，读取过程中如果检测到用户意外终止程序，则`except`捕获异常并提示用户。
 
-``` python
+```python
 import time
 try:
     f = open('test.txt')
@@ -3734,7 +3708,7 @@ except:
 
 需求：密码长度不足，则报异常（用户输入密码，如果输入的长度不足3位，则报错，即抛出自定义异常，并捕获该异常）。
 
-``` python
+```python
 # 自定义异常类，继承Exception
 class ShortInputError(Exception):
     def __init__(self, length, min_len):
@@ -3782,7 +3756,7 @@ Python 模块(Module)，是一个 Python 文件，以 .py 结尾，包含了 Pyt
 
 - 语法
 
-``` python
+```python
 # 1. 导入模块
 import 模块名
 import 模块名1, 模块名2...
@@ -3793,7 +3767,7 @@ import 模块名1, 模块名2...
 
 - 体验
 
-``` python
+```python
 import math
 print(math.sqrt(9))  # 3.0
 ```
@@ -3802,30 +3776,28 @@ print(math.sqrt(9))  # 3.0
 
 - 语法
 
-``` python
+```python
 from 模块名 import 功能1, 功能2, 功能3...
 ```
 
 - 体验
 
-``` python
+```python
 from math import sqrt
 print(sqrt(9))
 ```
-
-
 
 ##### 18.1.2.3 from .. import *
 
 - 语法
 
-``` python
+```python
 from 模块名 import *
 ```
 
 - 体验
 
-``` python
+```python
 from math import *
 print(sqrt(9))
 ```
@@ -3834,7 +3806,7 @@ print(sqrt(9))
 
 - 语法
 
-``` python
+```python
 # 模块定义别名
 import 模块名 as 别名
 
@@ -3844,7 +3816,7 @@ from 模块名 import 功能 as 别名
 
 - 体验
 
-``` python
+```python
 # 模块别名
 import time as tt
 
@@ -3865,7 +3837,7 @@ print('hello')
 
 新建一个Python文件，命名为`my_module1.py`，并定义`testA`函数。
 
-``` python
+```python
 def testA(a, b):
     print(a + b)
 ```
@@ -3874,7 +3846,7 @@ def testA(a, b):
 
 在实际开中，当一个开发人员编写完一个模块后，为了让模块能够在项目中达到想要的效果，这个开发人员会自行在py文件中添加一些测试信息.，例如，在`my_module1.py`文件中添加测试代码。
 
-``` python
+```python
 def testA(a, b):
     print(a + b)
 
@@ -3886,7 +3858,7 @@ testA(1, 1)
 
 解决办法如下：
 
-``` python
+```python
 def testA(a, b):
     print(a + b)
 
@@ -3908,7 +3880,7 @@ my_module1.testA(1, 1)
 
 - 体验
 
-``` python
+```python
 # 模块1代码
 def my_test(a, b):
     print(a + b)
@@ -3916,7 +3888,7 @@ def my_test(a, b):
 # 模块2代码
 def my_test(a, b):
     print(a - b)
-   
+
 # 导入模块和调用功能代码
 from my_module1 import my_test
 from my_module2 import my_test
@@ -3945,7 +3917,7 @@ my_test(1, 1)
 
 - my_module1模块代码
 
-``` python
+```python
 __all__ = ['testA']
 
 
@@ -3959,7 +3931,7 @@ def testB():
 
 - 导入模块的文件代码
 
-``` python
+```python
 from my_module1 import *
 testA()
 testB()
@@ -3979,7 +3951,7 @@ testB()
 2. 新建包内模块：`my_module1` 和 `my_module2`
 3. 模块内代码如下
 
-``` python
+```python
 # my_module1
 print(1)
 
@@ -3988,7 +3960,7 @@ def info_print1():
     print('my_module1')
 ```
 
-``` python
+```python
 # my_module2
 print(2)
 
@@ -4001,7 +3973,7 @@ def info_print2():
 
 #### 18.6.1 方法一
 
-``` python
+```python
 import 包名.模块名
 
 包名.模块名.目标
@@ -4009,7 +3981,7 @@ import 包名.模块名
 
 ##### 18.6.1.1 体验
 
-``` python
+```python
 import my_package.my_module1
 
 my_package.my_module1.info_print1()
@@ -4019,16 +3991,17 @@ my_package.my_module1.info_print1()
 
 注意：必须在`__init__.py`文件中添加`__all__ = []`，控制允许导入的模块列表。
 
-``` python
+```python
 from 包名 import *
 模块名.目标
 ```
 
 ##### 18.6.2.1 体验
 
-``` python
+```python
 from my_package import *
 
 my_module1.info_print1()
 ```
 
+## pytest

@@ -12,8 +12,6 @@ nvcc -arch=sm_75 -o hello hello.cu -run
 nsys profile --stats=true ./hello
 ```
 
-
-
 ## hello world
 
 ```c++
@@ -73,7 +71,7 @@ __global__ void gpu(int *a,int N){
     {
         a[i]*=2;
     }
-    
+
 }
 
 bool checkout(int *a,int N){
@@ -125,60 +123,60 @@ gridDim是一个dim3类型，表示网格的大小，一个网格中通常有多
 cuda中每一个线程有一个唯一的标识ID-ThreadIdx,这个ID随着grid和block的划分方式不同而变化。
 ```
 
-```
+```c++
 1、 grid划分成1维，block划分为1维
 
     int threadId = blockIdx.x *blockDim.x + threadIdx.x;  
-    
-  
+
+
 2、 grid划分成1维，block划分为2维  
 
     int threadId = blockIdx.x * blockDim.x * blockDim.y+ threadIdx.y * blockDim.x + threadIdx.x;  
-  
-  
+
+
 3、 grid划分成1维，block划分为3维  
 
     int threadId = blockIdx.x * blockDim.x * blockDim.y * blockDim.z  
                        + threadIdx.z * blockDim.y * blockDim.x  
                        + threadIdx.y * blockDim.x + threadIdx.x;  
 
-  
+
 4、 grid划分成2维，block划分为1维  
 
     int blockId = blockIdx.y * gridDim.x + blockIdx.x;  
     int threadId = blockId * blockDim.x + threadIdx.x;  
-   
-  
+
+
 5、 grid划分成2维，block划分为2维 
 
     int blockId = blockIdx.x + blockIdx.y * gridDim.x;  
     int threadId = blockId * (blockDim.x * blockDim.y)  
                        + (threadIdx.y * blockDim.x) + threadIdx.x;  
-    
-  
+
+
 6、 grid划分成2维，block划分为3维
 
     int blockId = blockIdx.x + blockIdx.y * gridDim.x;  
     int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)  
                        + (threadIdx.z * (blockDim.x * blockDim.y))  
                        + (threadIdx.y * blockDim.x) + threadIdx.x;  
-   
-  
+
+
 7、 grid划分成3维，block划分为1维 
 
     int blockId = blockIdx.x + blockIdx.y * gridDim.x  
                      + gridDim.x * gridDim.y * blockIdx.z;  
     int threadId = blockId * blockDim.x + threadIdx.x;  
-   
-  
+
+
 8、 grid划分成3维，block划分为2维  
 
     int blockId = blockIdx.x + blockIdx.y * gridDim.x  
                      + gridDim.x * gridDim.y * blockIdx.z;  
     int threadId = blockId * (blockDim.x * blockDim.y)  
                        + (threadIdx.y * blockDim.x) + threadIdx.x;  
-   
-  
+
+
 9、 grid划分成3维，block划分为3维
 
     int blockId = blockIdx.x + blockIdx.y * gridDim.x  
@@ -207,7 +205,7 @@ __global__ void gpu(int *a,int N){
     {
         a[i]*=2;
     }
-    
+
 }
 
 bool checkout(int *a,int N){
@@ -271,7 +269,7 @@ __global__ void gpu(int *a,int N){
     {
         a[i]*=2;
     }
-    
+
 }
 
 bool checkout(int *a,int N){
@@ -331,7 +329,7 @@ __global__ void gpu(int *a,int *b,int *c_gpu){
     {
         c_gpu[idx_x*N+idx_y]=a[idx_x*N+idx_y]+b[idx_x*N+idx_y];
     }
-    
+
 }
 bool check(int *c_cpu,int *c_gpu){
     for (int r = 0; r < N; ++r)
@@ -342,7 +340,7 @@ bool check(int *c_cpu,int *c_gpu){
             {
                 return false;
             }
-            
+
         }
     }
     return true;
@@ -446,8 +444,6 @@ cudaFreeHost(host_a); 释放内存
 
 <img src="images\thread_exe.png" alt="image-20220214161158610" style="zoom:80%;" />
 
-
-
 ## memory
 
 <img src="images\memory.png" alt="image-20220217105115805" style="zoom:80%;" />
@@ -531,7 +527,7 @@ __global__ void test_kernrl(){
 
     printf("%d. shared_value1=%d,shared_value2=%d\n",threadIdx.x,shared_value1,shared_value2);
     printf("%d. shared_array[0]=%d\n",threadIdx.x,shared_array[0]);
-    
+
 }
 int main(){
     test_kernrl<<<2,2>>>();
@@ -546,7 +542,7 @@ int main(){
 1. shared_array[0]=33
 0. shared_array[0]=33
 1. shared_array[0]=33
-    
+
 定义静态大小共享内存，共享内存在block内，所有线程可见
 ```
 
@@ -567,7 +563,7 @@ __global__ void test_kernel(){
     __syncthreads();
 
     printf("blockidx=%d, threadidx=%d, shared_array[0]=%d\n",blockIdx.x,threadIdx.x,shared_array[0]);
-    
+
 
 }
 
@@ -795,3 +791,16 @@ reason 时钟周期
 
 <img src="images\summary.png" alt="image-20220304172652648" style="zoom:80%;" />
 
+```
+1、update sample RTE 和RE，追踪jira状态，更新jira，和各个jira的负责人讨论最新进展，sample simpleSeparateCompilation不支持host对函数指针传参，drop jira， sample simpleCooperativeGroups建议supa这边先调试，目前我正在调试中，sample  binomialOptions 编译器正在调试中，sample eigenvalues已经合入了tlm align，编译器正在调试是否解决问题。
+2、sample concurrentKernels调试结束，已找到问题根源，由于这个br100的时钟周期设置为0，所以无法捕获有效数值，程序是计算八个时钟周期的数值==》8*clockTime和8*colckTime+while语句循环时间，判断条件是右边的大于左边，无时钟周期时，默认两个数值赋值为0，所以判断失败，导致程序结果出错 ，（英伟达显卡本机时钟周期为1.84GHZ）。
+3、shlf_scan debug，第一个simple test测试通过，image test测试失败，暂时没发现程序问题所在，已求助明财帮忙调试。
+参考资料：
+https://blog.csdn.net/qq_43827595/article/details/104301825?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-0.pc_relevant_default&spm=1001.2101.3001.4242.1&utm_relevant_index=3
+https://blog.csdn.net/mutourend/article/details/122522095?spm=1001.2101.3001.6650.6&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-6.pc_relevant_aa&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-6.pc_relevant_aa&utm_relevant_index=10
+https://blog.csdn.net/bruce_0712/article/details/79116013
+
+
+1、sample simpleCooperativeGroups debug
+2、zebu 环境 sample status
+```

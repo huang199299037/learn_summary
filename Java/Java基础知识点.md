@@ -1,10 +1,10 @@
-#    Java基础知识点
+# Java基础知识点
 
 ## Comparable接口和Comparator接口的比较
 
 1. Comparable和Comparator都是用来实现集合中元素的比较、排序的。
 2. Comparable是在类内部定义的方法实现的排序，位于java.lang下。
-3.  Comparator是在类外部实现的排序，位于java.util下。
+3. Comparator是在类外部实现的排序，位于java.util下。
 4. 实现Comparable接口需要覆盖compareTo方法，实现Comparator接口需要覆盖compare方法。
 
 **Comparable**
@@ -81,27 +81,23 @@ IntegerCache.cache[i + (-IntegerCache.low)]它是一个静态的Integer数组对
 ```Java
 public static void main(String[] args) {
 
-        Integer i1 = 100;
-        Integer i2 = 100;
-        Integer i3 = 200;
-        Integer i4 = 200;
         System.out.println(i1==i2);  //true
         System.out.println(i3==i4);  //false
-    
+
         Double i1 = 100.0;
         Double i2 = 100.0;
         Double i3 = 200.0;
         Double i4 = 200.0;
         System.out.println(i1==i2); //false
         System.out.println(i3==i4); //false
-    
-    	Boolean i1 = false;
+
+        Boolean i1 = false;
         Boolean i2 = false;
         Boolean i3 = true;
         Boolean i4 = true;
         System.out.println(i1==i2);//true
         System.out.println(i3==i4);//true
-		
+
         Integer num1 = 400;  
         int num2 = 400;  
         System.out.println(num1 == num2); //true
@@ -124,8 +120,8 @@ System.out.println(num3.equals(num1 + num2));  //false
 1、当一个基础数据类型与封装类进行==、+、-、*、/运算时，会将封装类进行拆箱，对基础数据类型进行运算。
 2、对于num3.equals(num1 + num2)为false的原因很简单，我们还是根据代码实现来说明：
     它必须满足两个条件才为true：
-	1、类型相同
-	2、内容相同
+    1、类型相同
+    2、内容相同
 public boolean equals(Object obj) {
         if (obj instanceof Long) {
             return value == ((Long)obj).longValue();
@@ -227,11 +223,11 @@ JDK7中，字符串常量池已经被转移至Java堆中，开发人员也对int
 
 ## 队列（Queue）用法
 
-|          | **抛出异常** | **返回特殊值**     |
-| -------- | ------------ | ------------------ |
-| **插入** | add(e)       | offer(e) 返回false |
-| **删除** | remove()     | poll() 返回null    |
-| **检查** | element()    | peek() 返回null    |
+|        | **抛出异常**  | **返回特殊值**        |
+| ------ | --------- | ---------------- |
+| **插入** | add(e)    | offer(e) 返回false |
+| **删除** | remove()  | poll() 返回null    |
+| **检查** | element() | peek() 返回null    |
 
 Queue是java中实现的接口，它总共只有6个方法，我们一般只用其中3个就可以了。Queue的实现类有LinkedList和PriorityQueue。最常用的实现类是LinkedList。
 
@@ -270,14 +266,14 @@ class UserComparator implements Comparator<User> {
 
 **Deque**
 
-|                    | Queue                  | Deque                           |
-| ------------------ | ---------------------- | ------------------------------- |
-| 添加元素到队尾     | add(E e) / offer(E e)  | addLast(E e) / offerLast(E e)   |
-| 取队首元素并删除   | E remove() / E poll()  | E removeFirst() / E pollFirst() |
+|           | Queue                  | Deque                           |
+| --------- | ---------------------- | ------------------------------- |
+| 添加元素到队尾   | add(E e) / offer(E e)  | addLast(E e) / offerLast(E e)   |
+| 取队首元素并删除  | E remove() / E poll()  | E removeFirst() / E pollFirst() |
 | 取队首元素但不删除 | E element() / E peek() | E getFirst() / E peekFirst()    |
-| 添加元素到队首     | 无                     | addFirst(E e) / offerFirst(E e) |
-| 取队尾元素并删除   | 无                     | E removeLast() / E pollLast()   |
-| 取队尾元素但不删除 | 无                     | E getLast() / E peekLast()      |
+| 添加元素到队首   | 无                      | addFirst(E e) / offerFirst(E e) |
+| 取队尾元素并删除  | 无                      | E removeLast() / E pollLast()   |
+| 取队尾元素但不删除 | 无                      | E getLast() / E peekLast()      |
 
 注意到`Deque`接口实际上扩展自`Queue`：
 
@@ -291,12 +287,12 @@ class UserComparator implements Comparator<User> {
 
 ## 修饰符
 
-|              | public | protected | 默认 | private |
-| ------------ | ------ | --------- | ---- | ------- |
-| 同一个类     | Yes    | Yes       | Yes  | Yes     |
-| 同一个包     | Yes    | Yes       | Yes  | No      |
-| 不同包子类   | Yes    | Yes       | No   | No      |
-| 不同包非子类 | Yes    | No        | No   | No      |
+|        | public | protected | 默认  | private |
+| ------ | ------ | --------- | --- | ------- |
+| 同一个类   | Yes    | Yes       | Yes | Yes     |
+| 同一个包   | Yes    | Yes       | Yes | No      |
+| 不同包子类  | Yes    | Yes       | No  | No      |
+| 不同包非子类 | Yes    | No        | No  | No      |
 
 ## **HashCode计算方式**
 
@@ -357,29 +353,30 @@ obj.getClass()!=Person.Class() 返回子类类型和Person类型
 
 <img src="java基础\Java代码的三个阶段.bmp" style="zoom:67%;" />
 
-	* 框架：半成品软件。可以在框架的基础上进行软件开发，简化编码
-	* 反射：将类的各个组成部分封装为其他对象，这就是反射机制
-		* 好处：
-			1. 可以在程序运行过程中，操作这些对象。
-			2. 可以解耦，提高程序的可扩展性。
+    * 框架：半成品软件。可以在框架的基础上进行软件开发，简化编码
+    * 反射：将类的各个组成部分封装为其他对象，这就是反射机制
+        * 好处：
+            1. 可以在程序运行过程中，操作这些对象。
+            2. 可以解耦，提高程序的可扩展性。
 
 
-	* 获取Class对象的方式：
-		1. Class.forName("全类名")：将字节码文件加载进内存，返回Class对象
-			* 多用于配置文件，将类名定义在配置文件中。读取文件，加载类
-		2. 类名.class：通过类名的属性class获取
-			* 多用于参数的传递
-		3. 对象.getClass()：getClass()方法在Object类中定义着。
-			* 多用于对象的获取字节码的方式
-	
-		* 结论：
-			同一个字节码文件(*.class)在一次程序运行过程中，只会被加载一次，不论通过哪一种方式获取的Class对象都是同一个。
+​    
+​    * 获取Class对象的方式：
+​        1. Class.forName("全类名")：将字节码文件加载进内存，返回Class对象
+​            * 多用于配置文件，将类名定义在配置文件中。读取文件，加载类
+​        2. 类名.class：通过类名的属性class获取
+​            * 多用于参数的传递
+​        3. 对象.getClass()：getClass()方法在Object类中定义着。
+​            * 多用于对象的获取字节码的方式
+​    
+        * 结论：
+            同一个字节码文件(*.class)在一次程序运行过程中，只会被加载一次，不论通过哪一种方式获取的Class对象都是同一个。
 
 ```java
 public class Person {
     private int age;
     private String name;
-    
+
     public String a;
     protected String b;
     String c;
@@ -445,46 +442,42 @@ public class Main {
 }
 ```
 
-
-
-
 ```java
 * Class对象功能：
-	* 获取功能：
-		1. 获取成员变量们
-			* Field[] getFields() ：获取所有public修饰的成员变量
-			* Field getField(String name)   获取指定名称的 public修饰的成员变量
+    * 获取功能：
+        1. 获取成员变量们
+            * Field[] getFields() ：获取所有public修饰的成员变量
+            * Field getField(String name)   获取指定名称的 public修饰的成员变量
 
-			* Field[] getDeclaredFields()  获取所有的成员变量，不考虑修饰符
-			* Field getDeclaredField(String name)  
-		2. 获取构造方法们
-			* Constructor<?>[] getConstructors()  
-			* Constructor<T> getConstructor(类<?>... parameterTypes)  
+            * Field[] getDeclaredFields()  获取所有的成员变量，不考虑修饰符
+            * Field getDeclaredField(String name)  
+        2. 获取构造方法们
+            * Constructor<?>[] getConstructors()  
+            * Constructor<T> getConstructor(类<?>... parameterTypes)  
 
-			* Constructor<T> getDeclaredConstructor(类<?>... parameterTypes)  
-			* Constructor<?>[] getDeclaredConstructors()  
-		3. 获取成员方法们：
-			* Method[] getMethods()  
-			* Method getMethod(String name, 类<?>... parameterTypes)  
+            * Constructor<T> getDeclaredConstructor(类<?>... parameterTypes)  
+            * Constructor<?>[] getDeclaredConstructors()  
+        3. 获取成员方法们：
+            * Method[] getMethods()  
+            * Method getMethod(String name, 类<?>... parameterTypes)  
 
-			* Method[] getDeclaredMethods()  
-			* Method getDeclaredMethod(String name, 类<?>... parameterTypes)  
+            * Method[] getDeclaredMethods()  
+            * Method getDeclaredMethod(String name, 类<?>... parameterTypes)  
 
-		4. 获取全类名	
-			* String getName()  
+        4. 获取全类名    
+            * String getName()  
 ```
-
 
 ```java
 * Field：成员变量
-	* 操作：
-		1. 设置值
-			* void set(Object obj, Object value)  
-		2. 获取值
-			* Object get(Object obj) 
+    * 操作：
+        1. 设置值
+            * void set(Object obj, Object value)  
+        2. 获取值
+            * Object get(Object obj) 
 
-		3. 忽略访问权限修饰符的安全检查
-			* setAccessible(true):暴力反射
+        3. 忽略访问权限修饰符的安全检查
+            * setAccessible(true):暴力反射
 ```
 
 ```java
@@ -495,72 +488,70 @@ public class Main {
        // 设置public的成员变量
         fieldA.set(person,"aaa");
         System.out.println(person);
-		// 获取private的成员变量
+        // 获取private的成员变量
         Field field=personClass.getDeclaredField("name");
         field.setAccessible(true);
         Object value=field.get(person);
         System.out.println(value);
-		// 设置private的成员变量
+        // 设置private的成员变量
         field.set(person,"li");
         System.out.println(person);
 ```
 
-	* Constructor:构造方法
-		* 创建对象：
-			* T newInstance(Object... initargs)  
-	
-			* 如果使用空参数构造方法创建对象，操作可以简化：Class对象的newInstance方法
+    * Constructor:构造方法
+        * 创建对象：
+            * T newInstance(Object... initargs)  
+    
+            * 如果使用空参数构造方法创建对象，操作可以简化：Class对象的newInstance方法
 
 ```java
-	   // 获得public构造器 构造对象
-	   Constructor con=personClass.getConstructor();
+       // 获得public构造器 构造对象
+       Constructor con=personClass.getConstructor();
         Object pe=con.newInstance();
         System.out.println(pe);
 
-		// 获得private构造器 构造对象
+        // 获得private构造器 构造对象
         Constructor constructor=personClass.getDeclaredConstructor(int.class,String.class);
         constructor.setAccessible(true);
         Object p=constructor.newInstance(18,"lisi");
         System.out.println(p);
-       
+
         //如果使用空参数构造方法创建对象，操作可以简化：Class对象的newInstance方法
         Object per=personClass.newInstance();
         System.out.println(per);
 ```
 
-
-	* Method：方法对象
-		* 执行方法：
-			* Object invoke(Object obj, Object... args)  
-	
-		* 获取方法名称：
-			* String getName:获取方法名
+    * Method：方法对象
+        * 执行方法：
+            * Object invoke(Object obj, Object... args)  
+    
+        * 获取方法名称：
+            * String getName:获取方法名
 
 ```java
         // 获取public方法
         Method method = personClass.getMethod("method");
         Person person=new Person();
         method.invoke(person);
-		// 获取private方法
+        // 获取private方法
         Method method1=personClass.getDeclaredMethod("method", int.class);
         method1.setAccessible(true);
         method1.invoke(person,3);
-		// 获取方法名
+        // 获取方法名
         System.out.println(method1.getName());
 ```
 
-
-	* 案例：
-		* 需求：写一个"框架"，不能改变该类的任何代码的前提下，可以帮我们创建任意类的对象，并且执行其中任意方法
-			* 实现：
-				1. 配置文件
-				2. 反射
-			* 步骤：
-				1. 将需要创建的对象的全类名和需要执行的方法定义在配置文件中
-				2. 在程序中加载读取配置文件
-				3. 使用反射技术来加载类文件进内存
-				4. 创建对象
-				5. 执行方法
+    * 案例：
+        * 需求：写一个"框架"，不能改变该类的任何代码的前提下，可以帮我们创建任意类的对象，并且执行其中任意方法
+            * 实现：
+                1. 配置文件
+                2. 反射
+            * 步骤：
+                1. 将需要创建的对象的全类名和需要执行的方法定义在配置文件中
+                2. 在程序中加载读取配置文件
+                3. 使用反射技术来加载类文件进内存
+                4. 创建对象
+                5. 执行方法
 
 ```java
         // 创建Properties对象
@@ -670,7 +661,6 @@ public class Generic<T> {
                 '}';
     }
 }
-
 ```
 
 ```
@@ -856,7 +846,6 @@ public class Box<T> {
         Box.showBox(box2);
     }
 }
-
 ```
 
 ```
@@ -927,58 +916,58 @@ public class Main {
 
 * 定义：注解（Annotation），也叫元数据。一种代码级别的说明。它是JDK1.5及以后版本引入的一个特性，与类、接口、枚举是在同一个层次。它可以声明在包、类、字段、方法、局部变量、方法参数等的前面，用来对这些元素进行说明，注释。
 * 概念描述：
-	* JDK1.5之后的新特性
-	* 说明程序的
-	* 使用注解：@注解名称
+    * JDK1.5之后的新特性
+    * 说明程序的
+    * 使用注解：@注解名称
 ```
 
-	* 作用分类：
-​		①编写文档：通过代码里标识的注解生成文档【生成文档doc文档】
-​		②代码分析：通过代码里标识的注解对代码进行分析【使用反射】
-​		③编译检查：通过代码里标识的注解让编译器能够实现基本的编译检查【Override】
+    * 作用分类：
 
+​        ①编写文档：通过代码里标识的注解生成文档【生成文档doc文档】
+​        ②代码分析：通过代码里标识的注解对代码进行分析【使用反射】
+​        ③编译检查：通过代码里标识的注解让编译器能够实现基本的编译检查【Override】
 
 ```java
 * JDK中预定义的一些注解
-	* @Override	：检测被该注解标注的方法是否是继承自父类(接口)的
-	* @Deprecated：该注解标注的内容，表示已过时
-	* @SuppressWarnings：压制警告
-		* 一般传递参数all  @SuppressWarnings("all")
+    * @Override    ：检测被该注解标注的方法是否是继承自父类(接口)的
+    * @Deprecated：该注解标注的内容，表示已过时
+    * @SuppressWarnings：压制警告
+        * 一般传递参数all  @SuppressWarnings("all")
 
 * 自定义注解
-	* 格式：
-		元注解
-		public @interface 注解名称{
-			属性列表;
-		}
+    * 格式：
+        元注解
+        public @interface 注解名称{
+            属性列表;
+        }
 
-	* 本质：注解本质上就是一个接口，该接口默认继承Annotation接口
-		* public interface MyAnno extends java.lang.annotation.Annotation {}
+    * 本质：注解本质上就是一个接口，该接口默认继承Annotation接口
+        * public interface MyAnno extends java.lang.annotation.Annotation {}
 
-	* 属性：接口中的抽象方法
-		* 要求：
-			1. 属性的返回值类型有下列取值
-				* 基本数据类型
-				* String
-				* 枚举
-				* 注解
-				* 以上类型的数组
+    * 属性：接口中的抽象方法
+        * 要求：
+            1. 属性的返回值类型有下列取值
+                * 基本数据类型
+                * String
+                * 枚举
+                * 注解
+                * 以上类型的数组
 
-			2. 定义了属性，在使用时需要给属性赋值
-				1. 如果定义属性时，使用default关键字给属性默认初始化值，则使用注解时，可以不进行属性的赋值。
-				2. 如果只有一个属性需要赋值，并且属性的名称是value，则value可以省略，直接定义值即可。
-				3. 数组赋值时，值使用{}包裹。如果数组中只有一个值，则{}可以省略
-	
-	* 元注解：用于描述注解的注解
-		* @Target：描述注解能够作用的位置
-			* ElementType取值：
-				* TYPE：可以作用于类上
-				* METHOD：可以作用于方法上
-				* FIELD：可以作用于成员变量上
-		* @Retention：描述注解被保留的阶段
-			* @Retention(RetentionPolicy.RUNTIME)：当前被描述的注解，会保留到class字节码文件中，并被JVM读取到
-		* @Documented：描述注解是否被抽取到api文档中
-		* @Inherited：描述注解是否被子类继承
+            2. 定义了属性，在使用时需要给属性赋值
+                1. 如果定义属性时，使用default关键字给属性默认初始化值，则使用注解时，可以不进行属性的赋值。
+                2. 如果只有一个属性需要赋值，并且属性的名称是value，则value可以省略，直接定义值即可。
+                3. 数组赋值时，值使用{}包裹。如果数组中只有一个值，则{}可以省略
+
+    * 元注解：用于描述注解的注解
+        * @Target：描述注解能够作用的位置
+            * ElementType取值：
+                * TYPE：可以作用于类上
+                * METHOD：可以作用于方法上
+                * FIELD：可以作用于成员变量上
+        * @Retention：描述注解被保留的阶段
+            * @Retention(RetentionPolicy.RUNTIME)：当前被描述的注解，会保留到class字节码文件中，并被JVM读取到
+        * @Documented：描述注解是否被抽取到api文档中
+        * @Inherited：描述注解是否被子类继承
 ```
 
 ```java
@@ -993,23 +982,22 @@ public @interface Anno {
 }
 ```
 
-
 ```java
 * 在程序使用(解析)注解：获取注解中定义的属性值
-	1. 获取注解定义的位置的对象  （Class，Method,Field）
-	2. 获取指定的注解
-		* getAnnotation(Class)
-		//其实就是在内存中生成了一个该注解接口的子类实现对象
+    1. 获取注解定义的位置的对象  （Class，Method,Field）
+    2. 获取指定的注解
+        * getAnnotation(Class)
+        //其实就是在内存中生成了一个该注解接口的子类实现对象
 
-	            public class ProImpl implements Pro{
-	                public String className(){
-	                    return "cn.itcast.annotation.Demo1";
-	                }
-	                public String methodName(){
-	                    return "show";
-	                }
-	            }
-	3. 调用注解中的抽象方法获取配置的属性值
+                public class ProImpl implements Pro{
+                    public String className(){
+                        return "cn.itcast.annotation.Demo1";
+                    }
+                    public String methodName(){
+                        return "show";
+                    }
+                }
+    3. 调用注解中的抽象方法获取配置的属性值
 ```
 
 注解的使用
@@ -1069,17 +1057,16 @@ public class ReflectTest {
         method.invoke(obj);
     }
 }
-
 ```
 
+    * 案例：简单的测试框架
+    * 小结：
+        1. 以后大多数时候，我们会使用注解，而不是自定义注解
+        2. 注解给谁用？
+            1. 编译器
+            2. 给解析程序用
+        3. 注解不是程序的一部分，可以理解为注解就是一个标签
 
-	* 案例：简单的测试框架
-	* 小结：
-		1. 以后大多数时候，我们会使用注解，而不是自定义注解
-		2. 注解给谁用？
-			1. 编译器
-			2. 给解析程序用
-		3. 注解不是程序的一部分，可以理解为注解就是一个标签
 ## 枚举
 
 使用
@@ -1243,8 +1230,8 @@ enum FourSeasons implements Inter { //使用enum关键字，并实现上述接�
 
 ```java
 修饰符 class 外部类名称｛
-	修饰符 class 内部类名称｛
-	｝
+    修饰符 class 内部类名称｛
+    ｝
 ｝
 内用外，随意用 外用内，需要内部类对象
 使用内部类
@@ -1252,7 +1239,7 @@ enum FourSeasons implements Inter { //使用enum关键字，并实现上述接�
          body.method();
         2.直接方式：外部类名称.内部类名称 对象名=new 外部类名称().new 内部类名称()
         Body.Heart heart=new Body().new Heart();
-	    heart.beat();
+        heart.beat();
 ```
 
 ```java
@@ -1289,7 +1276,6 @@ public class Body {
         this.name = name;
     }
 }
-
 ```
 
 重名解决
@@ -1318,10 +1304,10 @@ public class Outer {
 ```java
 一个类定义在方法中
 修饰符 class 外部类名称｛
-	修饰符 返回值类型 外部类方法名称(参数列表)｛
-    	class 局部内部类名称｛
+    修饰符 返回值类型 外部类方法名称(参数列表)｛
+        class 局部内部类名称｛
         ｝
-	｝
+    ｝
 ｝
 ```
 
@@ -1373,7 +1359,6 @@ public class Outer3 {
         }
     }
 }
-
 ```
 
 匿名内部类
@@ -1658,7 +1643,7 @@ sout("执行完毕");
 psvm(String[] args) throws Exception{
   // 创建缓冲流
   FileReader fr = new FileReader("..");
-	BufferedReader br = new BufferedReader(fr);
+    BufferedReader br = new BufferedReader(fr);
   // 读取
   // 1. 第一种方式
   char[] buf = new char[1024];
@@ -1671,8 +1656,8 @@ psvm(String[] args) throws Exception{
   while((line = br.readLine()) != null){
     sout(line);
   }
-  
-	// 关闭
+
+    // 关闭
   br.close();
 }
 ```
@@ -1775,16 +1760,16 @@ public class Demo{
   public static void fileOpen(){
     // 1. 创建文件
     if(!file.exists()){ // 是否存在
-    	File file = new File("...");
-    	boolean b = file.creatNewFile();
+        File file = new File("...");
+        boolean b = file.creatNewFile();
     }
-    
+
     // 2. 删除文件
     // 2.1 直接删除
     file.delete(); // 成功true
     // 2.2 使用jvm退出时删除
     file.deleteOnExit();
-    
+
     // 3. 获取文件信息
     sout("获取绝对路径" + file.getAbsolutePaht());
     sout("获取路径" + file.getPath());
@@ -1792,14 +1777,14 @@ public class Demo{
     sout("获取夫目录" + file.getParent());
     sout("获取文件长度" + file.length());
     sout("文件创建时间" + new Date(file.lashModified()).toLocalString());
-    
+
     // 4. 判断
     sout("是否可写" + file.canWrite());
     sout("是否是文件" + file.isFile());
     sout("是否隐藏" + file.isHidden());
   }
-  
-  
+
+
   // 文件夹操作
   public static void directoryOpe() throws Exception{
     // 1. 创建文件夹
@@ -1809,36 +1794,36 @@ public class Demo{
       //dir.mkdir(); // 只能创建单级目录
       dir.mkdirs(); // 创建多级目录
     }
-    
+
     // 2. 删除文件夹
     // 2.1 直接删除
     dir.delete(); // 只能删除最底层空目录
     // 2.2 使用jvm删除
     dir.deleteOnExit();
-    
+
     // 3. 获取文件夹信息
- 		sout("获取绝对路径" + dir.getAbsolutePaht());
+         sout("获取绝对路径" + dir.getAbsolutePaht());
     sout("获取路径" + dir.getPath());
     sout("获取文件名称" + dir.getName());
     sout("获取夫目录" + dir.getParent());
     sout("获取文件长度" + dir.length());
     sout("文件夹创建时间" + new Date(dir.lashModified()).toLocalString());
-    
+
     // 4. 判断
     sout("是否是文件夹" + dir.isFile());
     sout("是否隐藏" + dir.isHidden());
-    
+
     // 5. 遍历文件夹
     File dir2 = new File("...");
     String[] files = dir2.list();
     for(String string : files){
       sout(string);
     }
-    
+
     // FileFilter接口的使用
-    
+
     File[] files2 = dir2.listFiles(new FileFilter(){
-      
+
       @Override
       public boolean accept(File pathname){
         if(pathname.getName().endsWith(".jpg")){
@@ -1850,7 +1835,7 @@ public class Demo{
     for(File file : files2){
       sout(file.getName());
     }
-    
+
   }
 }
 ```
@@ -1904,7 +1889,7 @@ Throwable是错误和异常的父类
                 System.in
         ));
         br.readLine();
-        
+
     }
 ```
 
@@ -1923,14 +1908,14 @@ throw
 
 ```
 作用：
-	可以使用throw关键字在指定方法中抛出异常
+    可以使用throw关键字在指定方法中抛出异常
 使用格式
-	throw new xxxException("原因阐述")
+    throw new xxxException("原因阐述")
 1. throw关键字必须写在方法内部
 2. throw关键字后边的new对象必须是Exception或其子类
 3. 必须处理异常
-	1.throw后边是运行时异常或其子类，我们可以不处理，交给jvm
-	2. 编译异常必须处理，要么throws要么try catch
+    1.throw后边是运行时异常或其子类，我们可以不处理，交给jvm
+    2. 编译异常必须处理，要么throws要么try catch
 ```
 
 throws
@@ -1975,7 +1960,7 @@ java中异常抛出后代码还会继续执行吗
 ```java
 //代码1
 public static void test() throws Exception  {
- 
+
     throw new Exception("参数越界"); 
     System.out.println("异常后"); //编译错误，「无法访问的语句」
 }
@@ -2149,9 +2134,9 @@ this代表当前对象，通过谁调用的方法，谁就是当前对象
 在父子类继承关系中，如果成员变量重名，则创建子类对象时，访问有两种方式
 
 1 直接通过子类对象访问成员变量
-	等号左边是谁，就优先使用谁，没有则向上找
+    等号左边是谁，就优先使用谁，没有则向上找
 2 间接通过成员方法访问成员变量
-	该方法属于谁，就优先用谁，没有则向上找
+    该方法属于谁，就优先用谁，没有则向上找
 int num=200; father
     public void methodFather(){
         System.out.println(num);
@@ -2161,7 +2146,7 @@ int num=100;
     public void methodSon(){
         System.out.println(num);
     }
-    
+
 System.out.println(father.num); // 200
 System.out.println(son.num); // 100
 son.methodFather(); // 200
@@ -2185,11 +2170,11 @@ public void method(){
 
 ```java
 重名成员方法
-	创建的对象是谁，优先用谁，如果没有则向上找
+    创建的对象是谁，优先用谁，如果没有则向上找
 重写注意事项
 1. 必须保证与父类的方法名称相同，参数列表页相同
 2. 子类返回值必须，小于等于父类方法的返回值范围
-	父类返回Sting 子类返回Object 报错
+    父类返回Sting 子类返回Object 报错
 3. 子类方法的权限必须大于等于 父类方法的修饰符
     父类是protected 子类必须大于等于protected
 ```
@@ -2244,7 +2229,7 @@ public class Zi extends Fu{
 
     }
     public void methodA(){
-        
+
     }
     public void methodB(){
         methodA();
@@ -2464,3 +2449,173 @@ System.out.println(isTrue); // true
 ![](java基础\搜索字符串.png)
 
 <img src="java基础\空格替换.png" style="zoom:67%;" />
+
+## Serializable
+
+参考资料 https://blog.csdn.net/u011568312/article/details/57611440 https://www.jianshu.com/p/8e4a9cac727f
+
+[Serializable](https://so.csdn.net/so/search?q=Serializable&spm=1001.2101.3001.7020)接口中一个成员函数或者成员变量也没有
+
+序列化：对象的寿命通常随着生成该对象的程序的终止而终止，有时候需要把在内存中的各种对象的状态（也就是实例变量，不是方法）保存下来，并且可以在需要时再将对象恢复。虽然你可以用你自己的各种各样的方法来保存对象的状态，但是Java给你提供一种应该比你自己的好的保存对象状态的机制，那就是序列化。
+
+总结：Java 序列化技术可以使你将一个对象的状态写入一个Byte 流里（系列化），并且可以从其它地方把该Byte 流里的数据读出来（反序列化）
+
+### 系列化的用途
+
+- 想把的内存中的对象状态保存到一个文件中或者数据库中时候
+- 想把对象通过网络进行传播的时候
+
+### 如何序列化
+
+只要一个类实现Serializable接口，那么这个类就可以序列化了。
+
+例如有一个 Person类，实现了Serializable接口，那么这个类就可以被序列化
+
+```java
+class Person implements Serializable{   
+    private static final long serialVersionUID = 1L; //一会就说这个是做什么的
+    String name;
+    int age;
+    public Person(String name,int age){
+        this.name = name;
+        this.age = age;
+    }   
+    public String toString(){
+        return "name:"+name+"\tage:"+age;
+    }
+}
+    File file = new File("file"+File.separator+"out.txt");
+    
+    FileOutputStream fos = null;
+    try {
+        fos = new FileOutputStream(file);
+        ObjectOutputStream oos = null;
+        try {
+            oos = new ObjectOutputStream(fos);
+            Person person = new Person("tom", 22);
+            System.out.println(person);
+            oos.writeObject(person);            //写入对象
+            oos.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally{
+            try {
+                oos.close();
+            } catch (IOException e) {
+                System.out.println("oos关闭失败："+e.getMessage());
+            }
+        }
+    } catch (FileNotFoundException e) {
+        System.out.println("找不到文件："+e.getMessage());
+    } finally{
+        try {
+            fos.close();
+        } catch (IOException e) {
+            System.out.println("fos关闭失败："+e.getMessage());
+        }
+    }
+                            
+    FileInputStream fis = null;
+    try {
+        fis = new FileInputStream(file);
+        ObjectInputStream ois = null;
+        try {
+            ois = new ObjectInputStream(fis);
+            try {
+                Person person = (Person)ois.readObject();   //读出对象
+                System.out.println(person);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally{
+            try {
+                ois.close();
+            } catch (IOException e) {
+                System.out.println("ois关闭失败："+e.getMessage());
+            }
+        }
+    } catch (FileNotFoundException e) {
+        System.out.println("找不到文件："+e.getMessage());
+    } finally{
+        try {
+            fis.close();
+        } catch (IOException e) {
+            System.out.println("fis关闭失败："+e.getMessage());
+        }
+    }
+```
+
+### serialVersionUID
+
+id相同反序列化正常进行，如果不相同，反序列化会失败，试图重构就会报java.io.InvalidClassException异常，因为这两个类的版本不一致，local class incompatible，重构就会出现错误。
+
+### 静态变量序列化
+
+串行化只能保存对象的非静态成员交量，不能保存任何的成员方法和静态的成员变量，而且串行化保存的只是变量的值，对于变量的任何修饰符都不能保存。
+
+如果把Person类中的name定义为static类型的话，试图重构，就不能得到原来的值，只能得到null。说明对静态成员变量值是不保存的。这其实比较容易理解，序列化保存的是对象的状态，静态变量属于类的状态，因此 序列化并不保存静态变量。
+
+### transient关键字
+
+经常在实现了 Serializable接口的类中能看见transient关键字。这个关键字并不常见。 transient关键字的作用是：阻止实例中那些用此关键字声明的变量持久化；当对象被反序列化时（从源文件读取字节序列进行重构），这样的实例变量值不会被持久化和恢复。
+
+当某些变量不想被序列化，同是又不适合使用static关键字声明，那么此时就需要用transient关键字来声明该变量。
+
+### 序列化中的继承问题
+
+- 当一个父类实现序列化，子类自动实现序列化，不需要显式实现Serializable接口。
+- 一个子类实现了 Serializable 接口，它的父类都没有实现 Serializable 接口，要想将父类对象也序列化，就需要让父类也实现Serializable 接口
+
+第二种情况中：如果父类不实现 Serializable接口的话，就需要有默认的无参的构造函数。这是因为一个 Java 对象的构造必须先有父对象，才有子对象，反序列化也不例外。在反序列化时，为了构造父对象，只能调用父类的无参构造函数作为默认的父对象。因此当我们取父对象的变量值时，它的值是调用父类无参构造函数后的值。在这种情况下，在序列化时根据需要在父类无参构造函数中对变量进行初始化，否则的话，父类变量值都是默认声明的值，如 int 型的默认是 0，string 型的默认是 null。
+
+```java
+class People{
+    int num;
+    public People(){}           //默认的无参构造函数，没有进行初始化
+    public People(int num){     //有参构造函数
+        this.num = num;
+    }
+    public String toString(){
+        return "num:"+num;
+    }
+}
+class Person extends People implements Serializable{    
+    
+    private static final long serialVersionUID = 1L;
+    
+    String name;
+    int age;
+    
+    public Person(int num,String name,int age){
+        super(num);             //调用父类中的构造函数
+        this.name = name;
+        this.age = age;
+    }
+    public String toString(){
+        return super.toString()+"\tname:"+name+"\tage:"+age;
+    }
+}
+```
+
+在一端写出对象的时候
+
+```java
+    Person person = new Person(10,"tom", 22); //调用带参数的构造函数num=10,name = "tim",age =22
+    System.out.println(person);
+    oos.writeObject(person);                  //写出对象
+```
+
+在另一端读出对象的时候
+
+```java
+    Person person = (Person)ois.readObject(); //反序列化，调用父类中的无参构函数。
+    System.out.println(person);
+```
+
+输出为
+
+```java
+    num:0   name:tom    age:22
+```
