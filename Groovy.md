@@ -15,6 +15,90 @@ displayName = user.name ? user.name : 'Anonymous'
 displayName = user.name ?: 'Anonymous'   
 ```
 
+### 继承
+
+**获取所有父类**
+
+```java
+public static List<Class> getSuperClasses(Object o) {
+  List<Class> classList = new ArrayList<Class>();
+  Class superclass = o.getClass().getSuperclass();
+  while (superclass != null) {   
+    classList.add(superclass);
+    superclass = superclass.getSuperclass();
+  }
+  return classList;
+}
+```
+
+### 枚举类
+
+```java
+values() 遍历每一个枚举类的对象
+toString() 返回枚举类的名称
+
+package biren.main.logging
+
+import com.cloudbees.groovy.cps.NonCPS
+
+/**
+ * Enumeration for log levels
+ */
+enum LogLevel implements Serializable {
+
+  ALL(0, 0),
+  TRACE(2, 8),
+  DEBUG(3, 12),
+  INFO(4, 0),
+  DEPRECATED(5, 93),
+  WARN(6, 202),
+  ERROR(7, 5),
+  FATAL(8, 9),
+  NONE(Integer.MAX_VALUE, 0)
+
+  Integer level
+
+  static COLOR_CODE_PREFIX = "1;38;5;"
+
+  Integer color
+
+  private static final long serialVersionUID = 1L
+
+    LogLevel(Integer level, Integer color) {
+    this.level = level
+    this.color = color
+  }
+
+  @NonCPS
+  static LogLevel fromInteger(Integer value) {
+    for (lvl in values()) {
+      if (lvl.getLevel() == value) return lvl
+    }
+    return INFO
+  }
+
+  @NonCPS
+  static LogLevel fromString(String value) {
+    for (lvl in values()) {
+      if (lvl.toString().equalsIgnoreCase(value)) return lvl
+    }
+    return INFO
+  }
+
+  @NonCPS
+  String getColorCode() {
+    return COLOR_CODE_PREFIX + color.toString()
+  }
+
+  static void main(String[] args) {
+    for (lvl in values()) {
+      println(lvl.toString())
+    }
+  }
+}
+
+```
+
 
 
 ## 闭包
@@ -631,7 +715,336 @@ example
 
 > 非显示的类不需要导入
 
-## pipeline
+### 日志类
+
+```
+日志输出级别（由高到低）
+
+NONE：最高级别用于关闭所有的日志记录
+
+FATAL：严重错误，表示程序已经无法运行了。
+
+ERROR：普通错误，程序还可以运行，大多数难以优雅处理的异常都属于 Error 范畴。
+
+WARN：警告信息，预期的错误
+
+DEPRECATED：调用废弃接口
+
+INFO：有意义的事件信息，如程序启动，关闭事件，收到请求事件等；
+
+DEBUG：调试信息，可记录详细的业务处理到哪一步了，以及当前的变量状态；
+
+TRACE：非常具体的信息，只能用于开发调试使用，更详细的跟踪信息
+
+ALL：输出所有信息
+```
+
+```java
+    public String testLog(){
+	    //调试的时候知道进入了方法
+        Logger.debug("enter getting content");
+        String content=CacheManager.getCachedContent();
+
+        if(content==null){
+		   // 使用warn因为程序还可以继续执行，但是类似的警告太多可能说明缓存服务不可用了，值得引起注意
+            Logger.warn("Got empty content from cache,need to perform database lookup");
+            Connection conn=new ConnectionFactory.getConnection();
+            if (conn==null){
+			   // 详细的错误信息
+                Logger.error("Can't get database connection,failed to return content");
+            }else{
+                try{
+                    content=conn.query();
+                }catch (IOException e){
+                //记录错误堆栈信息
+                    Logger.error("Failed to perform database lookup",e);
+                } finally {
+                    ConnectionFactory.releaseConnection(conn);
+                    
+                }
+            }
+        }
+        // 调试的时候知道退出了方法
+        Logger.debug("returning content: "+content);
+        return content;
+    }
+	
+	Logger.INFO("start pipeline")
+    something
+    testLog()
+    Logger.INFO("endup pipeline")
+```
+
+
+
+##pipeline
+
+详解流程参考资料：https://zhuanlan.zhihu.com/p/563981209
+
+参考资料 https://blog.csdn.net/qq_34556414/article/details/117419824
+
+> pipeline中同一个stage可以包含两个script
 
 ### 环境变量
+
+**列出环境变量**
+
+```groovy
+1、${YOUR_JENKINS_HOST}/env-vars.html在Jenkins主服务器上打开页面，以获取HTML页面上列出的所有环境变量的列表。
+2、可以通过执行printenvshell命令列出所有环境变量 ，使用printenv | sort命令组合来获取环境变量的排序列表可能很有用
+pipeline {
+  agent any
+  stages {
+    stage('Preparation') {
+      steps {
+        script{
+            sh "printenv | sort"
+        }
+      }
+    }
+  }
+}
+```
+
+**读取环境变量**
+
+```
+以在通过env对象的管道步骤中访问环境变量，例如，env.BUILD_NUMBER将返回当前的内部版本号
+```
+
+**设置环境变量**
+
+```groovy
+可以使用environment { }block 来声明性地设置环境变量，使用env.VARIABLE_NAME或命令来设置环境变量withEnv(["VARIABLE_NAME=value"]) {}。
+ 
+pipeline {
+    agent any
+ 
+    environment {
+        FOO = "bar"
+    }
+ 
+    stages {
+        stage("Env Variables") {
+            environment {
+                NAME = "Alan"
+            }
+ 
+            steps {
+                echo "FOO = ${env.FOO}"
+                echo "NAME = ${env.NAME}"
+ 
+                script {
+                    env.TEST_VARIABLE = "some test value"
+                }
+ 
+                echo "TEST_VARIABLE = ${env.TEST_VARIABLE}"
+ 
+                withEnv(["ANOTHER_ENV_VAR=here is some value"]) {
+                    echo "ANOTHER_ENV_VAR = ${env.ANOTHER_ENV_VAR}"
+                }
+            }
+        }
+    }
+}
+FOO = bar
+NAME = Alan
+TEST_VARIABLE = some test value
+ANOTHER_ENV_VAR = here is some value
+```
+
+**覆盖环境变量**
+
+```
+Jenkins Pipeline支持覆盖环境变量。注意一些规则。
+
+1、该withEnv(["env=value]) { }块可以覆盖任何环境变量。
+2、使用environment {}块设置的变量不能使用命令式env.VAR = "value"赋值覆盖。
+3、命令式env.VAR = "value"分配只能覆盖使用命令式创建的环境变量。
+```
+
+```groovy
+pipeline {
+    agent any
+ 
+    environment {
+        FOO = "bar"
+        NAME = "Joe"
+    }
+ 
+    stages {
+        stage("Env Variables") {
+            environment {
+                NAME = "Alan" // overrides pipeline level NAME env variable
+                BUILD_NUMBER = "2" // overrides the default BUILD_NUMBER
+            }
+ 
+            steps {
+                echo "FOO = ${env.FOO}" // prints "FOO = bar"
+                echo "NAME = ${env.NAME}" // prints "NAME = Alan"
+                echo "BUILD_NUMBER =  ${env.BUILD_NUMBER}" // prints "BUILD_NUMBER = 2"
+ 
+                script {
+                    env.SOMETHING = "1" // creates env.SOMETHING variable
+                }
+            }
+        }
+ 
+        stage("Override Variables") {
+            steps {
+                script {
+                    env.FOO = "IT DOES NOT WORK!" // it can't override env.FOO declared at the pipeline (or stage) level
+                    env.SOMETHING = "2" // it can override env variable created imperatively
+                }
+ 
+                echo "FOO = ${env.FOO}" // prints "FOO = bar"
+                echo "SOMETHING = ${env.SOMETHING}" // prints "SOMETHING = 2"
+ 
+                withEnv(["FOO=foobar"]) { // it can override any env variable
+                    echo "FOO = ${env.FOO}" // prints "FOO = foobar"
+                }
+ 
+                withEnv(["BUILD_NUMBER=1"]) {
+                    echo "BUILD_NUMBER = ${env.BUILD_NUMBER}" // prints "BUILD_NUMBER = 1"
+                }
+            }
+        }
+    }
+}
+```
+
+**布尔值存储在环境变量中**
+
+```
+存储为环境变量的每个值都将转换为String。当存储布尔false值时，它将转换为"false"。如果要在布尔表达式中正确使用该值，则需要调用"false".toBoolean()method
+"false".toBoolean()method转换时忽略大小写
+```
+
+```groovy
+pipeline {
+    agent any
+ 
+    environment {
+        IS_BOOLEAN = false
+    }
+ 
+    stages {
+        stage("Env Variables") {
+            steps {
+                script {
+                    if (env.IS_BOOLEAN) {
+                        echo "You can see this message, because \"false\" String evaluates to Boolean.TRUE value"
+                    }
+ 
+                    if (env.IS_BOOLEAN.toBoolean() == false) {
+                        echo "You can see this message, because \"false\".toBoolean() returns Boolean.FALSE value"
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+**使用sh捕获环境变量**
+
+```
+还可以将shell命令的输出捕获为环境变量。需要使用sh(script: 'cmd', returnStdout:true)格式来强制sh步骤返回输出，以便可以捕获它并将其存储在变量中
+```
+
+```groovy
+pipeline {
+    agent any
+ 
+    environment {
+        LS = "${sh(script:'ls -lah', returnStdout: true)}"
+    }
+ 
+    stages {
+        stage("Env Variables") {
+            steps {
+                echo "LS = ${env.LS}"
+            }
+        }
+    }
+```
+
+**流水线全局变量参考**
+
+内置变量
+
+```
+BUILD_NUMBER          //构建号
+BUILD_ID              //构建号
+BUILD_DISPLAY_NAME    //构建显示名称
+JOB_NAME              //项目名称
+              
+EXECUTOR_NUMBER       //执行器数量
+NODE_NAME             //构建节点名称
+WORKSPACE             //工作目录
+JENKINS_HOME          //Jenkins home
+JENKINS_URL           //Jenkins地址
+BUILD_URL             //构建地址
+JOB_URL               //项目地址
+```
+
+currentbuild变量
+
+```
+result  currentResult   //构建结果
+displayName      //构建名称  #111
+description      //构建描述
+duration         //持续时间
+```
+
+流水线中变量定义引用
+
+```
+ 变量的类型：两种类型的变量。
+1.Jenkins系统内置变量 （全局变量）
+2.Pipeline中定义变量（全局/局部变量）
+
+Jenkins系统内置变量：是Jenkins系统在安装部署后预先定义好的变量。这些变量可以通过Jenkins流水线语法页面看到具体有哪些。这些变量都是全局的可以使用"${env.变量名}引用。
+
+Pipeline中的变量：
+
+def name = "devops"
+String name = "devops"
+
+如果你在Jenkins图形界面设置了参数化构建，那么这些参数也都变成了Jenkins全局变量，可以使用与Jenkins内置变量相同的引用方式。
+
+如果在某个stage定义的变量默认是局部变量，在后续的stage中可能语法引用，所以如果需要引用最好定义为全局变量。
+
+全局变量的定义方式：
+env.name = "devops"
+引用方式： "${env.name}"
+```
+
+### steps
+
+参考资料 https://plugins.jenkins.io/workflow-basic-steps/ https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/ https://www.jenkins.io/doc/book/pipeline/syntax/
+
+```
+Pipeline: Basic Steps 插件
+```
+
+父类
+
+```groovy
+(Jenkinsfile)WorkflowScript@47dc6d52 (pipelineTest) pipelineTest@465781ca
+class org.jenkinsci.plugins.workflow.cps.CpsScript
+class com.cloudbees.groovy.cps.SerializableScript
+class groovy.lang.Script
+class groovy.lang.GroovyObjectSupport
+class java.lang.Object
+
+println(this)
+Class superclass = this.getClass().getSuperclass();
+while (superclass != null) {
+    println(superclass)
+    superclass = superclass.getSuperclass();
+}
+```
+
+## br_ci_lib
 

@@ -369,8 +369,8 @@ obj.getClass()!=Person.Class() 返回子类类型和Person类型
 ​        3. 对象.getClass()：getClass()方法在Object类中定义着。
 ​            * 多用于对象的获取字节码的方式
 ​    
-        * 结论：
-            同一个字节码文件(*.class)在一次程序运行过程中，只会被加载一次，不论通过哪一种方式获取的Class对象都是同一个。
+​        * 结论：
+​            同一个字节码文件(*.class)在一次程序运行过程中，只会被加载一次，不论通过哪一种方式获取的Class对象都是同一个。
 
 ```java
 public class Person {
@@ -1802,7 +1802,7 @@ public class Demo{
     dir.deleteOnExit();
 
     // 3. 获取文件夹信息
-         sout("获取绝对路径" + dir.getAbsolutePaht());
+    sout("获取绝对路径" + dir.getAbsolutePaht());
     sout("获取路径" + dir.getPath());
     sout("获取文件名称" + dir.getName());
     sout("获取夫目录" + dir.getParent());
@@ -2473,7 +2473,7 @@ System.out.println(isTrue); // true
 
 ```java
 class Person implements Serializable{   
-    private static final long serialVersionUID = 1L; //一会就说这个是做什么的
+    private static final long serialVersionUID = 1L; 
     String name;
     int age;
     public Person(String name,int age){

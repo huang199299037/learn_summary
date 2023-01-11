@@ -217,3 +217,22 @@ e00437-System-Product-Name
 | **sw-95** *10.9.0.172*          |        | br104-pr br104-ci                                            |           | Reserve          |
 | **sw-98** *10.50.32.123         |        | br104-pr br104-ci br104-ci-centos br104-ci-u20               |           | Reserve          |
 | **sw-99** *10.50.32.116*        |        | br104-pr-maintaining br104-ci-maintaining br104-ci-centos-maintaining br104-ci-u20-maintaining |           |                  |
+
+```
+cat /etc/*release | grep -w PE-SYSTEM
+
+
+http://br-jenkins01.birentech.com:8888/job/Pull_Request/job/silicon/job/SLO/job/br_generator/18951/ws/
+
+pr 机器名称workspace中包含@2
+88 65 20
+20 65
+69 70 73
+73 69 64 
+64 16 21 69 101
+
+nightly 机器名称workspace中包含@2
+20 88
+86
+```
+
