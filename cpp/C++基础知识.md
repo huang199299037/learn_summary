@@ -13309,9 +13309,11 @@ typedef float REAL;
 
 ①   char  ch_0 = ‘0’;                   // 字符0 赋值给一个字符，实际赋的 码值 为 0x30，十进制48
 
-      std::cout << ch_0 << '\n';      // 输出的 是 码值0x30 对应的 字符 0， 界面上看到的是0
-    
-      std::cout << int(ch_0) << '\n';    // 输出的 是字符 ‘0’ 对应的码值  0x30，即十进制48  ，界面上看到的是 48
+```c++
+  std::cout << ch_0 << '\n';      // 输出的 是 码值0x30 对应的 字符 0， 界面上看到的是0
+
+  std::cout << int(ch_0) << '\n';    // 输出的 是字符 ‘0’ 对应的码值  0x30，即十进制48  ，界面上看到的是 48
+```
 
 ②   char  ch_0 =  '\0';                 // 字符‘\0' 赋值给一个字符，实际赋的 码值 为 0x00，十进制0
 
@@ -13469,10 +13471,11 @@ std::array<double, 10> values {0.5,1.0,1.5,,2.0};
                    const vector<T,Alloc>& rhs );
   ```
   
+
   ## default
-  
+
   来看一个简单的例子：
-  
+
   ```text
           class Student
           {
@@ -13483,17 +13486,17 @@ std::array<double, 10> values {0.5,1.0,1.5,,2.0};
           Student s1;
           Student s2(s1);
   ```
-  
+
   在不定义任何构造函数的情况下，Student对象能定义成功，因为编译器会默认为我们设置几个构造函数，多的不说了，就说最简单的两个
-  
+
   ```text
               Student() {}
               Student(const Student& o):ID(o.ID),sName(o.sName)
               {}
   ```
-  
+
   一个是在不提供任何参数的情况下的默认构造函数，另一个是通过另一个对象构造的拷贝构造函数。
-  
+
   ```text
           class Student
           {
@@ -13506,9 +13509,9 @@ std::array<double, 10> values {0.5,1.0,1.5,,2.0};
           Student s1;
           Student s2(s1);
   ```
-  
+
   但是如果我们自己加了一个只指定名字参数的构造函数，上面这段代码就编译不过了。因为编译器就不自动为你生成默认的那些构造函数了，因为它觉得你想根据自己的需求定义构造函数。但是，如果你除了自己自定义的构造函数，还想用编译器为你生成默认的，怎么办？
-  
+
   ```text
           class Student
           {
@@ -13521,9 +13524,9 @@ std::array<double, 10> values {0.5,1.0,1.5,,2.0};
               Student(const string& _sName):sName(_sName){}
           };
   ```
-  
+
   传统的办法就是受点累，把编译器为你生成的那两个你亲自写一遍，这样不累吗？尤其是student成员变量很多的时候。有了default关键以后，省事多了，
-  
+
   ```text
           class Student
           {
@@ -13538,7 +13541,7 @@ std::array<double, 10> values {0.5,1.0,1.5,,2.0};
           Student s1;
           Student s2(s1);
   ```
-  
+
   那两个默认的构造函数，我们想要的实现跟编译器默认的一模一样，直接指定个default就行了，不用全部手打出来。这就是default这个关键字的作用。
 
 ## void
