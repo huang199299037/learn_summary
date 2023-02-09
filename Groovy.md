@@ -99,7 +99,68 @@ enum LogLevel implements Serializable {
 
 ```
 
+### 多重赋值
 
+参考资料：https://yanbin.blog/groovy-multiple-assignment-returns/
+
+```
+def（var1, var2, var3) = [value1, value2, value3]
+```
+
+```
+1、前面赋值是左右元素数目相等，如果是左短右长，或左长右短会是怎样
+2、如果只需提取右端列表的某几个元素一条语句该如何做
+3、函数如何返回多个值，以及如何一条语句接受函数返回的多个值
+4、是否能一条语句获得自定义对象(非 List) 的多个属性值
+5、正则表达式多组捕获的字符串是否能一次性的赋给多个变量
+```
+
+**左边变量数目多于右边列表元素**
+
+```groovy
+ def (id, name, address) = [1, 'Yanbin']
+ println("${id},${name},${address}")
+1,Yanbin,null
+左边多余的变量会被声明为 null 值
+```
+
+**左边变量数目少于右边列表元素**
+
+```groovy
+def (id, name) = [1, 'Yanbin','Earth']
+println("${id},${name}")
+1,Yanbin
+列表从左自右只提取需要的元素分别赋值左边的变量
+```
+
+**关于任意位置提取右边 List 的元素**
+
+```groovy
+def list = [1, 2, 3, 4, 5]
+def (a, b, rest) = [0, 1, 2..-1].collect { list[it] }
+println("${a},${b},${rest}")
+1,2,[3, 4, 5]
+```
+
+**Groovy 方法同时返回多个值**
+
+```groovy
+def static getUserInfo() {
+        return [1, 'Yanbin']
+}
+def (id, name) = getUserInfo()
+println("${id},${name}")
+1,Yanbin
+
+声明类型
+def (Integer id, String name) = getUserInfo()
+println("${id},${name}")
+1,Yanbin
+```
+
+### Map操作
+
+https://blog.csdn.net/feizuiku0116/article/details/122684328
 
 ## 闭包
 
@@ -522,6 +583,7 @@ class Person {
 class Thing {
     String name
 }
+
 
 def p = new Person(name:'Jessica', age:42)
 def t = new Thing(name:'Printer')

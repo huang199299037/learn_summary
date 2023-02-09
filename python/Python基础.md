@@ -943,7 +943,7 @@ print(name_list)
 ```
 
 2. 快速体验
-   
+  
    2.1 单个数据
 
 ```python
@@ -994,7 +994,7 @@ del 目标 or del(目标)
 ```
 
 2. 快速体验
-   
+  
    2.1 删除列表
 
 ```python
@@ -1404,6 +1404,32 @@ dict1 = {'name': 'Tom', 'age': 20, 'gender': '男'}
 for key, value in dict1.items():
     print(f'{key} = {value}')
 ```
+
+### 包含key
+
+```
+第一种方法：使用keys()方法
+生成一个字典
+dict = {'name': '','age': '','sex': ''}
+# 判断是否存在，其中dict.keys()是列出字典所有的key
+print('name' in dict.keys())  # 结果返回True
+print('id' in dict.keys())  # 结果返回False
+
+# 生成一个字典
+dict = {'name': '','age': '','sex': ''}
+# 判断是否存在，其中dict.keys()是列出字典所有的key
+print('name' in dict.keys())  # 结果返回True
+print('id' in dict.keys())  # 结果返回False
+
+第二种方法：优雅的使用 in 关键字（Python3支持，Python2不清楚）
+# 生成一个字典
+dict = {'name': '','age': '','sex': ''}
+# 判断key是否存在于dict中
+print('name' in dict)  # 结果返回True
+print('id' in dict)  # 结果返回False
+```
+
+
 
 ## 十一、集合
 
@@ -2589,7 +2615,7 @@ old_name = input('请输入您要备份的文件名：')
 ```
 
 2. 规划备份文件名
-   
+  
    2.1 提取目标文件后缀
    
    2.2 组织备份的文件名，xx[备份]后缀
@@ -2610,7 +2636,7 @@ new_name = old_name[:index] + '[备份]' + old_name[index:]
 ```
 
 3. 备份文件写入数据
-   
+  
    3.1 打开源文件 和 备份文件
    
    3.2 将源文件数据写入备份文件
@@ -3829,6 +3855,13 @@ sl(2)
 print('hello')
 ```
 
+#### 导入上级目录
+
+```python
+import sys
+sys.path.append('../')
+```
+
 ### 18.2 制作模块
 
 在Python中，每个Python文件都可以作为一个模块，模块的名字就是文件的名字。**也就是说自定义模块名必须要符合标识符命名规则。**
@@ -4003,5 +4036,58 @@ from my_package import *
 
 my_module1.info_print1()
 ```
+
+## 知识点
+
+### 环境变量
+
+https://blog.csdn.net/ad72182009/article/details/116117744
+
+### 时间
+
+https://blog.csdn.net/qq_35224503/article/details/100005600
+
+## 拼接字符串
+
+```python
+cmds="timeout 3400s python3 -m pytest  -s -v"
+cmd_list = shlex.split(cmds)
+print(cmd_list)
+output: ['timeout', '3400s', 'python3', '-m', 'pytest', '-s', '-v']
+print(" ".join(cmd_list))
+output: timeout 3400s python3 -m pytest  -s -v
+```
+
+
+
+## 多线程
+
+#### 多进程multiprocessing
+
+优点：可以利用多核cpu并行计算
+
+缺点：占用资源最多，可启动数目比线程少
+
+适用于：cpu密集型计算
+
+#### 多线程 threading
+
+优点：相比进程，更加轻量级，占用资源少
+
+缺点：多线程只能并发执行，不能利用多cpu，启动数目有限制，占用内存资源，有线程切换开销
+
+适用于：io密集型计算，同时运行的任务数目要求不多
+
+#### 多协程 asyncio
+
+优点：内存开销最少，启动协程数目最多
+
+缺点：支持库有限，代码实现复杂
+
+适用于：io密集型计算，需要超多任务运行。
+
+#### GIL
+
+
 
 ## pytest

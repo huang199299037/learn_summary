@@ -8,7 +8,7 @@ echo "copy sucg.so"
 sshfs e00437@10.50.20.170:/home/e00437/vscode/sulib .
 fusermount -u  /home/br104/e00437
 fusermount -zu  /home/br104/e00437
---gtest_list_tests
+_list_tests
 git submodule update --init --recursive
 repo sync --fetch-submodules
 --gtest_output=(json|xml)
@@ -234,5 +234,136 @@ pr 机器名称workspace中包含@2
 nightly 机器名称workspace中包含@2
 20 88
 86
+
+python3 -m pytest -sv --tb=long --duration=0.1 --file_path=/media/regression/H.264/test_h264_1280x720.h264 /home/jenkins/workspace/BR_PACKAGE_TEST/Sdk_Silicon_Test/br104/ubuntu-18.04/BVT/br_bevc_stress/br_qa/video/tests/test_bevc_stress.py::test_bevc_stress_decode --junit-xml=/home/jenkins/workspace/BR_PACKAGE_TEST/Sdk_Silicon_Test/br104/ubuntu-18.04/BVT/br_bevc_stress/test_result/test_result_test_bevc_stress_decode_57b566f4-c5a9-3dc9-a024-e4e4c97654da.xml
 ```
 
+
+
+```
+1、env_set_for_jobs  get_conf_project_name  get_conf_test_type
+
+
+```
+
+```
+['SoftmaxbwdTest.SoftmaxbwdAnySpcFP32', 'SoftmaxbwdTest.SoftmaxbwdAnySpcBF16']
+```
+
+```shell
+export WORKSPACE=/home/jenkins/workspace/BR_PACKAGE_TEST/Sdk_Silicon_Test/br104/ubuntu-18.04/SLO/sublas
+# rsync -ravzSh e00894@10.50.26.15:/home/e00894/code/br_jenkins/* ${WORKSPACE}/br_jenkins
+
+export TIMEOUT_MINITES_CASE=10
+export CASE_LIST_YAML_PATH=full-stack/test/sublas-test/config_ci.yaml
+
+# run ci pytest step
+cd "${WORKSPACE}"/br_jenkins
+export PYTHONPATH=./
+export LEVEL=ci_mini
+export JOB_NAME=sublas
+export JOB_BASE_NAME=sublas
+export REPO_NAME=sublas
+export ENV_FILE_PATH=full-stack/test/sublas-test/env_ci.sh
+# get cases
+bash "${WORKSPACE}"/br_jenkins/resources/get_case_list_interface/ci_case_list.sh -l ${LEVEL} -t rungtest
+# run cases
+python3 scripts/slave/nightly_test/test_common_for_all.py
+```
+
+```
+11ceb12810e36981e8ff65fbf339fd2f7d
+```
+
+```
+// get all env result
+                sh(script: "printenv | sort > all_env_result.txt")
+                archiveArtifacts("all_env_result.txt")
+```
+
+```
+docker -H 10.10.64.3:4243  exec -ti $(docker -H 10.10.64.3:4243 ps | grep k8s_default_pull-request-silicon-slo-sublas-11-7cbvz-rdbcn-mmbjv | awk '{print $1}') /bin/bash
+```
+
+```
+total  sulib sanity case 3706
+1 core 12batch 6915
+12 core gtest-parall 3120
+python process poll: 12 core 3119
+python process poll: 12 core 12 batch 1610
+python process poll: 12 core 6 batch 1643
+python process poll: 12 core 24 batch 1670
+python process poll: 16 core 50 batch 1534
+python process poll: 16 core 2991
+python process poll: 16 core 12 batch 1581
+```
+
+
+
+```
+ssh-keygen
+ssh-copy-id e00437@10.50.20.170
+export WORKSPACE=/home/jenkins/workspace/BR_PACKAGE_TEST/Full_Stack/develop/br104/ubuntu-18.04/BVT/umd
+export TIMEOUT_MINITES_CASE=10
+export CASE_LIST_YAML_PATH=full-stack/test/brumd-test/besu/config_ci.yaml
+
+# run ci pytest step
+cd "${WORKSPACE}"/br_jenkins
+export PYTHONPATH="${WORKSPACE}"/br_jenkins
+export LEVEL=sanity
+export JOB_NAME=br_besu
+export JOB_BASE_NAME=br_besu
+export REPO_NAME=br_besu
+export ENV_FILE_PATH=full-stack/test/brumd-test/besu/env_ci.sh
+python3 scripts/slave/nightly_test/test_common_for_all.py
+
+rsync -ravzSh e00437@10.50.20.170:/home/e00437/vscode/br_jenkins/* ${WORKSPACE}/br_jenkins
+
+
+
+16:28:52
+16:33:35
+```
+
+gtest result
+
+total case number：3706
+
+| 处理方式     | 使用核数 | batch | 失败率                              | 时间(分钟)   |
+| ------------ | -------- | ----- | ----------------------------------- | ------------ |
+| 串行         | 1        | 1     | 0/3706                              | 300          |
+| 串行         | 1        | 12    | 0/3706                              | 200          |
+| gtest-parall | 12       | 1     | 5/3706                              | 48           |
+| python多进程 | 12       | 1     | 7/3706 （5failure 2coredumped）     | 51.9（3119） |
+| python多进程 | 12       | 12    | 39/3706 （17failure 22coredumped）  | 26.8（1610） |
+| python多进程 | 12       | 24    | 2099/3706 (1failure 2098coredumped) | 27.8  (1670) |
+| python多进程 | 16       | 1     | 8/3706 (5failure 3coredumped)       | 49.9（2991） |
+| python多进程 | 16       | 12    | 63/3706 (17failure 46coredumped)    | 26.3（1581） |
+
+pytest result
+
+total case number : 71 (22 skip)
+
+total running case number：49 （22 3 failures）
+
+| 处理方式     | 使用核数 | batch | 失败率            | 时间(分钟)   |
+| ------------ | -------- | ----- | ----------------- | ------------ |
+| 串行         | 1        | 1     | 0/49              | 100          |
+| python多进程 | 12       | 1     | 3/49 （3failure） | 21.8（1313） |
+
+sulib测试线上(无rerun)
+
+| 处理方式     | 使用核数   | batch | 失败率              | 时间(分钟)                   |
+| ------------ | ---------- | ----- | ------------------- | ---------------------------- |
+| python多进程 | 12 无rerun | 1     | 66/4565             | 136 (45+22+50+9+10)          |
+| python多进程 | 14 rerun   | 1     | moop case失败太多了 | rerun时候文件没找到，nfs掉了 |
+
+
+
+pr线上
+
+| 处理方式                   | 使用核数 | batch | 失败率 | 时间(分钟) |
+| -------------------------- | -------- | ----- | ------ | ---------- |
+| sulib python多进程 1台机器 | 12 rerun | 1     | 0/4605 | 129        |
+| sulib python多进程 3台机器 | 12 rerun | 1     | 0/4605 | 90         |
+| br_gen python多进程 4 pod  | 12 rerun | 1     | 超时   |            |
