@@ -2393,6 +2393,19 @@ java9包含
 
 ![](java基础\多态.png)
 
+```
+多态的好处：
+          1.提高了代码的可维护性
+
+          2.提高了代码的扩展性
+
+多态的作用：
+           可以当做形式参数，可以接受任意子类对象
+
+多态的弊端：
+            不能使用子类特有的属性和行为
+```
+
 转型
 
 ![](java基础\转型.png)
@@ -2619,3 +2632,173 @@ class Person extends People implements Serializable{
 ```java
     num:0   name:tom    age:22
 ```
+
+## Pair
+
+Pair提供了一种处理简单的键值关联的便捷方法，当我们想从一个方法返回两个值时特别有用。
+
+共通点：Pair和Map都是以key,value进行存储
+
+不同点：
+
+Pair通过getKey()/getValue()获取对应的key值和value值，没有添加键值对的操作
+Map是通过get()获取对应的value，通过values()获取所有的value，而且还可以通过put进行新增键值对。
+pair保存的是一对key value，而map可以保存多对key value。
+
+自己实现Pair
+
+```java
+package com.ecnu.baserecord;
+
+public class Pair <K,V>{
+    public K key;
+    public V value;
+
+    public Pair(K key, V value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public K getKey() {
+        return key;
+    }
+
+    public void setKey(K key) {
+        this.key = key;
+    }
+
+    public V getValue() {
+        return value;
+    }
+
+    public void setValue(V value) {
+        this.value = value;
+    }
+}
+
+```
+
+第三方库：
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-lang3</artifactId>
+    <version>3.12.0</version>
+</dependency>
+```
+
+```java
+package com.ecnu.baserecord;
+
+
+import org.apache.commons.lang3.tuple.MutablePair;
+
+public class TestPair {
+    public static void main(String[] args) {
+        Pair<Integer,String> pair=new Pair<>(1,"hello");
+        System.out.println(pair.getKey());
+        System.out.println(pair.getValue());
+
+        org.apache.commons.lang3.tuple.Pair<Integer,String> pair1=new MutablePair<>(2,"world");
+
+        pair1.setValue("okkk");
+        System.out.println(pair1.getKey());
+        System.out.println(pair1.getValue());
+
+    }
+}
+output:
+1
+hello
+2
+okkk
+```
+
+## 数组
+
+https://blog.csdn.net/weixin_30843121/article/details/112706373
+
+首先必须声明数组变量，才能在程序中使用数组。下面是声明数组变量的语法
+
+```
+dataType[] arrayRefVar;   // 首选的方法 或 dataType arrayRefVar[];  // 效果相同，但不是首选方法
+例如：
+double[] myList;         // 首选的方法 或 double myList[];         //  效果相同，但不是首选方法
+```
+
+注意: 建议使用 dataType[] arrayRefVar 的声明风格声明数组变量。 dataType arrayRefVar[] 风格是来自 C/C++ 语言 ，在Java中采用是为了让 C/C++ 程序员能够快速理解java语言。
+
+java的三种[数组](https://so.csdn.net/so/search?q=数组&spm=1001.2101.3001.7020)声明方式
+
+```java
+1、String[] a=new String[2];
+2、String[] b=new String[]{"12","22"};
+3、String[] c={"12","22"};
+```
+
+数组元素默认值
+
+```
+元素的默认值：
+
+byte、short、char、int、long的默认值为0
+
+float、double的默认值为0.0        bollean的默认值为false
+
+类、接口、数组、string的默认值为null
+```
+
+## JUNIT
+
+https://blog.csdn.net/weixin_42753193/article/details/126788186
+
+### 1.单元测试
+
+> 单元测试就是针对最小的功能单元编写测试代码。Java程序最小的功能单元是方法，因此，对Java程序进行单元测试就是针对单个[Java方法](https://so.csdn.net/so/search?q=Java方法&spm=1001.2101.3001.7020)的测试。
+
+#### 测试Java方法(原生)
+
+要测试这个方法，一个很自然的想法是编写一个main()方法，然后运行一些测试代码
+
+> 不过，使用main()方法测试有很多缺点：
+
+1. 是只能有一个main()方法，不能把测试代码分离，
+2. 是没有打印出测试结果和期望结果，例如，expected: 3628800, but actual: 123456，
+3. 是很难编写一组通用的测试代码。
+
+### 2. JUnit 5
+
+> JUnit是一个开源的Java语言的单元测试框架，专门针对Java设计，使用最广泛，Spring Boot 2.2.0 版本开始引入 JUnit 5 作为单元测试默认库单元测试（unit testing），是指对软件中的最小可测试单元进行检查和验证。
+
+(1) JUnit 5简单使用的例子
+Junit5的操作非常简单,具体操作如下:
+
+导入Junit5的依赖
+
+如果是Sring Boot项目的话就无需导入了,因为SpringBoot中的test依赖中有Junit5的依赖
+
+Maven中导入以下依赖:
+
+```xml
+<!--junit5-->
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-engine</artifactId>
+    <version>5.9.2</version>
+</dependency>
+<dependency>
+    <groupId>org.junit.platform</groupId>
+    <artifactId>junit-platform-runner</artifactId>
+    <version>1.9.2</version>
+</dependency>
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-params</artifactId>
+    <version>5.9.2</version>
+</dependency>
+```
+junit-jupiter-engine：Junit的核心测试引擎
+junit-platform-runner： 用于在JUnit 4环境中的JUnit平台上执行测试和测试套件的运行器。
+junit-jupiter-params：编写参数化测试所需要的依赖包
