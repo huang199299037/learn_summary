@@ -310,7 +310,7 @@ export CASE_LIST_YAML_PATH=full-stack/test/brumd-test/besu/config_ci.yaml
 # run ci pytest step
 cd "${WORKSPACE}"/br_jenkins
 export PYTHONPATH="${WORKSPACE}"/br_jenkins
-export LEVEL=sanity
+export LEVEL=regression
 export JOB_NAME=br_besu
 export JOB_BASE_NAME=br_besu
 export REPO_NAME=br_besu
@@ -367,3 +367,316 @@ pr线上
 | sulib python多进程 1台机器 | 12 rerun | 1     | 0/4605 | 129        |
 | sulib python多进程 3台机器 | 12 rerun | 1     | 0/4605 | 90         |
 | br_gen python多进程 4 pod  | 12 rerun | 1     | 超时   |            |
+
+```
+node_ip=10.10.64.2
+docker -H $node_ip:4243  exec -ti $(docker -H $node_ip:4243 ps | grep k8s_default_pull-request-silicon-slo-br-generator-19090-z918c-0fm0n-j1m0x | awk '{print $1}') /bin/bash
+
+
+node_ip=10.10.64.2
+docker -H $node_ip:4243  exec -ti $(docker -H $node_ip:4243 ps | grep k8s_default_pull-request-silicon-slo-br-generator-19090-z918c-0fm0n-j1m0x | awk '{print $1}') /bin/bash
+
+
+node_ip=10.10.64.3
+docker -H $node_ip:4243  exec -ti $(docker -H $node_ip:4243 ps | grep k8s_default_pull-request-silicon-slo-br-generator-only-325-9g9qk-ntl1-9sbr2 | awk '{print $1}') /bin/bash
+
+node_ip=10.10.64.2
+docker -H $node_ip:4243  exec -ti $(docker -H $node_ip:4243 ps | grep k8s_default_pull-request-silicon-slo-br-generator-19100-wlwr2-tx4r9-dzw6r | awk '{print $1}') /bin/bash
+
+node_ip=10.10.64.15
+docker -H $node_ip:4243  exec -ti $(docker -H $node_ip:4243 ps | grep k8s_default_pull-request-silicon-slo-br-generator-only-333-k9cz0-0t9h-8vrr3 | awk '{print $1}') /bin/bash
+
+node_ip=10.10.64.11
+docker -H $node_ip:4243  exec -ti $(docker -H $node_ip:4243 ps | grep k8s_default_ge-test-full-stack-develop-br104-ubuntu-18-04-bvt-umd-417-4rvgv | awk '{print $1}') /bin/bash
+```
+
+线上br_gen测试
+
+| 处理方式     | 使用核数   | batch | 失败率              | 时间(分钟)                   |
+| ------------ | ---------- | ----- | ------------------- | ---------------------------- |
+| python多进程 | 12 无rerun | 1     | 66/4565             | 136 (45+22+50+9+10)          |
+| python多进程 | 14 rerun   | 1     | moop case失败太多了 | rerun时候文件没找到，nfs掉了 |
+
+```
+SELECT 
+	iID,
+	rTestCaseName,
+	iJobID,
+	iTestSuiteID,
+	rHostname,
+	rName
+FROM
+	(
+	SELECT
+		(@row_number := @row_number + 1) AS num,
+		Result.iID,
+		Result.rTestCaseName,
+		Result.iJobID,
+		Result.iTestSuiteID,
+		Result.rHostname,
+		TestSuite.rName
+	FROM
+		Result
+	left join TestSuite on
+		TestSuite.iID = Result.iTestSuiteID,
+		(SELECT@row_number := 0) AS t
+	WHERE
+		Result.iJobID = 20587
+		AND TestSuite.rName LIKE "%.py%"
+		AND TestSuite.rName LIKE "%moop_onnx%"
+	ORDER BY
+		Result.iID
+	LIMIT 10
+)temp_result
+where
+	num%4(total_thread) = (total_thread%treahd_id)
+```
+
+线上sulib测试 http://br-jenkins01.birentech.com:8888/job/Pull_Request/job/silicon/job/SLO/job/sulib/5792/ 2小时55分 Rel_0228/2268 1台silicon
+
+| 处理方式           | 使用核数 | batch | 失败率 | 时间(分钟)                                                   |
+| ------------------ | -------- | ----- | ------ | ------------------------------------------------------------ |
+| python多进程 moop  | 12       | 1     | 26/71  | parallel: 11分25秒 11:34:50-11:46:15    rerun 43 分 29 秒 11:46:15-12:29:44 1分钟上传 |
+| python多进程 sulib | 12       | 1     | 7/4595 | parallel:  81分51秒 12:30:52-13:52:43  rerun   1分26秒    13:53:16-13:54:39 13:57:22 3分钟上传 |
+
+```
+11:08:23 start  
+11:34:45 run cases (26分钟半左右开始跑case)
+13:57:22 end cases
+14:03:46 end (6分钟半左右处理后续报告)
+```
+
+```
+5041个case 2023 2 15 
+```
+
+2.16 sulib http://br-jenkins01.birentech.com:8888/job/Pull_Request/job/silicon/job/SLO/job/sulib/5911/ 2小时20分钟  develop/2336 2台silicon
+
+| 处理方式           | 使用核数 | batch | 失败率  | 时间(分钟)                                                   |
+| ------------------ | -------- | ----- | ------- | ------------------------------------------------------------ |
+| python多进程 moop  | 12       | 1     | 0/71    | silicon0：6分28秒 2:06:38-2:13:06  case number:36   failed:0  rerun:0秒  上传: 0秒<br />silicon1:   2分39秒  2:08:04-2:10:43  case number:35   failed:0  rerun:0秒  上传：0秒 |
+| python多进程 sulib | 12       | 1     | 16/5336 | silicon0: 84分37秒 2:13:06-3:37:43  case number:2667   failed:16  rerun 3分8秒  3:37:43-3:40:51 上传：1分32秒  3:40:51-3:42:23  <br />silicon1：81分34秒 2:10:43-3:32:17  case number:2669   failed:0  rerun 0秒  上传：50秒  3:32:17-3:33:07 |
+
+
+
+```
+1:29:18 start  
+2:06:38 and 2:08:04 run cases (37-39分钟半左右开始跑case)
+3:42:23 and 3:33:07  end cases  96分 and 85分
+3:49:57 end (7分34秒左右处理后续报告)
+```
+
+```
+5407个case 2023.2.16 
+parallel number
+Will pop
+find failed cases
+
+moop total time: 9分7秒
+sulib total time: 171分41秒
+```
+
+2.16  br_gen http://br-jenkins01.birentech.com:8888/job/Pull_Request/job/silicon/job/SLO/job/br_generator/19409/ 2小时32分钟  develop/2336 3台silicon
+
+| 处理方式           | 使用核数 | batch | 失败率 | 时间(分钟)                                                   |
+| ------------------ | -------- | ----- | ------ | ------------------------------------------------------------ |
+| python多进程 moop  | 12       | 1     | 0/71   | silicon0：6分9秒 0:40:26-0:46:35  case number:23   failed:0  rerun:0秒  上传: 0秒 <br />silicon1:   3分27秒  0:40:06-0:44:33  case number:24   failed:0  rerun:0秒  上传：0秒<br />silicon2:   1分24秒  0:40:02-0:41:26  case number:24   failed:0  rerun:0秒  上传：0秒 |
+| python多进程 sulib | 12       | 1     | 1/5326 | silicon0: 49分57秒 0:46:35-1:36:32  case number:1774   failed:1  rerun 2秒   上传：1分21秒  1:36:34-1:37:53 <br />  silicon1：98分55秒 0:44:43-2:23:48  case number:1776   failed:0  rerun 0秒  上传：1分13秒  2:23:48-2:25:01 <br />silicon1：93分31秒 0:41:26-2:14:57  case number:1776   failed:0  rerun 0秒  上传：1分5秒  2:14:57-2:15:52 |
+
+```
+00:04:45 start  
+2:25:01
+2:37:25 end (7分34秒左右处理后续报告)
+
+moop total time: 10分钟
+sulib total time:  246分04秒
+```
+
+```
+12:13
+12:39 26 分开始跑case 10+16 
+13:59:40
+14:06
+```
+
+```
+Pull_Request_silicon_SLO_br_gen
+1、10.10.64.2 
+2、10.10.64.6
+3、10.10.64.4
+4、10.10.64.2
+5、10.10.64.4
+6、10.10.64.4
+7、10.10.64.2
+8、10.10.64.4
+9、10.10.64.6
+10、10.10.64.2
+11、10.10.64.2
+12、10.10.64.4
+13、10.10.64.2
+14、10.10.64.4
+15、10.10.64.2
+16、10.10.64.2
+17、10.10.64.4
+18、10.10.64.6
+19、10.10.64.3
+20、10.10.64.6
+
+8个：10.10.64.2
+7个：10.10.64.4
+4个：10.10.64.6
+1个：10.10.64.3
+```
+
+br_gen
+
+![image-20230217170655086](C:\Users\E00437\AppData\Roaming\Typora\typora-user-images\image-20230217170655086.png)
+
+sulib
+
+![image-20230217170711590](C:\Users\E00437\AppData\Roaming\Typora\typora-user-images\image-20230217170711590.png)
+
+```
+现阶段存在的问题：
+问题一、减少job时间 
+    解决方案一、100或者50个一组
+    解决方案二、一个一个拿
+问题二、机器监控
+    机器最后扫描active，之后再扫描running case，risk是case hang和node hang
+
+统一流程讨论的问题：
+1、统一在docker中获取case list？ 待定
+各自的平台：
+优点：无需适配
+缺点:silicon释放
+docker：
+优点：节省silicon资源，pipeline时间短
+缺点：需要适配
+
+warning：注意jobid
+2、config_ci.yaml env_ci.sh  需要根据silicon和cmodel执行不同逻辑 
+要求开发加入适配
+
+3、每一条case是否只根据platform和case类型（pytest或gtest）可以确定
+case之间没有依赖，可以确定case
+
+4、项目下的子项目中的case是否可以交叉获取，还是必须先执行A项目的case，再执行B项目的case，还有一个情况是A适合多线程，B适合多进程
+可以交叉，现阶段直接使用多进程方式
+
+5、silicon 或者cmodel之后还有扩展该如何解决
+config和env适配
+```
+
+时间统计 根据node分配case数量
+
+| silicon0时间/分钟 | silicon1时间/分钟 | 时间/分钟 |
+| ----------------- | ----------------- | --------- |
+| 88                | 90                | 2         |
+| 102               | 91                | 11        |
+| 93                | 105               | 12        |
+| 102               | 100               | 2         |
+| 89                | 81                | 8         |
+| 94                | 99                | 5         |
+| 79                | 85                | 6         |
+
+100 batch
+
+| silicon0时间/分钟 | silicon1时间/分钟 | 时间/分钟 |
+| ----------------- | ----------------- | --------- |
+| 92                | 91                | 1         |
+
+one by one
+
+| silicon0时间/分钟 | silicon1时间/分钟 | 时间/分钟 |
+| ----------------- | ----------------- | --------- |
+| 84                | 80                | 4         |
+
+```
+线程一  指令1 指令2 指令3
+线程二  指令1 指令2 指令3
+parallel(线程一，线程二)
+```
+
+br_gen one by one
+
+| node数 | parallel数 | 时间/分钟 |
+| ------ | ---------- | --------- |
+| 20     | 3          | 34        |
+| 10     | 8          | 32        |
+| 10     | 4          | 53        |
+| 5      | 8          | 56        |
+
+```
+http://br-jenkins01.birentech.com:8888/job/Pull_Request/job/silicon/job/SLO/job/sulib/6087/testReport/
+
+suEagerBatchNorm/BatchNorm.FP32Plain/0 掉卡 受影响的case suEagerBatchNorm/BatchNorm.BF16Plain/7、P3/suTestConvBiasSilu.yolov5/62
+suEagerBatchNorm/BatchNorm.BF16Plain/2  掉卡
+suEagerBatchNorm/BatchNorm.BF16/1 core dumped 
+ReorderDryRun.Reorder_ConvAct_S8_S8 掉卡
+```
+
+```
+BEBR_STATUS_SYSTEM_ERROR
+/dev/biren/card_0
+ErrorCode
+```
+
+```
+test_inf_subgraph.py::test_bert_inf_2encoder_hbm 60分钟
+test_umd_brfwd_rn50_subgraph_g14_part.py::test_rn50_subgraph_14x14_part0 40分钟
+test_inf_subgraph.py::test_bert_int8_embedding_encoder_hbm 20分钟
+test_umd_brbackward_losslayer_hbm_optm.py::test_brbackward_losslayer_1spc_hbm_optm 36分钟
+test_umd_brbwd_subgraph_g14.py::test_rn50_bwd_subgraph_g14 75分钟
+
+test_umd_brbackward_embedding_optimizer.py::test_BRBackward_subgraph_embedding_opt 40分钟
+test_umd_brbackward_multihead.py::test_brbackward_multihead 12分钟
+
+test_umd_brfwd_rn50_subgraph_g14_part.py::test_rn50_subgraph_14x14_part1 36分钟
+
+test_umd_brbackward_losslayer_linear1.py::test_brbackward_losslayer_linear1 36分钟
+test_umd_brbackward_losslayer_linear1_layernorm_gelu.py::test_BRBackward_losssubgraph_linear1_Layernorm_Gelu 30分钟
+test_inf_subgraph.py::test_bert_int8_encoder_hbm 20分钟
+
+test_vector_basic_op_add_for_broadcast_by_tensort_1d.py::test_vector_basic_op_add::test_low_level_basic_op_add_tensor_in_1x512x8x155_col_fp32_64x64 15分钟
+test_inf_subgraph.py::test_bert_int8_2encoder_hbm 40分钟
+
+test_brbackward_optimizer_fusedlamb_embedding.py::test_BRBackward_optimzier_embedding 50分钟
+test_umd_brbwd_subgraph_g28.py::test_rn50_bwd_subgraph_g28 30 分钟
+test_umd_brbackward_losslayer_hbm.py::test_brbackward_losslayer_1spc_hbm 35分钟
+
+test_umd_brfwd_bert_subgraph_encoder0.py::test_bert_large_encoder_hbm 40分钟
+test_umd_brbwd_subgraph_g7.py::test_rn50_bwd_subgraph_g7 43分钟
+test_umd_brbackward_encoder_optimizer.py::test_BRBackward_subgraph_encoder_optimzier 15分钟
+```
+
+supa 
+
+| 串行               | 并行                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| 32分钟串行(sw-123) | 15分钟(sw-72)   203 cases rerun 2分钟 <br />4分18秒(sw-23)  0 case rerun 0秒    50分钟开始跑case |
+|                    |                                                              |
+|                    |                                                              |
+|                    |                                                              |
+
+
+
+sulib vs br_gen
+
+```
+定位问题： 锁定两台silicon，一个跑sulib，一个跑br_gen，登陆机器手动执行，发现sulib的cpu利用率很高，br_gen的cpu利用率太低，交换两台机器中的fullstack，发现原先跑sulib的机器还是很快，跑br_gen的机器还是很慢，排除full-stack问题。
+```
+
+```
+sulib:
+            yaml_file: "br_jenkins/pipeline/demo/get_case_list/gtest/config_ci_sulib.yaml"
+            env_file: "br_jenkins/pipeline/demo/get_case_list/gtest/env_ci_sulib.sh"
+            test_name: "sulib-test"
+```
+
+```
+yaml_file
+env_file  需要处理componet情况
+
+option 需要处理componet情况
+```
+

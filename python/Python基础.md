@@ -4058,7 +4058,63 @@ print(" ".join(cmd_list))
 output: timeout 3400s python3 -m pytest  -s -v
 ```
 
+## subprocess
 
+### shell
+
+https://blog.csdn.net/monicholas/article/details/47123987
+
+最近用到了[python](https://so.csdn.net/so/search?q=python&spm=1001.2101.3001.7020)的subprocess模块，看到官方声明里说要尽力避免使用shell=True这个参数，于是测试了一下：
+
+```python
+  from subprocess import call
+  import shlex
+
+  cmd = "cat test.txt; rm test.txt"
+  call(cmd, shell=True)
+```
+
+运行之后：
+1：打开并浏览了test.txt文件
+2：删除了test.txt文件
+
+```
+  from subprocess import call
+  import shlex
+
+  cmd = "cat test.txt; rm test.txt"
+  cmd = shlex(cmd)
+  call(cmd, shell=False)
+```
+
+运行之后：
+1：尝试打开名为text.txt；的文件
+2：尝试打开名为rm的文件
+3：打开并浏览了test.txt文件
+
+shell=True参数会让subprocess.call接受字符串类型的变量作为命令，并调用shell去执行这个字符串，第一个测试中的分号被认为是shell命令中的分隔符，执行了cat和rm两个命令。
+当shell=False是，subprocess.call只接受数组变量作为命令，并将数组的第一个元素作为命令，剩下的全部作为该命令的参数，因此第二个测试只执行了cat命令，并试着打开了作为参数的”text.txt;”，”rm” , “text.txt”三个文件。
+毫无疑问shell=False的参数能让你的程序更加安全，尤其是当你的cmd变量值是从外部读取到的时候。
+假设你有这样的一个需求：让程序运行cat命令，cat的参数则是从一个文件里读取，那代码可能是这样子的
+
+```python
+ from subprocess import call   
+
+ param = file.readline()
+ call(cat + param, shell = True)
+```
+
+一旦当param读取到了”a.txt; rm -rf /;b.txt”之类的字符串时，后果时毁灭性的……
+
+```python
+  from subprocess import call
+  import shlex
+
+  param = file.readline()
+  param = "cat " + param
+  param = shlex(param)
+  call(param, shell = False)
+```
 
 ## 多线程
 
@@ -4087,6 +4143,68 @@ output: timeout 3400s python3 -m pytest  -s -v
 适用于：io密集型计算，需要超多任务运行。
 
 #### GIL
+
+#### Python ProcessPoolExecutor实践
+
+https://blog.csdn.net/weixin_39253570/article/details/121463401
+
+```python
+进程池的创建、关闭
+建议使用with，退出时自动调用shutdown()释放资源。
+
+from concurrent.futures import ProcessPoolExecutor
+
+def func_1():
+	executor = ProcessPoolExecutor(5)
+	# do something
+	executor.shutdown()
+
+def func_2():
+	with ProcessPoolExecutor(5) as executor:
+		# do something
+		pass
+```
+
+**等待进程执行完毕并获取返回结果**
+
+方法一：
+
+```python
+import os
+import time
+from datetime import datetime
+from concurrent.futures import ProcessPoolExecutor, wait, as_completed
+
+
+def sleep(t):
+    print(f'[{os.getpid()}] sleeping')
+    time.sleep(t)
+    return t
+
+
+def test1():
+    print(f'[{os.getpid()}] main proc')
+    with ProcessPoolExecutor(5) as executor:
+        jobs = []
+        time_list = [3, 2, 4, 1]
+        for i in time_list:
+            jobs.append(executor.submit(sleep, i))
+        print(datetime.now())
+        for job in jobs:
+            print(f'[{os.getpid()}] {datetime.now()} {job.result()}')
+[13881] main proc
+2023-02-22 11:47:19.219238
+[13882] sleeping
+[13883] sleeping
+[13884] sleeping
+[13885] sleeping
+[13881] 2023-02-22 11:47:19.219261 3
+[13881] 2023-02-22 11:47:22.223835 2
+[13881] 2023-02-22 11:47:22.223900 4
+[13881] 2023-02-22 11:47:23.221382 1
+结论：
+不建议使用这种方法。输出是按照任务列表顺序，但是打印的时间很令人迷惑，实际上主进程与3进程打印是有明显时间差的但是打印时间却没有展现出来。
+```
 
 
 
