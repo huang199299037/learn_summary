@@ -35,3 +35,17 @@ git branch -D develop
 git branch -m 原始名称 新名称
 ```
 
+## clash for windows
+
+```
+$ git fetch origin
+Connection closed by 20.205.243.166 port 22
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+fix：
+git config --global --unset https.proxy
+```
+

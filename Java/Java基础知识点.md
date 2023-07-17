@@ -2633,6 +2633,62 @@ class Person extends People implements Serializable{
     num:0   name:tom    age:22
 ```
 
+## 函数
+
+### 默认参数
+
+在 JAVA 语言中，并没有提供像 C++、Python 等语言提供的`默认参数`特性，必须通过`函数重载`实现。
+
+```java
+普通函数的默认参数
+public class Main {
+    
+    public static int sum(int a, int b){
+        return a + b;
+    }
+    
+    public static int sum(int a){
+        return sum(a, 2);  // 当只有一个参数时，默认 b=2
+    }
+    
+    public static void main(String[] args) {
+        System.out.println(sum(1));      // 输出3
+        System.out.println(sum(1, 3));   // 输出4
+    }
+}
+构造函数的默认参数
+public class main {
+
+    public static class SUM{
+        private int a, b;
+        
+        // 当只有一个参数时，默认 b=2
+        public SUM(int a){
+            // 重载当前类的构造函数必须利用this()构造器
+            // 且this()必须在第一行
+            this(a, 2);
+        }
+        
+        public SUM(int a, int b){
+            this.a = a;
+            this.b = b;
+        }
+
+        @Override
+        public String toString() {
+            return a + b + "";
+        }
+    }
+    public static void main(String[] args) {
+        System.out.println(new SUM(1));      // 输出3
+        System.out.println(new SUM(1, 3));   // 输出4
+    }
+}
+
+```
+
+
+
 ## Pair
 
 Pair提供了一种处理简单的键值关联的便捷方法，当我们想从一个方法返回两个值时特别有用。
@@ -2802,3 +2858,217 @@ Maven中导入以下依赖:
 junit-jupiter-engine：Junit的核心测试引擎
 junit-platform-runner： 用于在JUnit 4环境中的JUnit平台上执行测试和测试套件的运行器。
 junit-jupiter-params：编写参数化测试所需要的依赖包
+
+## IDEA
+
+### 接口
+
+```java
+public class Foo{
+    public static interface Visitor<E>{
+            void visitor(E element);
+    }
+}
+static关键字是冗余的(嵌套接口自动为"静态"),可以删除而不影响语义;
+```
+
+### maven
+
+解决maven下载慢
+
+https://blog.csdn.net/qq_35349673/article/details/124862711
+
+https://blog.csdn.net/weixin_64854388/article/details/129159003
+
+解决IDEA Maven 下载依赖包速度过慢问题 ，jar包下载过慢，有一部分网络原因，很大一部分是因为需要请求到国外镜像仓库，响应比较慢
+
+1、右键点击项目，找到maven，选择 Open ‘settings.xml’或者Create ‘settings.xml’
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+<mirrors>
+ 
+<!--    <mirror>-->
+<!--      <id>mirrorId</id>-->
+<!--      <mirrorOf>repositoryId</mirrorOf>-->
+<!--      <name>Human Readable Name for this Mirror.</name>-->
+<!--      <url>http://my.repository.com/repo/path</url>-->
+<!--    </mirror>-->
+ 
+    <mirror>
+        <id>alimaven</id>
+        <name>aliyun maven</name>
+        <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+        <mirrorOf>central</mirrorOf>
+    </mirror>
+ 
+    <mirror>
+        <id>uk</id>
+        <mirrorOf>central</mirrorOf>
+        <name>Human Readable Name for this Mirror.</name>
+        <url>http://uk.maven.org/maven2/</url>
+    </mirror>
+ 
+    <mirror>
+        <id>CN</id>
+        <name>OSChina Central</name>
+        <url>http://maven.oschina.net/content/groups/public/</url>
+        <mirrorOf>central</mirrorOf>
+    </mirror>
+ 
+    <mirror>
+        <id>nexus</id>
+        <name>internal nexus repository</name>
+        <url>http://repo.maven.apache.org/maven2</url>
+        <mirrorOf>central</mirrorOf>
+    </mirror>
+ 
+    <!-- junit镜像地址 -->
+    <mirror>
+        <id>junit</id>
+        <name>junit Address/</name>
+        <url>http://jcenter.bintray.com/</url>
+        <mirrorOf>central</mirrorOf>
+    </mirror>
+ 
+<!--    <mirrors>-->
+        <!-- mirror
+         | Specifies a repository mirror site to use instead of a given repository. The repository that
+         | this mirror serves has an ID that matches the mirrorOf element of this mirror. IDs are used
+         | for inheritance and direct lookup purposes, and must be unique across the set of mirrors.
+         |
+        <mirror>
+          <id>mirrorId</id>
+          <mirrorOf>repositoryId</mirrorOf>
+          <name>Human Readable Name for this Mirror.</name>
+          <url>http://my.repository.com/repo/path</url>
+        </mirror>
+         -->
+ 
+        <mirror>
+            <!--This sends everything else to /public -->
+            <id>nexus-aliyun</id>
+            <mirrorOf>*</mirrorOf>
+            <name>Nexus aliyun</name>
+            <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+        </mirror>
+ 
+        <mirror>
+            <id>osc</id>
+            <mirrorOf>*</mirrorOf>
+            <url>http://maven.oschina.net/content/groups/public/</url>
+        </mirror>
+ 
+        <mirror>
+            <id>repo2</id>
+            <mirrorOf>central</mirrorOf>
+            <name>Human Readable Name for this Mirror.</name>
+            <url>http://repo2.maven.org/maven2/</url>
+        </mirror>
+ 
+        <mirror>
+            <id>net-cn</id>
+            <mirrorOf>central</mirrorOf>
+            <name>Human Readable Name for this Mirror.</name>
+            <url>http://maven.net.cn/content/groups/public/</url>
+        </mirror>
+ 
+        <mirror>
+            <id>ui</id>
+            <mirrorOf>central</mirrorOf>
+            <name>Human Readable Name for this Mirror.</name>
+            <url>http://uk.maven.org/maven2/</url>
+        </mirror>
+ 
+        <mirror>
+            <id>ibiblio</id>
+            <mirrorOf>central</mirrorOf>
+            <name>Human Readable Name for this Mirror.</name>
+            <url>http://mirrors.ibiblio.org/pub/mirrors/maven2/</url>
+        </mirror>
+ 
+        <mirror>
+            <id>jboss-public-repository-group</id>
+            <mirrorOf>central</mirrorOf>
+            <name>JBoss Public Repository Group</name>
+            <url>http://repository.jboss.org/nexus/content/groups/public</url>
+        </mirror>
+ 
+        <mirror>
+            <id>JBossJBPM</id>
+            <mirrorOf>central</mirrorOf>
+            <name>JBossJBPM Repository</name>
+            <url>https://repository.jboss.org/nexus/content/repositories/releases/</url>
+        </mirror>
+ 
+    </mirrors>
+</settings>
+ 
+```
+
+ 2、 覆盖配置， 应用，确定
+
+![img](images\maven_image.png)
+
+## Java8
+
+### 函数式编程
+
+1、大数量下处理集合效率高
+
+2、代码可读性高
+
+3、消灭嵌套地狱
+
+```
+面向对象的思想需要关注用什么对象完成什么事情，而函数式编程思想就类似鱼数学中的函数，主要关注的是对数据进行了什么操作。
+```
+
+### Lambda表达式
+
+java8的语法糖，可以对匿名内部类写法简化。
+
+**核心原则**
+
+```
+可推导可省略 接口且只有一个抽象方法
+```
+
+**基本格式**
+
+```
+(参数列表)- >{代码} 
+```
+
+例子：
+
+```java
+new Thread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("Thead start");
+            }
+        }).start();
+
+        new Thread(()->{
+            System.out.println("lambda thread start");
+        }).start();
+```
+
+**省略规则**
+
+```
+1、参数类型可以省略
+2、方法体只有一句代码时，大括号return和唯一一句代码的分号可以省略
+3、方法只有一个参数时小括号可以省略
+```
+
+### Stream流
+
+```
+java8的Stream使用函数式编程，可以被用来对集合或者数组进行链状流式的操作，可以方便对集合或者数组操作
+```
+
