@@ -2859,7 +2859,794 @@ junit-jupiter-engine：Junit的核心测试引擎
 junit-platform-runner： 用于在JUnit 4环境中的JUnit平台上执行测试和测试套件的运行器。
 junit-jupiter-params：编写参数化测试所需要的依赖包
 
+#### Junit5规则
+
+单元测试代码文件
+
+- 默认写在工程目录：src/test/java
+- 不允许写在业务代码目录下
+
+测试资源文件
+
+- 默认写在资源目录：src/test/sresources
+
+文件命名
+
+- 以Test开头或结尾
+
+  ```
+  idea没有对文件命名要求
+  使用maven有要求，不会收集不符合规则的文件
+  ```
+
+
+
+
+#### 测试用例结构
+
+- @DisplayName 定义别名
+
+```java
+@Test
+@DisplayName("testDisplay")
+void testSkipDemo(){
+    StreamDemo.skipDemo();
+}
+```
+
+- 前置操作 
+
+@BeforeEach 执行每一个test都会先执行这个方法
+
+```java
+@BeforeEach
+void setUp(){
+    System.out.println("=== before each ===");
+}
+```
+
+@BeforeAll 只在所有test开始执行之前执行一次
+
+```java
+@BeforeAll
+static void setUpAll(){
+    System.out.println("=== before all ====");
+}
+```
+
+- 后置操作
+
+@AfterEach 执行每一个test后都会执行这个方法
+
+```java
+@AfterEach
+void tearDown(){
+    System.out.println("=== after each ===");
+}
+```
+
+@AfterAll 只在所有test执行之后执行一次
+
+```java
+@AfterAll
+static void tearDownAll(){
+    System.out.println("=== after all ===");
+}
+```
+
+> all只执行一次，each每一个方法都会执行，all必须修饰静态方法，each可以修饰非静态方法，优先执行BeforeAll，最后执行AfterAll
+
+#### 测试用例断言
+
+- assertEquals 判断预期结果和实际结果对比相等 assertNotEquals 判断预期结果和实际结果不相等
+
+  ```java
+  assertEquals(2,1+1);
+  assertNotEquals(1,2+1);
+  ```
+
+- assertTrue 表达式和bool值为真  assertFalse 表达式和bool值为假
+
+  ```java
+  assertTrue(3>1);
+  assertTrue(true);
+  assertFalse(1>3);
+  assertFalse(false);
+  ```
+
+- assertNull assertNotNull 是否为null
+
+  ```java
+  assertNull(null);
+  assertNotNull(1);
+  ```
+
+- assertAll 
+
+  > assert断言出错之后不会继续执行，使用assertAll会执行所有的断言，汇总出错的断言
+
+  ```java
+  @Test
+  void  testAssertAll(){
+      assertAll("all",
+      ()-> assertEquals(2,1+1),
+      ()-> assertEquals(3,1+1),
+      ()-> assertEquals(4,1+1)
+      );
+  }
+  ```
+
+- assertTimeout 设置超时时间断言
+
+  ```java
+  @Test
+  void testAssertTimeout(){
+      assertTimeout(Duration.ofSeconds(3), () -> sleep(1000));
+  }
+  ```
+
+- assertThrows 异常断言
+
+  ```java
+  @Test
+  void testAssertThrows(){
+      assertThrows(ArithmeticException.class, () -> {
+          int a=1/0;
+      });
+  }
+  ```
+
+#### 继承
+
+<img src="../images/junit_extends.png" style="zoom:67%;" />
+
+#### 参数化
+
+引入依赖
+
+```xml
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-params</artifactId>
+    <version>5.10.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+> 参数化注解是@ParameterizedTest
+
+- 单参数 @ValueSource 
+
+```java
+@ParameterizedTest
+@ValueSource(strings = {"aa","bb","cc"})
+void testSingleParaTest(String string){
+    System.out.println(string);
+    assertEquals(2,string.length());
+}
+```
+
+<img src="../images/valueSoource.png" alt="截屏2023-08-13 19.41.54" style="zoom:67%;" />
+
+- @CsvSource 多参数默认使用,分隔，指定分隔符参数是delimiterString
+
+```java
+@ParameterizedTest
+@CsvSource({"aa,1","bb,2","cc,3"})
+void testMultiParaTest(String name, Integer age){
+    System.out.println(name+"::"+age);
+}
+@ParameterizedTest
+@CsvSource(value = {"aa|1","bb|2","cc|3"},delimiterString = "|")
+void testMultiParaDelimiterTest(String name, Integer age){
+    System.out.println(name+"::"+age);
+}
+```
+
+- @CsvFileSource 多参数默认使用,分隔，指定分隔符参数是delimiterString
+
+> 测试文件放在resources文件夹下面，使用/为当前resources文件夹
+
+```java
+@ParameterizedTest
+@CsvFileSource(resources = "/data1.csv")
+void testMultiFileParaTest(String name, Integer age){
+    System.out.println(name+"::"+age);
+}
+
+@ParameterizedTest
+@CsvFileSource(resources = "/data2.csv",delimiterString = "|")
+void testMultiFileParaDelimiterTest(String name, Integer age){
+    System.out.println(name+"::"+age);
+}
+```
+
+- @MethodSource 作为参数化的数据源
+
+> 必须为静态工厂方法，除非测试类被注释为@TestInstance
+
+<img src="../images/methodparam.png" alt="image-20230814011259647" style="zoom:67%;" />
+
+**单参数**
+
+```java
+@ParameterizedTest
+@MethodSource("stringProvider")
+void testMethodSource(String name){
+    System.out.println(name);
+}
+static Stream<String> stringProvider(){
+    return Stream.of("AA","BB");
+}
+
+@ParameterizedTest
+@MethodSource
+void testMethodSourceNoParam(String name){
+    System.out.println(name);
+}
+static Stream<String> testMethodSourceNoParam(){
+    return Stream.of("AA","BB");
+}
+```
+
+> 不加方法名称，默认使用和测试名同名的静态方法
+
+**多参数**
+
+```java
+@ParameterizedTest
+@MethodSource
+void testMethodSourceMulti(String name, Integer age) {
+    System.out.println(name + "::" + age);
+}
+
+static Stream<Arguments> testMethodSourceMulti() {
+    return Stream.of(
+            Arguments.arguments("AA", 1),
+            Arguments.arguments("BB", 2)
+    );
+}
+```
+
+- @EnumSource 枚举测试
+
+```
+public enum Person {
+  Person1("AA", 1),
+  Person2("BB", 2),
+  Person3("CC", 3);
+  private final String name;
+  private final Integer age;
+
+  private Person(String name, Integer age) {
+      this.name = name;
+      this.age = age;
+  }
+}
+
+@ParameterizedTest
+@EnumSource
+void testEnumSourceTest(Person person){
+  System.out.println(person.name+"::"+person.age);
+}
+```
+
+通过names指定枚举值
+
+```java
+@ParameterizedTest
+@EnumSource(names = {"Person1"})
+void testEnumSourceNames(Person person){
+    System.out.println(person.name+"::"+person.age);
+}
+AA::1
+```
+
+mode筛选枚举值 EXCLUDE取反，MATCH_ALL正则
+
+```java
+@ParameterizedTest
+@EnumSource(mode = EnumSource.Mode.EXCLUDE,  names = {"Person1"})
+void testEnumSourceModeExclude(Person person){
+    System.out.println(person.name+"::"+person.age);
+}
+BB::2
+CC::3
+@ParameterizedTest
+@EnumSource(mode = EnumSource.Mode.MATCH_ALL,  names = {"Pe.*"})
+void testEnumSourceModeMatchAll(Person person){
+    System.out.println(person.name+"::"+person.age);
+}
+AA::1
+BB::2
+CC::3
+```
+
+- 其他特殊参数化
+
+```java
+1、NullSource 传入null
+@ParameterizedTest
+@NullSource
+void  testNullSource(String param){
+    System.out.println(param);
+    assertNull(param);
+}
+2、EmptySource 传入空参数
+@ParameterizedTest
+@EmptySource
+void testEmptySource(String param) {
+    System.out.println(param);
+    assertTrue(param.isEmpty());
+}
+3、@NullAndEmptySource 传入null和空参数
+@ParameterizedTest
+@NullAndEmptySource
+void testNullAndEmptySource(String param) {
+    System.out.println(param);
+    assertTrue(null == param || param.isEmpty());
+}
+```
+
+#### 超时
+
+@Timeout 默认是秒
+
+```java
+@Test
+@Timeout(3)
+void testTimeout() throws InterruptedException {
+    sleep(10000);
+}
+```
+
+指定单位
+
+```java
+@Test
+@Timeout(value = 10,unit = TimeUnit.MINUTES)
+void testTimeoutUnit() throws InterruptedException {
+    sleep(10000);
+}
+```
+
+#### 重复测试
+
+@RepeatedTest 重复执行次数，可以指定测试显示描述
+
+```java
+@RepeatedTest(5)
+void testRepeat(){
+    System.out.println("test repeat");
+}
+
+@RepeatedTest(value = 5,name = "test repeat {currentRepetition} of {totalRepetitions}")
+void testRepeatName(){
+    System.out.println("test repeat");
+}
+```
+
+#### 标签测试
+
+@Tag 使用标签测试指定测试方法
+
+在pom配置中groups 指定测试方法，excludedGroups 排除指定测试方法
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>3.0.0</version>
+    <configuration>
+        <groups>dev</groups>
+        <excludedGroups>test</excludedGroups>
+    </configuration>
+</plugin>
+```
+
+
+
+```java
+@Tag("dev")
+@Test
+void testTagDev(){
+    System.out.println("tag dev");
+}
+
+@Tag("test")
+@Test
+void testTagTest(){
+    System.out.println("tag test");
+}
+
+@Tag("test")
+@Tag("dev")
+@Test
+void tesTagDevTest(){
+    System.out.println("tag dev test");
+}
+```
+
+> 使用mvn clean test 执行测试
+
+> 使用 mvn clean test -Dgroups=dev mvn clean test -DexcludedGroups=dev pom配置的优先级更高
+
+tag命名规范
+
+- 不准为空
+
+- 标签不得包含空格
+
+- 标签不得包含ISO控制字符
+
+- 标签不得包含以下保留字符
+
+  ```
+  ，
+  (、）
+  &
+  |
+  ！
+  ```
+
+tag表达式
+
+```xml
+& 与  <groups>dev&amp;test</groups> 在pom.xml中需要转义&
+！非 <groups>dev&amp;!test</groups>
+| 或 <groups>dev|test</groups>
+```
+
+##### 自定义标签
+
+需要自定义一个标签接口
+
+```java
+package com.ecnu.junit5;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@Tag("dev")
+@Test
+public @interface CustomizeTag {
+}
+
+```
+
+```java
+@CustomizeTag
+void testCustomizeTag(){
+    System.out.println("customize dev test");
+}
+```
+
+> mvn clean test -Dgroups=dev 执行
+
+#### 禁用用例
+
+- 禁用测试类
+
+  > 禁用测试类不能在idea体现，必须要在mvn体现 mvn clean test
+
+  ```
+  @Disabled("disable class")
+  public class DisableDemoTest {
+      @Test
+      @Disabled("disable demo")
+      void testDisableDemo(){
+          System.out.println("disable demo test");
+      }
+  
+      @Test
+      void testDemo(){
+          System.out.println("demo test");
+      }
+  }
+  ```
+
+- 禁用测试方法
+
+  ```java
+  public class DisableDemoTest {
+      @Test
+      @Disabled("disable demo")
+      void testDisableDemo(){
+          System.out.println("disable demo test");
+      }
+  
+      @Test
+      void testDemo(){
+          System.out.println("demo test");
+      }
+  }
+  去除类标签
+  ```
+
+#### 过滤执行
+
+```shell
+Run a single test method from a test class.
+mvn test -Dtest=Test1#methodname
+Other related use-cases
+mvn test // Run all the unit test classes
+mvn test -Dtest=Test1 // Run a single test class
+mvn test -Dtest=Test1,Test2 // Run multiple test classes
+mvn test -Dtest=Test1#testFoo* // Run all test methods that match pattern 'testFoo*' from a test class.
+mvn test -Dtest=Test1#testFoo*+testBar* // Run all test methods match pattern 'testFoo*' and 'testBar*' from a test class.
+```
+
+过滤目录
+
+```shell
+--inner
+ - FirstTest.java
+ - SecondTest.java
+mvn test -Dtest="inner/*"
+```
+
+> -Dtest 匹配文件夹需要加双引号，否则识别不了 zsh: no matches found: -Dtest=inner/*
+
+### 3.测试报告
+
+#### 安装allure
+
+https://blog.csdn.net/fuxiu_/article/details/131697534
+
+```shell
+brew install allure
+allure --version
+```
+
+#### 解析报告
+
+配置xml maven-surefire-plugin
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>3.0.0</version>
+    <configuration>
+<!-- <groups>dev|test</groups>-->
+<!-- <excludedGroups>test</excludedGroups>-->
+    </configuration>
+</plugin>
+```
+
+```shell
+allure serve ./target/surefire-reports 
+```
+
+配置xml 
+
+```xml
+<dependency>
+    <groupId>io.qameta.allure</groupId>
+    <artifactId>allure-junit5</artifactId>
+    <version>2.23.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+```shell
+allure serve ./allure-results 
+```
+
+## mockito
+
+创建虚假的对象，用于替换真实环境，达到验证方法功能性
+
+导入依赖
+
+```xml
+<dependency>
+    <groupId>org.mockito</groupId>
+    <artifactId>mockito-core</artifactId>
+    <version>5.4.0</version>
+</dependency>
+```
+
+### Mock方法
+
+org.mockito.Mockito.mock() 可以mock一个对象或者接口
+
+```java
+public static <T> T mock(Class<T> classToMock, MockSettings mockSettings) {
+    return MOCKITO_CORE.mock(classToMock, mockSettings);
+}
+```
+
+> classToMock 待mock的对象，返回mock出来的类
+
+
+
+```
+@Test
+void add() {
+    Random mockRandom = Mockito.mock(Random.class);
+    System.out.println(mockRandom.nextInt());  ==》0
+    Mockito.verify(mockRandom).nextInt();
+    Mockito.verify(mockRandom,Mockito.times(1)).nextInt();
+}
+```
+
+- Random mockRandom = Mockito.mock(Random.class) mock出一个类
+- mockRandom.nextInt() mock 一个方法
+- Mockito.verify(mockRandom).nextInt() 确认是否mock该方法
+- Mockito.verify(mockRandom,Mockito.times(1)).nextInt(); mock该方法次数
+
+> mock方法没有打桩的话，默认返回默认值
+
+### 打桩stub
+
+```java
+Mockito.when(mockRandom.nextInt()).thenReturn(100);
+assertEquals(100,mockRandom.nextInt());
+```
+
+### @Mock
+
+快速使用mock方法
+
+```java
+@Mock
+private Random random;
+
+@Test
+void testMockAnnotation(){
+    MockitoAnnotations.openMocks(this);
+    Mockito.when(random.nextInt()).thenReturn(200);
+    assertEquals(200,random.nextInt());
+}
+```
+
+> @Mock注解 必须和MockitoAnnotations.openMocks(this)一起使用
+
+### Spy方法和@Spy注解
+
+- 被spy对象会走真实方法，而mock对象不会
+- spy()方法参数是对象实例，mock参数是class
+
+```java
+@Test
+void testDiffSpyMock(){
+    MockitoDemo spy = Mockito.spy(new MockitoDemo());
+    assertEquals(3,spy.add(1,2)); // true
+
+    MockitoDemo mock = Mockito.mock(MockitoDemo.class);
+    assertEquals(0,mock.add(1,2)); // true
+}
+```
+
+spy注解
+
+```java
+@Spy
+private MockitoDemo mockitoDemo;
+
+@Test
+void testMockitoDemoAdd(){
+    MockitoAnnotations.openMocks(this);
+    assertEquals(3,mockitoDemo.add(1,2));
+    Mockito.when(mockitoDemo.add(1,2)).thenReturn(100);
+    assertEquals(100,mockitoDemo.add(1,2)); //true
+}
+```
+
+> @Spy注解 必须和MockitoAnnotations.openMocks(this)一起使用
+
+**whenThrow**
+
+```java
+@Spy
+private MockitoDemo mockitoDemo;
+
+@Test
+void testWhenThrow(){
+    MockitoAnnotations.openMocks(this);
+    MockitoDemo spy = Mockito.spy(new MockitoDemo());
+    Mockito.when(spy.add(1,2)).thenThrow(new RuntimeException());
+    assertThrows(RuntimeException.class, () -> spy.add(1,2));
+
+}
+```
+
+**thenCallRealMethod**
+
+```java
+@Spy
+private MockitoDemo mockitoDemo;
+
+@Test
+void testRealMethod(){
+    MockitoAnnotations.openMocks(this);
+    MockitoDemo spy = Mockito.spy(new MockitoDemo());
+    Mockito.when(spy.add(1,2)).thenCallRealMethod();
+    assertEquals(3, spy.add(1,2));
+}
+```
+
+### Mock静态方法
+
+加入pom.xml依赖
+
+```xml
+<dependency>
+    <groupId>org.mockito</groupId>
+    <artifactId>mockito-inline</artifactId>
+    <version>5.2.0</version>
+</dependency>
+```
+
+> mockito-core 必须注释否则冲突
+
+```java
+public static int paramStatic(int a,int b){
+        return a+b;
+}
+
+public static String noParamStatic(){
+    return "hello world";
+}
+
+@Test
+void testStaticParam(){
+    MockedStatic<MockitoDemo> mockedStatic = Mockito.mockStatic(MockitoDemo.class);
+    mockedStatic.when(()->MockitoDemo.paramStatic(1,2)).thenReturn(100);
+    assertEquals(100,MockitoDemo.paramStatic(1,2));
+}
+
+@Test
+void testNoStaticParam(){
+    MockedStatic<MockitoDemo> mockedStatic = Mockito.mockStatic(MockitoDemo.class);
+    mockedStatic.when(MockitoDemo::noParamStatic).thenReturn("AAA");
+    assertEquals("AAA",MockitoDemo.noParamStatic());
+}
+```
+
+> org.mockito.exceptions.base.MockitoException: 
+> For com.ecnu.mockito.MockitoDemo, static mocking is already registered in the current thread
+>
+> 一起使用mock静态方法，需要取消注册mock对象，使用try释放资源
+
+```java
+@Test
+void testStaticParam(){
+
+    try (MockedStatic<MockitoDemo> mockedStatic = Mockito.mockStatic(MockitoDemo.class)) {
+        mockedStatic.when(() -> MockitoDemo.paramStatic(1, 2)).thenReturn(100);
+        assertEquals(100,MockitoDemo.paramStatic(1,2));
+    }
+}
+
+@Test
+void testNoStaticParam(){
+    try (MockedStatic<MockitoDemo> mockedStatic = Mockito.mockStatic(MockitoDemo.class)) {
+        mockedStatic.when(MockitoDemo::noParamStatic).thenReturn("AAA");
+        assertEquals("AAA",MockitoDemo.noParamStatic());
+    }
+}
+```
+
+
+
 ## IDEA
+
+### 注释
+
+```
+1、settings-》java-》code gen-》
+```
+
+
 
 ### 接口
 
@@ -3009,9 +3796,26 @@ https://blog.csdn.net/weixin_64854388/article/details/129159003
  
 ```
 
- 2、 覆盖配置， 应用，确定
+#### 让终端使用IDEA自带的Maven （Mac）
 
-![img](images\maven_image.png)
+> https://blog.csdn.net/taotiezhengfeng/article/details/127954635
+
+Idea maven路径
+
+```
+/Applications/IntelliJ IDEA.app/Contents/plugins/maven/lib/maven3
+```
+
+修改 ～/.bash_profile文件
+
+```sh
+#这里的路径就是IDEA自带的maven路径;
+#注意：IntelliJ IDEA.app 中间的空格要加个“\”转译，否则报找不到文件错误
+export MAVEN_HOME=/Applications/IntelliJ\ IDEA.app/Contents/plugins/maven/lib/maven3
+export PATH=$PATH:$MAVEN_HOME/bin
+```
+
+保存 ，source ～/.bash_profile 使其生效。mvn -v 检查一下
 
 ## Java8
 
@@ -3024,7 +3828,7 @@ https://blog.csdn.net/weixin_64854388/article/details/129159003
 3、消灭嵌套地狱
 
 ```
-面向对象的思想需要关注用什么对象完成什么事情，而函数式编程思想就类似鱼数学中的函数，主要关注的是对数据进行了什么操作。
+面向对象的思想需要关注用什么对象完成什么事情，而函数式编程思想就类似于数学中的函数，主要关注的是对数据进行了什么操作。
 ```
 
 ### Lambda表达式
@@ -3060,15 +3864,831 @@ new Thread(new Runnable() {
 
 **省略规则**
 
-```
+```java
 1、参数类型可以省略
 2、方法体只有一句代码时，大括号return和唯一一句代码的分号可以省略
 3、方法只有一个参数时小括号可以省略
+  
+intToString(new IntConsumer() {
+            @Override
+            public void accept(int value) {
+                System.out.println(value+"abc");
+            }
+});
+
+intToString(value -> System.out.println(value+"abc"));
 ```
+
+### 双冒号
+
+在使用 Lambda 表达式的时候，我们实际上传递进去的代码就是一种解决方案：拿什么参数做什么操作。试想，有这样一种情况：我们在 Lambda 中所指定的操作方案，已经有地方存在相同方案，那是否还有必要再重写逻辑呢？
+
+当然可以不需要。这时就用到了我们今天要讲解的内容：Java的方法引用符 “::”。
+
+```java
+// Lambda 表达式写法：
+s -> System.out.println(s);
+// :: 方法引用写法：
+System.out::println
+```
+
+我么可以通过方法引用，来使用已经存在的方案，使表达式变得更加简洁。
 
 ### Stream流
 
 ```
 java8的Stream使用函数式编程，可以被用来对集合或者数组进行链状流式的操作，可以方便对集合或者数组操作
+```
+
+1、安装lombok
+
+2、设置类
+
+Author
+
+```java
+package com.ecnu.lambda;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode // 用于后期去重
+public class Author {
+    private Long id;
+    private String name;
+    private Integer age;
+    private String introduction;
+    private List<Book> books;
+
+}
+```
+
+Book
+
+```java
+package com.ecnu.lambda;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode // 用于后期去重
+public class Book {
+    private Long id;
+    private String name;
+    private String category;
+    private Double score;
+    private String introduction;
+
+}
+```
+
+调用类
+
+```java
+package com.ecnu.lambda;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+public class StreamDemo {
+    public static void main(String[] args) {
+        List<Author> authors = getAuthors();
+        // 打印年龄小于18的，不重复的作家的姓名
+        authors.stream() // 把集合转换成流
+                .distinct() // 去重
+                .filter(author -> author.getAge() < 18)
+                .forEach(author -> System.out.println(author.getName()));
+
+    }
+
+    private static List<Author> getAuthors() {
+        // init author data
+        Author author1 = new Author(1L, "author1", 33, "intro1", null);
+        Author author2 = new Author(2L, "author2", 15, "intro2", null);
+        Author author3 = new Author(3L, "author3", 14, "intro3", null);
+        Author author4 = new Author(3L, "author3", 14, "intro3", null);
+
+        // 书籍列表
+        List<Book> book1 = new ArrayList<>();
+        List<Book> book2 = new ArrayList<>();
+        List<Book> book3 = new ArrayList<>();
+
+        book1.add(new Book(1L, "book1_name1", "1,2", 88.0, "book1_intro1"));
+        book1.add(new Book(2L, "book1_name2", "3,2", 99.0, "book1_intro2"));
+
+        book2.add(new Book(3L, "book2_name1", "1", 85.0, "book2_intro1"));
+        book2.add(new Book(3L, "book2_name1", "1", 85.0, "book2_intro1"));
+        book2.add(new Book(4L, "book2_name2", "2,4", 86.0, "book2_intro2"));
+
+        book3.add(new Book(5L, "book3_name1", "2", 56.0, "book2_intro2"));
+        book3.add(new Book(6L, "book3_name2", "4", 100.0, "book2_intro2"));
+        book3.add(new Book(6L, "book3_name2", "4", 100.0, "book2_intro2"));
+
+        author1.setBooks(book1);
+        author2.setBooks(book2);
+        author3.setBooks(book3);
+        author4.setBooks(book3);
+
+        List<Author> authorList = new ArrayList<>(Arrays.asList(author1, author2, author3, author4));
+
+        return authorList;
+    }
+}
+```
+
+#### Stream流程
+
+```
+1、创建流
+2、中间操作
+3、终结操作
+必须要有终结操作，否则失败
+```
+
+##### 创建流
+
+单列集合 集合对象.stream()
+
+```java
+List<Author> authors = getAuthors();
+Stream<Author> stream = authors.stream() // 把集合转换成流
+```
+
+数组 Arrays.stream() 或者 Stream.of() 接口静态方法
+
+```java
+Integer[] integers= {1,2,3,4,5};
+Stream<Integer> stream = Arrays.stream(integers);
+Stream<Integer> stream1 = Stream.of(integers);
+```
+
+双列集合 先转换成单列集合
+
+```java
+Map<String, Integer> map = new HashMap<>();
+        map.put("A", 1);
+        map.put("B", 2);
+        map.put("C", 3);
+        map.put("D", 4);
+        map.put("E", 5);
+        Stream<Map.Entry<String, Integer>> stream = map.entrySet().stream();
+        stream.filter(stringIntegerEntry -> stringIntegerEntry.getValue() > 3)
+                .forEach(stringIntegerEntry -> System.out.println(stringIntegerEntry.getKey()+"==="+stringIntegerEntry.getValue()));
+```
+
+##### 中间操作
+
+###### filter
+
+对流中的对象进行筛选
+
+```java
+作家名字中包含字符2的作家
+List<Author> authors = getAuthors();
+        authors.stream().filter(author -> author.getName().contains("2")).forEach(author -> System.out.println(author.getName()));
+author2
+```
+
+###### map
+
+对流中的元素进行计算或转换
+
+```java
+List<Author> authors = getAuthors();
+        authors.stream()
+                .map(new Function<Author, String>() {
+                    @Override
+                    public String apply(Author author) {
+                        return author.getName();
+                    }
+                })
+                .forEach(new Consumer<String>() {
+                    @Override
+                    public void accept(String s) {
+                        System.out.println(s);
+                    }
+                });
+将Author对象转换为String对象，最后输出
+```
+
+###### distinct
+
+去除流中所有重复的元素
+
+> Distinct方法是依赖Object中的equals方法来判断对象是否相等，所有需要重写equals方法，否则比较的是地址值
+
+```java
+// 打印年龄小于18的，不重复的作家的姓名
+        authors.stream() // 把集合转换成流
+                .distinct() // 去重
+                .filter(author -> author.getAge() < 18)
+                .forEach(author -> System.out.println(author.getName()));
+```
+
+###### sorted
+
+对流中元素进行排序
+
+```java
+List<Author> authors = getAuthors();
+        authors.stream()
+                .sorted(new Comparator<Author>() {
+                    @Override
+                    public int compare(Author o1, Author o2) {
+                        return o2.getAge()- o1.getAge();
+                    }
+                })
+                .forEach(new Consumer<Author>() {
+                    @Override
+                    public void accept(Author author) {
+                        System.out.println(author.getName());
+                    }
+                });
+```
+
+> Sorted 无参需要流中对象实现Comparable接口
+
+###### limit
+
+设置流的最大长度，超出部分被抛弃
+
+```java
+List<Author> authors = getAuthors();
+        authors.stream()
+                .limit(2)
+                .forEach(author -> System.out.println(author.getName()));
+```
+
+###### skip
+
+跳过流中前n个元素
+
+```java
+List<Author> authors = getAuthors();
+        authors.stream()
+                .skip(3)
+                .forEach(author -> System.out.println(author.getName()));
+```
+
+###### flatMap
+
+map对象只能把一个对象转换成另一个对象来作为流中元素，而flatMap可以把一个对象转换成多个对象作为流中的元素
+
+```java
+得到作者所有书籍去重的书籍
+List<Author> authors = getAuthors();
+        authors.stream()
+                .flatMap(new Function<Author, Stream<Book>>() {
+                    @Override
+                    public Stream<Book> apply(Author author) {
+                        return author.getBooks().stream();
+                    }
+                })
+                .distinct()
+                .forEach(new Consumer<Book>() {
+                    @Override
+                    public void accept(Book book) {
+                        System.out.println(book.getName());
+                    }
+                });
+```
+
+##### 终结操作
+
+###### forEach
+
+对流中元素进行遍历操作
+
+```java
+List<Author> authors = getAuthors();
+        // 打印年龄小于18的，不重复的作家的姓名
+        authors.stream() // 把集合转换成流
+                .distinct() // 去重
+                .filter(author -> author.getAge() < 18)
+                .forEach(author -> System.out.println(author.getName()));
+```
+
+###### count
+
+统计流中元素个数
+
+```java
+List<Author> authors = getAuthors();
+        long counted = authors.stream()
+                .count();
+        System.out.println(counted);
+```
+
+###### max&min
+
+获取流中的最值
+
+```java
+List<Author> authors = getAuthors();
+        Optional<Double> max = authors.stream()
+                .flatMap((Function<Author, Stream<Book>>) author -> author.getBooks().stream())
+                .map(book -> book.getScore())
+                .max((o1, o2) -> (int) (o1-o2));
+        System.out.println(max.get());
+
+        Optional<Double> min = authors.stream()
+                .flatMap((Function<Author, Stream<Book>>) author -> author.getBooks().stream())
+                .map(book -> book.getScore())
+                .min((o1, o2) -> (int) (o1-o2));
+        System.out.println(min.get());
+```
+
+###### collect
+
+将流转换成集合
+
+```java
+List<Author> authors = getAuthors();
+				// 所有作者名字的list
+        List<Object> collect = authors.stream()
+                .map((Function<Author, Object>) author -> author.getName())
+                .collect(Collectors.toList());
+        System.out.println(collect);
+				
+				// 所有书名的set集合
+        Set<Object> collect1 = authors.stream()
+                .flatMap(new Function<Author, Stream<?>>() {
+                    @Override
+                    public Stream<?> apply(Author author) {
+                        return author.getBooks().stream();
+                    }
+                })
+                .collect(Collectors.toSet());
+        System.out.println(collect1);
+				// map key为作者名，value 为 list<Book>
+        Map<String, List<Book>> collect2 = authors.stream()
+                .distinct()
+                .collect(Collectors.toMap(author -> author.getName(), author -> author.getBooks()));
+        System.out.println(collect2);
+    }
+```
+
+###### 查找匹配
+
+anyMatch
+
+任意符合匹配条件的元素，结果为true
+
+```java
+任意有大于29的作家
+List<Author> authors = getAuthors();
+        boolean flag = authors.stream()
+                .anyMatch(author -> author.getAge() > 29);
+        System.out.println(flag);
+```
+
+allMatch
+
+所有元素都满足，结果为true
+
+```java
+所有作家大于18岁
+List<Author> authors = getAuthors();
+        boolean flag = authors.stream()
+                .allMatch(author -> author.getAge() > 18);
+        System.out.println(flag);
+```
+
+noneMatch
+
+所有元素都不满足，结果为true
+
+```java
+没有作家大于100岁
+List<Author> authors = getAuthors();
+        boolean flag = authors.stream()
+                .noneMatch(author -> author.getAge() > 100);
+        System.out.println(flag);
+```
+
+anyFind
+
+返回流中任意一个元素，不一定是第一个
+
+```java
+任意一个小于18岁的作家
+List<Author> authors = getAuthors();
+        Optional<Author> author = authors.stream()
+                .filter(author1 -> author1.getAge() > 18)
+                .findAny();
+        author.ifPresent(author12 -> System.out.println(author12.getName()));
+```
+
+findFirst
+
+获取流中第一个元素
+
+```
+获取年龄最小的作家名字
+List<Author> authors = getAuthors();
+        Optional<Author> first = authors.stream()
+                .sorted((o1, o2) -> o1.getAge() - o2.getAge())
+                .findFirst();
+        first.ifPresent(author -> System.out.println(author.getName()));
+```
+
+###### reduce归并
+
+对流中的数据按照指定的计算方式计算出一个结果
+
+```java
+计算年龄总和
+List<Author> authors = getAuthors();
+        Integer reduce = authors.stream()
+                .distinct()
+                .map(author -> author.getAge())
+                .reduce(0, (result, element) -> result + element);
+        System.out.println(reduce);
+```
+
+##### 注意事项
+
+- 惰性求值（如果没有终结操作，中间操作是不会执行的）
+- 流是一次性的（一旦一个流对象经过一个终结操作后，这个流就失效了，不能再使用了）
+- 不会影响原数据（除非调用元素的set方法）
+
+### optional
+
+optional避免空指针异常，函数是编程的api中很多使用了optional
+
+#### 创建对象
+
+一般使用Optional的静态方法ofNullable把数据封装成一个Optional对象，无论传入参数是否为null，都不会有异常
+
+```java
+Author author = getAuthor();
+        Optional<Author> optionalAuthor = Optional.ofNullable(author);
+        optionalAuthor.ifPresent(author1 -> System.out.println(author1.getName()));
+```
+
+源码
+
+```java
+ public static <T> Optional<T> ofNullable(T value) {
+        return value == null ? (Optional<T>) EMPTY
+                             : new Optional<>(value);
+    }
+```
+
+非空对象
+
+```
+Optional.of()
+```
+
+空对象
+
+```
+Optional.empty()
+```
+
+#### 安全消费操作
+
+ifPresent 避免出现空指针异常
+
+```java
+Author author = getAuthor();
+        Optional<Author> optionalAuthor = Optional.ofNullable(author);
+        optionalAuthor.ifPresent(author1 -> System.out.println(author1.getName()));
+```
+
+#### 获取值
+
+get方法，不安全
+
+```java
+Author author1 = optionalAuthor.get();
+        System.out.println(author1.getName());
+```
+
+#### 安全获取值
+
+- orElseGet
+
+​	设置获取数据的默认值，如果获取不到就使用默认值
+
+```
+Author author2 = optionalAuthor.orElseGet(() -> new Author(2L, "author2", 2, "intro2", null));
+        System.out.println(author2);
+```
+
+- orElseThrow
+
+​	获取数据为空时，抛出异常
+
+```java
+try {
+            Author author3 = optionalAuthor.orElseThrow(() -> new RuntimeException("element null"));
+            System.out.println(author3);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+```
+
+#### 过滤
+
+filter
+
+按照条件过滤Optional对象，如果不符合，会返回一个无数据的Optional对象
+
+```java
+optionalAuthor.filter(author33 -> author33.getAge()>8).ifPresent(author32 -> System.out.println(author32.getName()));
+```
+
+#### 判断
+
+isPresent
+
+```java
+if (optionalAuthor.isPresent()) {
+            System.out.println(optionalAuthor.get().getName());
+        }
+```
+
+#### 数据转换
+
+map可以对数据进行转换
+
+```java
+optionalAuthor.map(author3 -> author3.getBooks()).ifPresent(books -> System.out.println(books));
+```
+
+### 函数式接口
+
+只有一个抽象方法的接口成为函数式接口，JDK使用注解@FunctionalInterface 标识，但是无论是否有标识，不影响函数式接口的判定
+
+#### 常见的函数式接口
+
+Consumer消费接口
+
+根据传入的参数进行消费
+
+```java
+@FunctionalInterface
+public interface Consumer<T> {
+
+    /**
+     * Performs this operation on the given argument.
+     *
+     * @param t the input argument
+     */
+    void accept(T t);
+}
+```
+
+Function 计算转换接口
+
+根据传入的参数进行转换，把结果返回
+
+```java
+@FunctionalInterface
+public interface Function<T, R> {
+    /**
+     * Applies this function to the given argument.
+     *
+     * @param t the function argument
+     * @return the function result
+     */
+    R apply(T t);
+   }
+```
+
+Predicate 根据传入的参数条件判断，返回判断结果
+
+```java
+@FunctionalInterface
+public interface Predicate<T> {
+
+    /**
+     * Evaluates this predicate on the given argument.
+     *
+     * @param t the input argument
+     * @return {@code true} if the input argument matches the predicate,
+     * otherwise {@code false}
+     */
+    boolean test(T t);
+    }
+```
+
+Supplier 生产接口
+
+在方法中创建对象，把创建的对象对象
+
+```java
+public interface Supplier<T> {
+
+    /**
+     * Gets a result.
+     *
+     * @return a result
+     */
+    T get();
+}
+```
+
+#### 常见的默认方法
+
+and 且 Predicate的方法，用于拼接判断条件
+
+```java
+getAuthors().stream()
+                .filter(new Predicate<Author>() {
+                    @Override
+                    public boolean test(Author author) {
+                        return author.getAge()>18;
+                    }
+                }.and(new Predicate<Author>() {
+                    @Override
+                    public boolean test(Author author) {
+                        return author.getName().length()>1;
+                    }
+                })).forEach(author -> System.out.println(author.getName()));
+```
+
+or 或
+
+negate 取反
+
+### 方法引用
+
+使用lambda表达式时，如果方法体只有一个方法调用（包括构造方法），可以进一步简化代码
+
+#### 基本格式
+
+类名或者对象名::方法名
+
+##### 引用类的静态方法
+
+格式：类名::方法名
+
+使用前提
+
+> 方法体中只有一行代码，并且这行代码调用了某个类的静态方法，并且重写的抽象方法所有的参数按照顺序传入这个静态方法
+
+```java
+getAuthors().stream()
+                .map(new Function<Author, String>() {
+                    @Override
+                    public String apply(Author author) {
+                        return String.valueOf(author);
+                    }
+                }).forEach(new Consumer<String>() {
+                    @Override
+                    public void accept(String s) {
+                        System.out.println(s);
+                    }
+                });
+
+getAuthors().stream()
+                .map(String::valueOf).forEach(System.out::println);
+```
+
+##### 引用对象的实例方法
+
+格式: 对象名::方法名
+
+> 方法体中只有一行代码，并且这行代码调用了这个对象的实例方法，并且重写的抽象方法所有的参数按照顺序传入这个实例方法
+
+```java
+StringBuilder sb =new StringBuilder();
+        getAuthors().stream()
+                .map(new Function<Author, String>() {
+                    @Override
+                    public String apply(Author author) {
+                        return author.getName();
+                    }
+                }).forEach(new Consumer<String>() {
+                    @Override
+                    public void accept(String s) {
+                        sb.append(s);
+                    }
+                });
+        System.out.println(sb);
+StringBuilder sb =new StringBuilder();
+        getAuthors().stream()
+                .map(new Function<Author, String>() {
+                    @Override
+                    public String apply(Author author) {
+                        return author.getName();
+                    }
+                }).forEach(sb::append);
+        System.out.println(sb);       
+```
+
+##### 引用类的实例方法
+
+格式:类名::方法名
+
+> 方法体中只有一行代码，并且这行代码只调用了第一个参数的成员方法，并且重写的抽象方法剩余的参数按照顺序传入这个成员方法
+
+```java
+interface UseString{
+        String use(String str,int start,int length);
+    }
+    public static String subAuthorName(String str,UseString useString){
+        int start=0;
+        int length=1;
+        return useString.use(str,start,length);
+    }
+subAuthorName("abc", new UseString() {
+            @Override
+            public String use(String str, int start, int length) {
+                return str.substring(start,length);
+            }
+        });
+
+System.out.println(subAuthorName("abc", String::substring));
+```
+
+##### 构造器引用
+
+格式: 类名::new
+
+> 方法体中只有一行代码，并且这行代码只调用了某个类的构造方法，并且重写的抽象方法所有的参数按照顺序传入这个构造方法
+
+```java
+getAuthors().stream()
+                .map(new Function<Author,String>() {
+                    @Override
+                    public String apply(Author author) {
+                        return author.getName();
+                    }
+                })
+                .map(new Function<String, StringBuilder>() {
+                    @Override
+                    public StringBuilder apply(String s) {
+                        return new StringBuilder(s);
+                    }
+                }).forEach(new Consumer<StringBuilder>() {
+                    @Override
+                    public void accept(StringBuilder stringBuilder) {
+                        System.out.println(stringBuilder);
+                    }
+                });
+getAuthors().stream()
+                .map(Author::getName)
+                .map(StringBuilder::new).forEach(System.out::println);                
+```
+
+### 高级用法
+
+#### 基本数据类型优化
+
+> 避免装箱拆箱时间消耗
+
+```java
+getAuthors().stream()
+                .map(Author::getAge)
+                .map(age->age+10)
+                .filter(age->age>18)
+                .map(age->age-2)
+                .forEach(System.out::println);
+getAuthors().stream()
+                .mapToInt(Author::getAge)
+                .map(age->age+10)
+                .filter(age->age>18)
+                .map(age->age-2)
+                .forEach(System.out::println);                
+```
+
+#### 并行流
+
+当流中有大量元素时，可以使用并行流提高效率，并行流就是分配多个线程去完成，并行流有现成的接口
+
+```java
+stream.parallel()
+                .peek(new Consumer<Integer>() {
+                    @Override
+                    public void accept(Integer integer) {
+                        System.out.println(integer+"::"+Thread.currentThread().getName());
+                    }
+                })
+                .reduce(Integer::sum)
+                .ifPresent(System.out::println);
+```
+
+parallelStream
+
+```java
+List<Author> authors1 = getAuthors();
+        authors1.stream().parallel()
+                .forEach(author -> System.out.println(author.getName()));
 ```
 

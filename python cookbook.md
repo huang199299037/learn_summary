@@ -1,3 +1,0 @@
-# python cookbook
-
-## 数据结构和算法

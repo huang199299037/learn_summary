@@ -19,6 +19,7 @@ sudo service mysql status # 查看服务状态
 sudo service mysql start # 启动服务
 sudo service mysql stop # 停止服务
 sudo service mysql restart # 重启服务
+112357Aa.
 ```
 
 ### 登陆
@@ -102,7 +103,7 @@ mysql> select host,user,authentication_string from user;
 
 ##### 远程连接
 
-光设置需要登陆用户的 host 为 % 是不够的，因为 mysql 的配置文件中静止了远程登录，需要去修改一下配置文件。
+光设置需要登陆用户的 host 为 % 是不够的，因为 mysql 的配置文件中禁止了远程登录，需要去修改一下配置文件。
 
 先关停mysql服务
 

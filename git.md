@@ -46,6 +46,7 @@ Please make sure you have the correct access rights
 and the repository exists.
 
 fix：
-git config --global --unset https.proxy
+https://github.com/vernesong/OpenClash/issues/1960
+https://docs.github.com/zh/authentication/troubleshooting-ssh/using-ssh-over-the-https-port
 ```
 
