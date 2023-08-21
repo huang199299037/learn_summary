@@ -2004,7 +2004,7 @@ print(f'全局变量a = {a}')  # 全局变量a = 100
 
 `testB`函数内部的200。综上：`testB`函数内部的`a = 200`是定义了一个局部变量。
 
-思考：如何在函数体内部修改全局变量？
+==思考：如何在函数体内部修改全局变量？==
 
 ```python
 a = 100
@@ -2012,6 +2012,10 @@ a = 100
 
 def testA():
     print(a)
+    def inner_foo():
+        # nonlocal 关键字声明a可以操作局部变量
+        nonlocal a
+        a = 300
 
 
 def testB():
@@ -2020,10 +2024,11 @@ def testB():
     a = 200
     print(a)
 
-
-testA()  # 100
+testA()  # 100 300
 testB()  # 200
 print(f'全局变量a = {a}')  # 全局变量a = 200
+
+python这种方法能避免局部变量和全局变量的重复名称错误调用 
 ```
 
 ### 14.4 函数的返回值
@@ -4058,63 +4063,7 @@ print(" ".join(cmd_list))
 output: timeout 3400s python3 -m pytest  -s -v
 ```
 
-## subprocess
 
-### shell
-
-https://blog.csdn.net/monicholas/article/details/47123987
-
-最近用到了[python](https://so.csdn.net/so/search?q=python&spm=1001.2101.3001.7020)的subprocess模块，看到官方声明里说要尽力避免使用shell=True这个参数，于是测试了一下：
-
-```python
-  from subprocess import call
-  import shlex
-
-  cmd = "cat test.txt; rm test.txt"
-  call(cmd, shell=True)
-```
-
-运行之后：
-1：打开并浏览了test.txt文件
-2：删除了test.txt文件
-
-```
-  from subprocess import call
-  import shlex
-
-  cmd = "cat test.txt; rm test.txt"
-  cmd = shlex(cmd)
-  call(cmd, shell=False)
-```
-
-运行之后：
-1：尝试打开名为text.txt；的文件
-2：尝试打开名为rm的文件
-3：打开并浏览了test.txt文件
-
-shell=True参数会让subprocess.call接受字符串类型的变量作为命令，并调用shell去执行这个字符串，第一个测试中的分号被认为是shell命令中的分隔符，执行了cat和rm两个命令。
-当shell=False是，subprocess.call只接受数组变量作为命令，并将数组的第一个元素作为命令，剩下的全部作为该命令的参数，因此第二个测试只执行了cat命令，并试着打开了作为参数的”text.txt;”，”rm” , “text.txt”三个文件。
-毫无疑问shell=False的参数能让你的程序更加安全，尤其是当你的cmd变量值是从外部读取到的时候。
-假设你有这样的一个需求：让程序运行cat命令，cat的参数则是从一个文件里读取，那代码可能是这样子的
-
-```python
- from subprocess import call   
-
- param = file.readline()
- call(cat + param, shell = True)
-```
-
-一旦当param读取到了”a.txt; rm -rf /;b.txt”之类的字符串时，后果时毁灭性的……
-
-```python
-  from subprocess import call
-  import shlex
-
-  param = file.readline()
-  param = "cat " + param
-  param = shlex(param)
-  call(param, shell = False)
-```
 
 ## 多线程
 
@@ -4144,68 +4093,392 @@ shell=True参数会让subprocess.call接受字符串类型的变量作为命令�
 
 #### GIL
 
-#### Python ProcessPoolExecutor实践
-
-https://blog.csdn.net/weixin_39253570/article/details/121463401
-
-```python
-进程池的创建、关闭
-建议使用with，退出时自动调用shutdown()释放资源。
-
-from concurrent.futures import ProcessPoolExecutor
-
-def func_1():
-	executor = ProcessPoolExecutor(5)
-	# do something
-	executor.shutdown()
-
-def func_2():
-	with ProcessPoolExecutor(5) as executor:
-		# do something
-		pass
-```
-
-**等待进程执行完毕并获取返回结果**
-
-方法一：
-
-```python
-import os
-import time
-from datetime import datetime
-from concurrent.futures import ProcessPoolExecutor, wait, as_completed
-
-
-def sleep(t):
-    print(f'[{os.getpid()}] sleeping')
-    time.sleep(t)
-    return t
-
-
-def test1():
-    print(f'[{os.getpid()}] main proc')
-    with ProcessPoolExecutor(5) as executor:
-        jobs = []
-        time_list = [3, 2, 4, 1]
-        for i in time_list:
-            jobs.append(executor.submit(sleep, i))
-        print(datetime.now())
-        for job in jobs:
-            print(f'[{os.getpid()}] {datetime.now()} {job.result()}')
-[13881] main proc
-2023-02-22 11:47:19.219238
-[13882] sleeping
-[13883] sleeping
-[13884] sleeping
-[13885] sleeping
-[13881] 2023-02-22 11:47:19.219261 3
-[13881] 2023-02-22 11:47:22.223835 2
-[13881] 2023-02-22 11:47:22.223900 4
-[13881] 2023-02-22 11:47:23.221382 1
-结论：
-不建议使用这种方法。输出是按照任务列表顺序，但是打印的时间很令人迷惑，实际上主进程与3进程打印是有明显时间差的但是打印时间却没有展现出来。
-```
-
 
 
 ## pytest
+
+### 命名规则
+
+```
+1. 模块名必须以test_开头或以_test结尾（如，test_login.py）
+2. 测试类必须以Test开头，并且不能有init方法（如，class TestLogin:）
+3. 测试方法必须以test开头（如，def test_01()或test02()）
+```
+
+### mock
+
+https://www.cnblogs.com/Zzbj/p/10594633.html#autoid-4-3-0 (代码有误)
+
+https://www.jianshu.com/p/da9a6ffecf8b
+
+```
+什么是mock？比如当我们需要用一个接口时，这个接口还没有实现或者依赖第三方服务，为了保证当前功能的开发和测试，就需要使用mock模拟这些接口。
+Python中使用mock对象替代掉指定的Python对象，实现控制Python对象的行为。mock模块在Python 3.3以后合并到unittest模块中了，可以直接通过导入使用。
+```
+
+Mock对象就是mock模块中的一个类的实例，能在整个测试套件中模拟大量的方法。创建后，就可以指定返回值并设置所需的属性，也可以断言调用了哪些方法/属性及其参数。
+
+```
+class Mock(spec=None, side_effect=None, return_value=DEFAULT, wraps=None, name=None, spec_set=None, **kwargs)
+```
+
+**Mock类主要的几个参数：**
+
+- **name**:命名一个mock对象，只是起到标识作用，可以通过print查看。
+- **return_value**: 定义mock方法的返回值，可以指定一个值（或者对象），当mock对象被调用时，返回**return_value**指定的值。
+- **side_effect**: 这个参数指向一个可调用对象，接收一个可迭代序列。可以抛出异常或者动态改变值。当传递这个参数的时候return_value 参数就会失效。
+
+```
+from unittest import mock
+result1 = mock.Mock(name='mock名称')
+print(result1)
+mock_value1 = mock.Mock(return_value="返回值1")
+print(mock_value1())
+mock_value2 = mock.Mock(return_value="返回值2",side_effect= [1,2,3])
+print(mock_value2())
+print(mock_value2())
+print(mock_value2())
+
+<Mock name='mock名称' id='140648556049216'>
+返回值1
+1
+2
+3
+```
+
+**Mock 步骤如下：**
+
+- 导入 unittest 框架中的 mock
+- 找到要替换的对象A，可以是一个类、函数或者类实例
+- 实例化mock对象，设置mock对象的行为，比如调用的时候返回的值，被访问成员的时候返回什么值等。
+- 使用mock对象替换对象A
+- 调用并断言
+
+```python
+client.py
+import requests
+
+
+def send_request(url):
+    r = requests.get(url)
+    return r.status_code
+
+def visit_ustack():
+    return send_request("https://www.baidu.com")
+```
+
+```python
+test_client.py
+
+import unittest
+from unittest import mock
+import client
+
+
+class TestClient(unittest.TestCase):
+
+    def test_success_request(self):
+        success_send = mock.Mock(return_value=200)
+        client.send_request = success_send
+        self.assertEqual(client.visit_ustack(), 200)
+
+    def test_fail_request(self):
+        fail_send = mock.Mock(return_value=404)
+        client.send_request = fail_send
+        self.assertEqual(client.visit_ustack(), 404)
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+unittest:python3 test_client.py
+pytest: python3 -m pytest -sv
+```
+
+### patch和patch.object
+
+```python
+def test_success_request_1(self):
+        status_code = 200
+        success_send = mock.Mock(return_value=status_code)
+        with mock.patch('client.send_request', success_send):
+            from client import visit_ustack
+            self.assertEqual(visit_ustack(), status_code)
+
+def test_fail_request_1(self):
+    status_code = 404
+    fail_send = mock.Mock(return_value=status_code)
+    with mock.patch('client.send_request', fail_send):
+        from client import visit_ustack
+        self.assertEqual(visit_ustack(), status_code)
+
+def test_fail_request(self):
+        status_code = 404
+        fail_send = mock.Mock(return_value=status_code)
+        with mock.patch.object(client, 'send_request', fail_send):
+            from client import visit_ustack
+            self.assertEqual(visit_ustack(), status_code)      
+```
+
+### mock open
+
+```python
+def check_solaris_version(filename='/etc/release'):
+    with open(filename) as f:
+        content = f.readlines()
+    for line in content:
+        m = re.match(r'\s+Oracle Solaris (\d+\.\d+).*', line.rstrip())
+        if m:
+            return True
+    return False
+@pytest.fixture
+def mocker_solaris(mocker):
+    # Read a mocked /etc/release file
+    mocked_etc_release_data = mocker.mock_open(read_data=" Oracle Solaris 12.0")
+    builtin_open = "__builtin__.open" if PY2 else "builtins.open"
+    mocker.patch(builtin_open, mocked_etc_release_data)
+```
+
+
+
+### pytest mock
+
+https://blog.csdn.net/AI_Green/article/details/120311292
+
+pytest是一个测试的框架，能够提供测试场景中的多种功能。这里不讨论别的功能，只说mock。
+
+pytest-mock是一个pytest的插件，安装即可使用。pytest-mock提供了一个mocker对象，在导入pytest时默认导入。
+
+mocker 是对mock的一个兼容，mock有的属性和方法，mocker都有，而且还有自己特有的方法。
+
+mocker对mock的兼容：
+
+```
+mocker.patch
+mocker.patch.object
+mocker.patch.multiple
+mocker.patch.dict
+mocker.stopall
+mocker.resetall
+
+Mock
+MagicMock
+PropertyMock
+ANY
+DEFAULT (Version 1.4)
+call (Version 1.1)
+sentinel (Version 1.2)
+mock_open
+seal (Version 3.4)
+```
+
+在pytest框架中使用的mock 是pytest-mock，这个模块需要独立安装。
+
+pip install pytest-mock
+
+```python
+test_py_client.py
+
+import client
+import pytest
+import os
+
+def test_mock_fun(mocker):
+    mock_get_sum = mocker.patch('client.visit_ustack')
+    mock_get_sum.return_value = 200
+    assert client.visit_ustack() == mock_get_sum.return_value
+
+
+def test_mock_fun1(mocker):
+    mocker.patch('client.visit_ustack', return_value=400)
+    assert client.visit_ustack() == 400
+
+
+if __name__ == "__main__":
+    pytest.main(
+        [
+            "-s",
+            "-v",
+            os.path.abspath(__file__)
+        ]
+    )
+python3 test_py_client.py
+python3 -m pytest -sv
+```
+
+### import
+
+在写 python 程序的时候，经常会用到引入其他文件夹里的 py 文件，要是都在同目录下直接 import 就好了，可是有的不在同一个目录，很多时候就直接 import 报错了。下面介绍导入文件的方法：
+
+#### 导入同一目录
+
+```python
+model_main.py
+main.py
+
+import model_main
+```
+
+#### 导入不同目录
+
+##### 调用子目录下文件
+
+```
+如果要在 main.py 中导入同级目录下的子目录文件 model_main.py，就必须在 model 文件夹下建立空文件__init__.py文件。
+主目录 script
+	子目录 model
+		  __init__.py
+		  model_main.py
+    main.py
+from model.model_main import method
+```
+
+##### 调用上级目录文件
+
+```
+想要实现 main.py 调用 model_main.py，做法是先跳到上级目录,然后在 model 目录下建一个空文件 init.py ，就可以像第二步调用子目录下的模块一样进行调用了。新的目录结构如下：
+
+目录 model
+	__init__.py
+	model_main.py
+目录 script
+	main.py
+
+import sys
+sys.path.append("..")    # 跳到上级目录下面（sys.path添加目录时注意是在windows还是在Linux下，windows下需要‘\\'否则会出错。）
+from model.model_main import method    # 导入
+```
+
+#### 关于\__init__.py
+
+在 python 模块的每一个包中，都有一个 **\__init__**.py 文件（这个文件定义了包的属性和方法），然后是一些模块文件和子目录，假如子目录中也有 **\__init__**.py  ，那么它就是这个包的子包了。当你将一个包作为模块导入（比如从 xml 导入 dom ）的时候，实际上导入了它的 **\__init__**.py 文件。
+
+一个包是一个带有特殊文件 **\__init__**.py 的目录， **\__init__**.py 文件定义了包的属性和方法。其实它可以什么也不定义，可以只是一个空文件，但是必须存在。如果 **\__init__**.py  不存在，这个目录就仅仅是一个目录，而不是一个包，它就不能被导入或者包含其它的模块和嵌套包。
+
+### PYTHON
+
+```
+https://www.cnblogs.com/lifeofershisui/p/8135702.html
+```
+
+### Catch Exception
+
+```
+https://www.jianshu.com/p/eae1e758a47c
+https://stackoverflow.com/questions/23337471/how-to-properly-assert-that-an-exception-gets-raised-in-pytest
+```
+
+
+
+### python 对list中的dict排序
+
+```
+lst = [{'level': 19, 'star': 36, 'time': 1},
+       {'level': 20, 'star': 40, 'time': 2},
+       {'level': 20, 'star': 40, 'time': 3},
+       {'level': 20, 'star': 40, 'time': 4},
+       {'level': 20, 'star': 40, 'time': 5},
+       {'level': 18, 'star': 40, 'time': 1}]
+
+# 需求:
+# level越大越靠前;
+# level相同, star越大越靠前;
+# level和star相同, time越小越靠前;
+
+# 先按time排序
+lst.sort(key=lambda k: (k.get('time', 0)))
+
+# 再按照level和star顺序
+# reverse=True表示反序排列，默认正序排列
+lst.sort(key=lambda k: (k.get('level', 0), k.get('star', 0)), reverse=True)
+```
+
+### URL拼接
+
+https://blog.csdn.net/laod112/article/details/130897574
+
+首先，Python提供了一个标准库`urllib.parse`来处理URL，其中包括对URL的拼接和解析。例如，我们可以使用`urljoin()`函数来拼接两个URL
+
+```python
+from urllib.parse import urljoin
+
+base_url = 'https://www.example.com/'
+relative_url = 'path/to/file'
+full_url = urljoin(base_url, relative_url)
+print(full_url) # https://www.example.com/path/to/file
+```
+
+其中，base_url是基础URL，relative_url是相对路径，urljoin()函数根据相对路径和基础URL来拼接完整的URL。这种方式可以确保生成的URL是合法的，同时也可以处理特殊情况，例如基础URL以/结尾或相对路径以//开头等。
+
+有时候我们需要拼接URL的查询字符串，可以使用urlencode()函数将字典参数转换为查询字符串格式：
+
+```python
+from urllib.parse import urlencode
+
+params = {
+    'param1': 'value1',
+    'param2': 'value2',
+}
+query_string = urlencode(params)
+full_url = urljoin(base_url, relative_url) + '?' + query_string
+print(full_url) # https://www.example.com/path/to/file?param1=value1&param2=value2
+
+```
+
+另外，如果需要拼接多个查询参数，可以使用`&`符号连接各个参数，例如：
+
+```python
+full_url = urljoin(base_url, relative_url) + '?param1=value1&param2=value2'
+```
+
+### Python项目如何生成requirements.txt文件
+
+https://www.cnblogs.com/wordblog/p/16157622.html
+
+```
+使用 pipreqs 生成
+我们还可以通过第三方库 pipreqs 来生成 requirements.txt 文件，这个方式有一个好处，那就是它可以只生成我们当前Python项目中所用到的依赖包及其版本号，而不是像 pip freeze 方式一样把所有包全部列出生成。
+```
+
+安装
+
+```
+pip install pipreqs
+```
+
+查看
+
+```
+pip3 show pipreqs
+```
+
+使用
+
+```
+pipreqs 使用起来也很容易，命令使用方式为：pipreqs 当前Python项目的根目录
+
+```
+
+警告
+
+```
+如果我们Python项目的根目录中已存在 requirements.txt ，那么出现警告：
+D:\>pipreqs D:\pycharm\Code\flaskDemo --encoding=utf-8
+WARNING: Requirements.txt already exists, use --force to overwrite it
+
+警告信息中的提示，告诉我们可以使用参数 --force 来覆盖重新生成 requirements.txt ，如下：
+pipreqs D:\pycharm\Code\flaskDemo --encoding=utf-8 --force
+```
+
+执行requirement.txt
+
+```
+执行命令：pip install -r requirements.txt 
+```
+
+### pipenv
+
+```
+pipenv能够有效管理Python多个环境，各种包，相当于 virtualenv 和 pip 的合体，且更加强大。
+```
+

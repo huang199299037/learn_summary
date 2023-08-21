@@ -169,3 +169,58 @@ wc -l
 判断目录下文件数与指定文件数量是否相等
 ```
 
+### 复制
+
+https://blog.csdn.net/u012593447/article/details/76575242/
+
+现在假设服务器的ip为：10.12.13.14，域名是www.abc.com
+
+1、从服务器分别复制文件和文件夹到本地：
+
+```
+scp root@10.12.13.14:/home/file /myMachine/x (可以将ip换成域名，也可以去掉root@)
+
+scp -r www.abc.com:/home/file/ /myMachine/myFile/
+```
+
+2、本地复制到服务器
+
+```
+复制文件
+scp /myMachine/x root@10.12.13.14:/home/file
+复制文件夹
+scp -r /myMachine/myFile/ www.abc.com:/home/file/ 
+```
+
+## wget
+
+https://www.jianshu.com/p/9aed3bf36e32
+
+wget的时候加上 -N（参数）：意思是只下载比本地新的文件
+
+```
+$ wget -N "http://xx"
+-q quite no output
+```
+
+- 如果本地没有这个文件，会进行下载；
+
+- 如果有这个文件，但是文件没有变化，不进行下载。
+
+- 如果有这个文件，但是文件有变化，进行下载。
+
+### 修改用户/修改组ID/目录属组
+
+```
+cat /etc/passwd | grep br104
+br104:x:1000:1000:br104,,,:/home/br104:/bin/bash
+is not in the sudoers file.  This incident will be reported.
+wq! 权限保存
+sudo su -
+usermod -u 1000 admin
+groupmod -g 1000 admin
+chown -R br104:br104 /home/br104
+```
+
+
+

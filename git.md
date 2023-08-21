@@ -33,6 +33,11 @@ git branch -D develop
 
 # branch 重命名
 git branch -m 原始名称 新名称
+
+# 切换到远程分支
+git checkout -b 本地分支名 远程分支名
+
+65062a46 108a0d0e
 ```
 
 ## clash for windows
