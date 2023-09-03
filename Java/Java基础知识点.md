@@ -80,26 +80,30 @@ IntegerCache.cache[i + (-IntegerCache.low)]它是一个静态的Integer数组对
 
 ```Java
 public static void main(String[] args) {
+  			Integer i1 = 100;
+        Integer i2 = 100;
+        Integer i3 = 200;
+        Integer i4 = 200;
 
         System.out.println(i1==i2);  //true
         System.out.println(i3==i4);  //false
 
-        Double i1 = 100.0;
-        Double i2 = 100.0;
-        Double i3 = 200.0;
-        Double i4 = 200.0;
-        System.out.println(i1==i2); //false
-        System.out.println(i3==i4); //false
+        Double d1 = 100.0;
+        Double d2 = 100.0;
+        Double d3 = 200.0;
+        Double d4 = 200.0;
+        System.out.println(d1==d2); //false
+        System.out.println(d3==d4); //false
 
-        Boolean i1 = false;
-        Boolean i2 = false;
-        Boolean i3 = true;
-        Boolean i4 = true;
-        System.out.println(i1==i2);//true
-        System.out.println(i3==i4);//true
+        Boolean b1 = false;
+        Boolean b2 = false;
+        Boolean b3 = true;
+        Boolean b4 = true;
+        System.out.println(b1==b2);//true
+        System.out.println(b3==b4);//true
 
-        Integer num1 = 400;  
-        int num2 = 400;  
+        Integer num1 = 400;
+        int num2 = 400;
         System.out.println(num1 == num2); //true
     }
 ```
@@ -145,9 +149,11 @@ public class Test {
 
 ## String
 
+https://www.bilibili.com/video/BV1DM4y1Q7GK/?spm_id_from=333.337&vd_source=611b1ef124271a22e110feed4df29d1b
+
 **创建字符串形式**
 
-​        首先形如声明为S ss是一个类S的引用变量ss（我们常常称之为句柄，后面JVM相关内容会讲到），而对象一般通过new创建。所以这里的ss仅仅是引用变量，并不是对象。
+  首先形如声明为S ss是一个类S的引用变量ss（我们常常称之为句柄，后面JVM相关内容会讲到），而对象一般通过new创建。所以这里的ss仅仅是引用变量，并不是对象。
 
   **创建字符串的两种基本形式：**   
 
@@ -158,7 +164,7 @@ public class Test {
 
 从图中可以看出，s1使用””引号（也是平时所说的字面量）创建字符串，在编译期的时候就对常量池进行判断是否存在该字符串，如果存在则不创建直接返回对象的引用；如果不存在，则先在常量池中创建该字符串实例再返回实例的引用给s1。注意：编译期的常量池是静态常量池，以后和会讲。。。。
 
-再来看看s2，s2使用关键词new创建字符串，JVM会首先检查字符串常量池，如果该字符串已经存在常量池中，那么不再在字符串常量池创建该字符串对象，而直接堆中复制该对象的副本，然后将堆中对象的地址赋值给引用s2，如果字符串不存在常量池中，就会实例化该字符串并且将其放到常量池中，然后在堆中复制该对象的副本，然后将堆中对象的地址赋值给引用s2。注意：此时是运行期，那么字符串常量池是在运行时常量池中的。。。。
+再来看看s2，s2使用关键词new创建字符串，JVM会首先检查字符串常量池，如果该字符串已经存在常量池中，那么不再在字符串常量池创建该字符串对象，而直接在堆中复制该对象的副本，然后将堆中对象的地址赋值给引用s2，如果字符串不存在常量池中，就会实例化该字符串并且将其放到常量池中，然后在堆中复制该对象的副本，然后将堆中对象的地址赋值给引用s2。注意：此时是运行期，那么字符串常量池是在运行时常量池中的。。。。
 
 **“+”连接形式创建字符串（更多可以查看API）：**
 
@@ -190,7 +196,7 @@ public class Test {
 
 String.intern()解析
 
-   String.intern()是一个Native方法，底层调用C++的 StringTable::intern 方法，源码注释：当调用 intern 方法时，如果常量池中已经该字符串，则返回池中的字符串；否则将此字符串添加到常量池中，并返回字符串的引用。
+   String.intern()是一个Native方法，底层调用C++的 StringTable::intern 方法，源码注释：当调用 intern 方法时，如果常量池中已经存在该字符串，则返回池中的字符串；否则将此字符串添加到常量池中，并返回字符串的引用。
 
 ```java
 public class StringTest {
@@ -219,6 +225,86 @@ JDK7JDK8的内存模型如下：
 
 ```
 JDK7中，字符串常量池已经被转移至Java堆中，开发人员也对intern 方法做了一些修改。因为字符串常量池和new的对象都存于Java堆中，为了优化性能和减少内存开销，当调用 intern 方法时，如果常量池中已经存在该字符串，则返回池中字符串；否则直接存储堆中的引用，也就是字符串常量池中存储的是指向堆里的对象。所以结果为true。
+```
+
+### StringBuilder
+
+setCharAt(index,char) 设置索引为某个char
+
+```java
+public static void main(String[] args) {
+      StringBuilder sb =new StringBuilder("hello world");
+      sb.setCharAt(7,'J');
+      System.out.println(sb);
+}
+```
+
+### 数字大小写转换
+
+https://blog.csdn.net/qq_39352650/article/details/129348893
+
+**数字转字符**
+
+```java
+int num = 65;
+char ch = (char) num;
+System.out.println(ch); // 输出 A
+```
+
+**字符转数字**
+
+```java
+char ch = 'A';
+int num = (int) ch;
+System.out.println(num); // 输出 65
+
+如果想将字符’6’转为数字6，那就可以用(int) '6' - 48，因为48是字符’0’对应的ASCII值
+```
+
+```java
+char ch = 'a'-'A'+'H';
+System.out.println(ch);
+int numCh = '6'-48; // 不需要强制转换
+System.out.println(numCh);
+char chNum = 6+48;
+System.out.println(chNum);
+
+int num=6;
+char chT = (char)(num+48); // 需要加强制转换
+System.out.println(chT);
+```
+
+**数字转字符串**
+
+```java
+int num = 123;
+String str = Integer.toString(num);
+System.out.println(str); // 输出 "123"
+```
+
+**字符串转数字**
+
+```java
+String str = "123";
+int num = Integer.parseInt(str);
+System.out.println(num); // 输出 123
+```
+
+**字符转字符串再转数字**
+
+```java
+char ch = 'A';
+String str1 = String.valueOf(ch);
+String str2 = "" + ch;
+System.out.println(str1); // 输出 "A"
+System.out.println(str2); // 输出 "A"
+```
+
+**大小写转换**
+
+```java
+char lowCh = 'H'+a'-'A' // 输出 'h'
+char upCh = 'b'-a'-'A' // 输出 'B'
 ```
 
 ## 队列（Queue）用法
@@ -2687,8 +2773,6 @@ public class main {
 
 ```
 
-
-
 ## Pair
 
 Pair提供了一种处理简单的键值关联的便捷方法，当我们想从一个方法返回两个值时特别有用。
@@ -2801,10 +2885,116 @@ java的三种[数组](https://so.csdn.net/so/search?q=数组&spm=1001.2101.3001.
 
 byte、short、char、int、long的默认值为0
 
-float、double的默认值为0.0        bollean的默认值为false
+float、double的默认值为0.0        boolean的默认值为false
 
 类、接口、数组、string的默认值为null
 ```
+
+### 二维数组
+
+https://blog.csdn.net/qq_64782704/article/details/127808079
+
+二维数组声明
+
+```java
+(1) int [][] arr;
+(2) int arr [][];
+(3) int [] arr [];
+```
+
+二维数组创建
+
+```java
+(1)定义的同时赋值(静态初始化)
+int [][]arr={{1,2,3},{4,5,6},{7,8,9}};
+
+(2)先声明，后创建数组对象
+int [][] arr;
+arr=new int[3][3]; 默认值是0
+
+(3)在声明的同时创建数组对象(一步到位）
+int [][] arr = new int [3][3]；
+```
+
+二维数组列不确定
+
+```java
+char a [][]=new char [5][];
+
+import java.util.Scanner;
+public class Main {
+    public static void main(String[] args) {
+        char a [][]=new char [5][];
+        for(int i=0;i<a.length;i++)
+        {
+            a[i]=new char [i+1];
+//给二维数组中的每一个一维数组开辟存储空间,若无此语句，则一维数组的引用变量指向空;
+            for(int j=0;j<a[i].length;j++)
+            {
+                a[i][j]='*';
+            }
+        }
+        for(int i=0;i<a.length;i++)
+        {
+            for(int j=0;j<a[i].length;j++)
+            {
+                System.out.print(a[i][j]+" ");
+            }
+            System.out.println();
+        }
+    }
+}
+
+* 
+* * 
+* * * 
+* * * * 
+* * * * * 
+ 
+进程已结束,退出代码0
+```
+
+### ArrayList的扩容机制
+
+**扩容机制：**
+
+1.  使用ArraryList()无参构造的时候，会使用长度为0的数组。
+2.  使用ArrayList(int initialCapacity)构造时，会使用指定容量的数组。 
+3.  使用public ArrayList(Colection<?   extends E> c)的时候，会使用c的大小作为数组容量。 
+4.  使用ArrayList 调用add(Object    o)方法，首次扩容会从0扩容成10，再次扩容会扩容到上一次容量的1.5倍，比如0,10,15,22,33…….
+5.  调用addAll(Colection  c)方法时，当前没有元素（容量为0的话），首次扩容会max（10，实际元素个数）（从10和实际加入元素个数中选择最大容量进行扩容），当前存在有元素时，则max（原容量1.5倍，实际元素个数）
+
+原理
+
+```
+ArrayList 是一个数组结构的存储容器，默认情况下，设置数组长度是 10. 当然我们也可以在构建 ArrayList 对象的时候自己指定初始长度。 随着在程序里面不断的往 ArrayList 中添加数据，当添加的数据达到 10 个的时候， ArrayList 就没有多余容量可以存储后续的数据。 这个时候 ArrayList 会自动触发扩容。 扩容的具体流程很简单， 1. 首先，创建一个新的数组，这个新数组的长度是原来数组长度的 1.5 倍。 2. 然后使用 Arrays.copyOf 方法把老数组里面的数据拷贝到新的数组里面。 扩容完成后再把当前要添加的元素加入到新的数组里面，从而完成动态扩容的过程。 以上就是我对这个我对这个问题的理解！ 
+
+ArrayList 扩容是在第10个元素还是第11个元素触发的 ?
+   在 Java 中，ArrayList 的扩容是在添加第11个元素时触发的，当 ArrayList 中的元素数量达到了其初始容量（默认为 10）时，ArrayList 会自动扩容，新的容量为原来的 1.5 倍。当然也可以在创建 ArrayList 对象时指定其初始容量，以避免频繁的扩容操作。
+```
+
+## 集合
+
+### List
+
+**使用Collections查找List中最大值、最小值**
+
+```java
+public static void main(String[] args) {
+    List<Integer> list = new ArrayList<>();
+    list.add(1);
+    list.add(5);
+    list.add(8);
+    Integer max = Collections.max(list);
+    Integer min = Collections.min(list);
+    System.out.println("max:" + max);
+    System.out.println("min:" + min);
+}
+```
+
+> 注意：
+>
+> 在使用上述方法时候，必须确认你的List里面没有元素为null，不然会出现空指针异常。
 
 ## JUNIT
 
@@ -3646,8 +3836,6 @@ void testNoStaticParam(){
 1、settings-》java-》code gen-》
 ```
 
-
-
 ### 接口
 
 ```java
@@ -3816,6 +4004,45 @@ export PATH=$PATH:$MAVEN_HOME/bin
 ```
 
 保存 ，source ～/.bash_profile 使其生效。mvn -v 检查一下
+
+### 配置项目结构
+
+#### 添加module
+
+```
+项目目录 -》新建-》module
+```
+
+#### module添加框架
+
+```
+项目结构-》选中module-》添加框架 （如：python）
+```
+
+#### 配置项目源路径
+
+```xml
+选中目录-》配置源代码、测试、资源等，生成iml文件
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="4">
+  <component name="AdditionalModuleElements">
+    <content url="file://$MODULE_DIR$" dumb="true">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/venv" />
+    </content>
+  </component>
+  <component name="FacetManager">
+    <facet type="Python" name="Python">
+      <configuration sdkName="Python 3.9 (notebookcode)" />
+    </facet>
+  </component>
+</module>
+```
+
+
 
 ## Java8
 
