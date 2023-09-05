@@ -4484,5 +4484,175 @@ pipenv能够有效管理Python多个环境，各种包，相当于 virtualenv �
 
 ## 装饰器
 
+## 迭代
 
+### iterable
+
+可迭代对象 （数据保存者）有能力产生一个迭代器
+
+```
+可以一个一个返回它的成员，包括
+list str tuple,dict, file objects ,任何对象定义了__iter__() 方法，或者实现Sequence,有_getitem__方法
+循环 in 后面必须是可迭代对象
+```
+
+### iterator
+
+迭代器 知道数据状态，像一个指针
+
+```
+表示一个数据流的对象,可以使用__next__函数不断从中拿到新的数据，必须要有__next__函数，迭代器一般需要实现__iter__函数，成为一个可迭代对象
+```
+
+for xx in iterable
+
+```
+首先会从iterable拿到iterator 
+```
+
+> iter(目标对象)获取指向目标对象的迭代器，next(迭代器)获得当前迭代器指向的元素，并将迭代器后移一位
+
+```python
+class NodeIterator:
+    def __init__(self, node):
+        self.cur_node = node
+
+    def __next__(self):
+        if self.cur_node is None:
+            raise StopIteration
+        node, self.cur_node = self.cur_node, self.cur_node.next
+        return node
+
+    def __iter__(self):
+        return self
+
+
+class Node:
+    def __init__(self, name):
+        self.name = name
+        self.next = None
+
+    def __iter__(self):
+        return NodeIterator(self)
+
+
+node1 = Node("node1")
+node2 = Node("node2")
+node3 = Node("node3")
+node1.next = node2
+node2.next = node3
+
+it = iter(node1)
+first = next(it)
+
+for node in it:
+    print(node.name)
+
+node2
+node3
+```
+
+## 生成器
+
+```
+生成器也是一种迭代器
+```
+
+```python
+def gen(num): 生成器函数
+    while num > 0:
+        yield num
+        num -= 1
+    return
+
+
+g = gen(5) 生成器对象
+first = next(g)
+for i in g:
+    print(i)
+
+class Node:
+    def __init__(self, name):
+        self.name = name
+        self.next = None
+
+    def __iter__(self):
+        node = self
+        while node is not None:
+            yield node
+            node = node.next
+
+
+node1 = Node("node1")
+node2 = Node("node2")
+node3 = Node("node3")
+node1.next = node2
+node2.next = node3
+
+for node in node1:
+    print(node.name)
+```
+
+>  如果想要获取return值，需要捕获异常StopIteration
+
+### send
+
+重新赋值
+
+```python
+def gen_send(num):
+    while num > 0:
+        temp = yield num
+        if temp is not None:
+            num = temp
+        num -= 1
+
+
+gs = gen_send(5)
+first = next(gs) # first = g.send(None)
+print(f"first: {first}")
+print(f"send: {gs.send(10)}")
+
+for i in gs:
+    print(i)
+first: 5
+send: 9
+8
+7
+6
+5
+4
+3
+2
+1
+```
+
+## 异步
+
+```python
+import asyncio
+
+
+async def main(): # 定义一个协程(coroutine)函数
+    print("hello")
+    await asyncio.sleep(1)
+    print("world")
+
+
+coro = main() # 定义一个协程对象
+```
+
+如何运行协程函数呢
+
+1、进入async模式，使用event loop控制
+
+2、将coroutine变成task
+
+e.g.
+
+```python
+asyncio.run(coro) 是入口函数，参数是coro，做了两件事
+1、建立event loop
+2、把coro变成event loop中的第一个task
+```
 
