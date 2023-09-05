@@ -4482,3 +4482,7 @@ pipreqs D:\pycharm\Code\flaskDemo --encoding=utf-8 --force
 pipenv能够有效管理Python多个环境，各种包，相当于 virtualenv 和 pip 的合体，且更加强大。
 ```
 
+## 装饰器
+
+
+

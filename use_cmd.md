@@ -1400,3 +1400,67 @@ result upload success 4778
 total case number is
 ```
 
+sgpt结果失败统计
+
+| 时间                                   | 失败原因                                                     | 原因归结 |
+| -------------------------------------- | ------------------------------------------------------------ | -------- |
+| 8.7-8.8                                | 开发机器未restore，jnlp_service未配置，导致为无法自动连接    | CI       |
+| 8.9-8.10                               | 如期运行，结果有误                                           | 开发     |
+| 8.11-8.13                              | 开发机器占用                                                 | 开发     |
+| 8.14-8.15 （118机器占用，配置111机器） | 配置111机器                                                  | CI/开发  |
+| 8.16                                   | 掉卡，full-stack合入导致，ci清除kmd版本                      | 开发     |
+| 8.17 （成功）                          |                                                              |          |
+| 8.21-8.22                              | 加入python新包，开发机器未restore，ansible未安装相应的包，timeout时间设定问题 | CI       |
+| 8.23 （成功）                          |                                                              |          |
+
+推送 docker file镜像
+
+```
+执行 build.sh  /home/e00437/vscode/br_jenkins/docker/jenkins-slave/master
+sudo tmpreaper -a --verbose=0 --showdeleted --mtime-dir "${hour2keep}" --protect 'Full_Stack/develop/br104/ubuntu-18.04/FPA/br_pytorch_weekly{/*,/*/*,/*/*/*,/*/*/*/*}' "${parent_dir}"/"${the_dir}"
+```
+
+
+
+```
+# add case_time, get case time from mongodb
+# test_suite = case_dict["test_suite"]
+# case_name = case_dict["case_name"]
+
+# get_case_time_params = {
+#     "job_name": job_name,
+#     "job_base_name": job_base_name,
+#     "build_number": build_number - 1,
+#     "test_suite": test_suite,
+#     "case_name": case_name,
+# }
+# get_case_time_url = (
+#     mongodb_url_class.GET_POST_RESULT_URL
+#     + "?"
+#     + urlencode(get_case_time_params)
+# )
+# response_data = get_response_data(get_case_time_url)
+# response_data_content = json.loads(response_data.content)
+# if response_data_content["code"] == 0:
+#     case_time = float(response_data_content["data"]["case_time"])
+#     break
+
+repo_total_case_list.sort(key=lambda k: (k.get("case_time", 3600.0)), reverse=True)
+```
+
+```
+http://10.9.0.54:8888/job/Merge_Request/job/silicon/job/ARCH/job/sgpt/112/consoleFull
+http://10.9.0.54:8888/job/Merge_Request/job/silicon/job/SLO/job/sulib/6915/
+```
+
+```
+test_op_div.py::test_div_regression[case_cfg0-0]
+test_op_div.py::test_div_regression[case_cfg1-1]
+```
+
+```
+collected 102341 items / 52455 deselected / 49886 selected
+44762
+5124
+```
+
