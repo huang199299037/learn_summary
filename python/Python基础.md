@@ -4656,3 +4656,144 @@ asyncio.run(coro) 是入口函数，参数是coro，做了两件事
 2、把coro变成event loop中的第一个task
 ```
 
+### 多个task同步
+
+> await 后面是coro时会把变成task，执行task，等到await完成之后，才会交出控制权
+
+```java
+import asyncio
+import time
+
+
+async def say_after(delay, what):
+    await asyncio.sleep(delay)
+    print(what)
+
+
+async def main():
+    print(f"start at {time.strftime('%X')}")
+    await say_after(1, "hello")
+    await say_after(2, "world")
+    print(f"finished at {time.strftime('%X')}")
+
+asyncio.run(main())
+
+# 等待三秒
+start at 01:31:08
+hello
+world
+finished at 01:31:11
+执行顺序：
+main成为task执行，打印开始时间，第一个 say_after 成为task，第一个sleep成为task，执行完sleep task之后，执行say_after task并打印 hello, 第二个 say_after 成为task，第二个sleep成为task，执行完sleep task之后，执行say_after task并打印 world
+最后执行main task 打印完成时间
+```
+
+> 控制权的返回都是显式的，event loop没有办法强行从一个task中拿回控制权，必须要task主动把控制权交出去，交出去的方式有两种，一种是await会交回，另一种是函数运行完毕
+
+### 多个task异步
+
+```python
+import asyncio
+import time
+
+
+async def say_after(delay, what):
+    await asyncio.sleep(delay)
+    print(what)
+
+
+async def main():
+    print(f"start at {time.strftime('%X')}")
+    task1 = asyncio.create_task(say_after(1, "hello"))
+    task2 = asyncio.create_task(say_after(2, "world"))
+    await task1
+    await task2
+    print(f"finished at {time.strftime('%X')}")
+
+asyncio.run(main())
+start at 01:56:09
+hello
+world
+finished at 01:56:11
+```
+
+> create_task 将coro变成task并注册进入event loop中
+>
+> Async 适合解决io问题
+
+返回值
+
+```python
+import asyncio
+import time
+
+
+async def say_after(delay, what):
+    await asyncio.sleep(delay)
+    print(what)
+    return f"{delay}-{what}"
+
+
+async def main():
+    print(f"start at {time.strftime('%X')}")
+    task1 = asyncio.create_task(say_after(1, "hello"))
+    task2 = asyncio.create_task(say_after(2, "world"))
+    ret1=await task1
+    ret2=await task2
+    print(ret1)
+    print(ret2)
+    print(f"finished at {time.strftime('%X')}")
+
+asyncio.run(main())
+
+start at 01:59:49
+hello
+world
+1-hello
+2-world
+finished at 01:59:51
+```
+
+### gather
+
+```python
+import asyncio
+import time
+
+
+async def say_after(delay, what):
+    await asyncio.sleep(delay)
+    print(what)
+    return f"{delay}-{what}"
+
+
+async def main():
+    print(f"start at {time.strftime('%X')}")
+    task1 = asyncio.create_task(say_after(1, "hello"))
+    task2 = asyncio.create_task(say_after(2, "world"))
+    # ret1=await task1
+    # ret2=await task2
+    # print(ret1)
+    # print(ret2)
+    ret = await asyncio.gather(task1,task2)
+    print(ret)
+    print(f"finished at {time.strftime('%X')}")
+
+asyncio.run(main())
+
+start at 02:02:49
+hello
+world
+['1-hello', '2-world']
+finished at 02:02:51
+```
+
+> 将task全部注册到event loop
+
+> 也可以接受coro，会将coro变成task然后全部注册到event loop
+
+```python
+ret = await asyncio.gather(say_after(1, "hello"),say_after(2, "world"))
+    print(ret)
+```
+
