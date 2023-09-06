@@ -4797,3 +4797,130 @@ ret = await asyncio.gather(say_after(1, "hello"),say_after(2, "world"))
     print(ret)
 ```
 
+
+
+## heapq模块
+
+https://blog.csdn.net/qq_28790663/article/details/122317386
+
+https://zhuanlan.zhihu.com/p/395199112
+
+python中没有独立的堆类型，可以使用heapq模块来实现，主要包含6个函数
+
+| 函数              | 描述                        |
+| ----------------- | --------------------------- |
+| heappush(heap,x)  | 将x压入堆中                 |
+| heappop(heap)     | 从堆出弹出最小的元素        |
+| heapify(heap)     | 让列表转换为堆              |
+| heapplace(heap,x) | 弹出最小的元素，并将x压入堆 |
+| nlargest(n,iter)  | 返回iter中n个最大的元素     |
+| nsmallest(n,iter) | 返回iter中n个最小的元素     |
+
+### 使用heappush创建堆
+
+```
+from heapq import * 
+from random import shuffle
+data = list(range(10))
+shuffle(data)
+print(f'原始数据为:{data}')
+heap = []
+for n in data:
+    heappush(heap, n)
+print(f'创建的堆为:{heap}')
+```
+
+```
+原始数据为:[1, 5, 2, 0, 9, 7, 3, 4, 8, 6]
+创建的堆为:[0, 1, 2, 4, 6, 7, 3, 5, 8, 9]
+```
+
+### 将列表转化为最小堆
+
+```
+my_list = [1,2,3,4,5]
+shuffle(my_list)
+heapify(my_list)
+print(my_list)
+
+```
+
+```
+[1, 2, 4, 5, 3]
+```
+
+### 将元素压入堆
+
+```
+heappush(heap,10)
+print(heap)
+```
+
+```
+[0, 1, 2, 4, 3, 8, 6, 9, 5, 7, 10]
+```
+
+### 从堆中弹出元素
+
+原始堆为[0, 1, 2, 4, 3, 8, 6, 9, 5, 7, 10]
+
+```
+print(heappop(heap))
+print(heappop(heap))
+print(heap)
+```
+
+```
+0
+1
+[2, 4, 3, 6, 5, 7, 8, 10, 9]
+```
+
+### 使用heapplace弹出元素的同时压入新的元素
+
+```
+print(heapreplace(heap,0))
+print(heap)
+```
+
+```
+2
+[0, 6, 3, 7, 9, 5, 4, 10, 8]
+```
+
+###  找出最大或最小的多个元素
+
+```
+print(nsmallest(3,heap))
+print(nlargest(3,heap))
+```
+
+```
+[0, 3, 4]
+[10, 9, 8]
+```
+
+### 自定义比较器
+
+当放入堆中的是自定义类时，可以通过实现 `__lt__` 方法来比较元素大小。假设有一个自定义类为 `Node`，它包含一个 `value` 属性，现在问题改为给定一个 `Node` 的数组，返回前 `k` 小的 `Node` 的值，可通过实现 `__lt__` 方法求解。
+
+```python
+class Node:
+    def __init__(self, value):
+        self.value = value
+
+    def __lt__(self, other):
+        return self.value < other.value
+
+
+def top_k(nodes, k):
+    heap = [node for node in nodes]
+    heapq.heapify(heap)
+
+    return list(map(lambda x: heapq.heappop(heap).value, range(k)))
+
+
+if __name__ == '__main__':
+    print(top_k([Node(5), Node(4), Node(3), Node(2), Node(1)], 3))  # [1, 2, 3]
+```
+
