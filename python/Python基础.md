@@ -4658,7 +4658,7 @@ asyncio.run(coro) 是入口函数，参数是coro，做了两件事
 
 ### 多个task同步
 
-> await 后面是coro时会把变成task，执行task，等到await完成之后，才会交出控制权
+> await coroutine --> 像调用生成器一样调用coroutine，等待直到拿到范围值（可能为空），不交还控制权，导致并不能实现异步
 
 ```java
 import asyncio
