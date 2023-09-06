@@ -1464,3 +1464,22 @@ collected 102341 items / 52455 deselected / 49886 selected
 5124
 ```
 
+```
+cmd_info = "cmd_info:" + " ".join(cmds)
+    rerun_message = "rerun_message:" + rerun_message
+    host_name = "hostname:" + socket.gethostname()
+    host_ip = "hostip:" + extract_ip()
+    host_name_ip = host_name + " " + host_ip
+    current_time = "current_time:" + str(datetime.now())
+
+```
+
+```
+pprint(f"{repo_name} gtest get case list cmd is {gtest_case_list_cmd}")
+# check rerun status
+if rerun_status:
+    rerun_message = "already rerun!!!"
+else:
+    rerun_message = "norerun"
+```
+
