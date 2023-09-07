@@ -4306,7 +4306,7 @@ python3 test_py_client.py
 python3 -m pytest -sv
 ```
 
-### import
+## import
 
 在写 python 程序的时候，经常会用到引入其他文件夹里的 py 文件，要是都在同目录下直接 import 就好了，可是有的不在同一个目录，很多时候就直接 import 报错了。下面介绍导入文件的方法：
 
@@ -4355,22 +4355,16 @@ from model.model_main import method    # 导入
 
 一个包是一个带有特殊文件 **\__init__**.py 的目录， **\__init__**.py 文件定义了包的属性和方法。其实它可以什么也不定义，可以只是一个空文件，但是必须存在。如果 **\__init__**.py  不存在，这个目录就仅仅是一个目录，而不是一个包，它就不能被导入或者包含其它的模块和嵌套包。
 
-### PYTHON
+### PYTHONPATH
 
-```
 https://www.cnblogs.com/lifeofershisui/p/8135702.html
-```
 
-### Catch Exception
+## Catch Exception
 
-```
 https://www.jianshu.com/p/eae1e758a47c
 https://stackoverflow.com/questions/23337471/how-to-properly-assert-that-an-exception-gets-raised-in-pytest
-```
 
-
-
-### python 对list中的dict排序
+## python 对list中的dict排序
 
 ```
 lst = [{'level': 19, 'star': 36, 'time': 1},
@@ -4393,7 +4387,7 @@ lst.sort(key=lambda k: (k.get('time', 0)))
 lst.sort(key=lambda k: (k.get('level', 0), k.get('star', 0)), reverse=True)
 ```
 
-### URL拼接
+## URL拼接
 
 https://blog.csdn.net/laod112/article/details/130897574
 
@@ -4431,7 +4425,7 @@ print(full_url) # https://www.example.com/path/to/file?param1=value1&param2=valu
 full_url = urljoin(base_url, relative_url) + '?param1=value1&param2=value2'
 ```
 
-### Python项目如何生成requirements.txt文件
+## requirements.txt文件
 
 https://www.cnblogs.com/wordblog/p/16157622.html
 

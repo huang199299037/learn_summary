@@ -1465,21 +1465,15 @@ collected 102341 items / 52455 deselected / 49886 selected
 ```
 
 ```
-cmd_info = "cmd_info:" + " ".join(cmds)
-    rerun_message = "rerun_message:" + rerun_message
-    host_name = "hostname:" + socket.gethostname()
-    host_ip = "hostip:" + extract_ip()
-    host_name_ip = host_name + " " + host_ip
-    current_time = "current_time:" + str(datetime.now())
-
+{'code': 0, 'data': None, 'msg': '成功'}
+<class 'dict'>
+{'code': 0, 'data': [{'case_path': 'commodo', 'case_type': 'id ut consectetur nostrud occaecat', 'repo': 'veniam', 'test_suite': 'sed', 'case_name': 'case_name', 'case_option': 'ullamco mollit proident Excepteur', 'case_timeout': '1992-08-15 02:38:39', 'case_duration_time': '1979-05-07 08:07:06', 'case_entrypoint': 'cupidatat id irure officia reprehenderit', 'case_time': 3, 'case_result': 'SUCCESS', 'job_name': 'job_name', 'job_base_name': 'job_base_name', 'build_number': 80, 'node_name': 'node_name', 'case_message': 'sint in pariatur', 'jenkins_url': 'jenkins_url', 'CreatedAt': '2023-09-06T11:47:01.697Z'}, {'case_path': 'aaa', 'case_type': 'bbb', 'repo': 'cc', 'test_suite': 'sed', 'case_name': 'aa', 'case_option': 'oor', 'case_timeout': '10m', 'case_duration_time': '30m', 'case_entrypoint': 'ddd', 'case_time': 2, 'case_result': 'SUCCESS', 'job_name': 'job_name', 'job_base_name': 'job_base_name', 'build_number': 80, 'node_name': 'node_name', 'case_message': 'ffff', 'jenkins_url': 'jenkins_url', 'CreatedAt': '2023-09-06T11:47:01.697Z'}, {'case_path': '333', 'case_type': 'cc', 'repo': 'hh', 'test_suite': 'dd', 'case_name': 'vv', 'case_option': 'pp', 'case_timeout': '30m', 'case_duration_time': '40m', 'case_entrypoint': 'xx', 'case_time': 1, 'case_result': 'FAILURE', 'job_name': 'job_name', 'job_base_name': 'job_base_name', 'build_number': 80, 'node_name': 'node_name', 'case_message': 'fail', 'jenkins_url': 'jenkins_url', 'CreatedAt': '2023-09-06T11:47:01.697Z'}, {'case_path': 'gg', 'case_type': 'ii', 'repo': 'll', 'test_suite': 'nn', 'case_name': 'kk', 'case_option': 'ls', 'case_timeout': '20m', 'case_duration_time': '30m', 'case_entrypoint': 'ok', 'case_time': 10, 'case_result': 'SUCCESS', 'job_name': 'job_name', 'job_base_name': 'job_base_name', 'build_number': 80, 'node_name': 'node_name', 'case_message': 'xs', 'jenkins_url': 'jenkins_url', 'CreatedAt': '2023-09-06T11:47:01.697Z'}], 'msg': '成功'}
+<class 'dict'>
 ```
 
 ```
-pprint(f"{repo_name} gtest get case list cmd is {gtest_case_list_cmd}")
-# check rerun status
-if rerun_status:
-    rerun_message = "already rerun!!!"
-else:
-    rerun_message = "norerun"
+1 skipped in pytest
+
+
 ```
 
