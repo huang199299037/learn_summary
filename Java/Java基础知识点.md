@@ -1176,7 +1176,7 @@ public final class MyEnum extends java.lang.Enum<MyEnum> {
 ```java
 /*-------------------------
 JDK1.5之前通过自行设计程序，来自定义枚举类
-下面以季节为例自定义枚举类
+面以季节为例自定义枚举类
 --------------------------*/
 package pack01;
 
@@ -1571,7 +1571,7 @@ FileInputStream(String name) //地址
    public static void main(String[] args) throws IOException {
         FileInputStream fis=new FileInputStream("F:\\javaproject\\jvm\\src\\com\\ecnu\\classloader\\file\\a.txt");
         //1、读取单个字节
-      /*  int temp=0;
+      /*  int temp=0
         while ((temp=fis.read())!=-1)
             System.out.print((char)temp);*/
         //2、读取多个字节
@@ -1686,7 +1686,7 @@ psvm(String[] args){
 5. 静态属性不能序列化
 6. 序列化多个对象，可以借助集合来实现
 
-### 文件流
+### 字符流
 
 输入流
 
@@ -2258,7 +2258,7 @@ public void method(){
 重名成员方法
     创建的对象是谁，优先用谁，如果没有则向上找
 重写注意事项
-1. 必须保证与父类的方法名称相同，参数列表页相同
+1. 必须保证与父类的方法名称相同，参数列表也相同
 2. 子类返回值必须，小于等于父类方法的返回值范围
     父类返回Sting 子类返回Object 报错
 3. 子类方法的权限必须大于等于 父类方法的修饰符
@@ -2296,7 +2296,7 @@ super
 this
 
 ```java
-1. 在本类成员方法中，访问奔雷成员变量
+1. 在本类成员方法中，访问本类成员变量
 2. 在本类成员，调用本类的另一个成员方法
 3. 在本类的构造方法中，访问本类的另一个构造方法
 A. this调用必须是第一个，也是唯一一个
@@ -2467,7 +2467,7 @@ java9包含
 
 ```
 父类引用指向子类对象
-父类名称 对象名=new 自类名称 左父右子
+父类名称 对象名=new 子类名称 左父右子
 ```
 
 ```
@@ -2773,6 +2773,16 @@ public class main {
 
 ```
 
+### 函数参数值传递
+
+值传递和引用传递
+
+```
+值传递对形参的修改不会影响实参，引用传递反之
+```
+
+> java只有值传递，基本数据类型复制值给形参，非基本数据类型则是复制该对象的引用
+
 ## Pair
 
 Pair提供了一种处理简单的键值关联的便捷方法，当我们想从一个方法返回两个值时特别有用。
@@ -2855,6 +2865,8 @@ hello
 2
 okkk
 ```
+
+
 
 ## 数组
 
@@ -4314,7 +4326,7 @@ List<Author> authors = getAuthors();
 
 去除流中所有重复的元素
 
-> Distinct方法是依赖Object中的equals方法来判断对象是否相等，所有需要重写equals方法，否则比较的是地址值
+> Distinct方法是依赖Object中的equals方法来判断对象是否相等，所以需要重写equals方法，否则比较的是地址值
 
 ```java
 // 打印年龄小于18的，不重复的作家的姓名

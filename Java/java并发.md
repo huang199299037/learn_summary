@@ -257,7 +257,7 @@ A-->D
 join(n) 最多等待n毫秒 线程提前结束，不需要等待那么长时间
 ```
 
-interrupt 方法详解
+#### interrupt 方法详解
 
 ```
 打断 sleep，wait，join 的线程
@@ -266,10 +266,24 @@ interrupt 方法详解
 打断正常运行的线程, 不会清空打断状态 true
 ```
 
+#### 两阶段终止模式
+
+```mermaid
+graph TD
+    A[(while true)] --> B{有没有被打断?}
+    B -- Yes --> C[后续处理]
+    C --> D(结束循环)
+    B -- No --> E[睡眠 2s]
+    E -- Timeout --> F[执行监控记录]
+    E -- Exception --> G[设置打断标记]
+    F --> A
+    G --> A
+```
+
 打断 park 线程
 
 ```
-打断 park 线程, 不会清空打断状态
+ park作用暂停当前线程，打断 park 线程, 不会清空打断状态
 ```
 
 不推荐的方法
@@ -284,6 +298,16 @@ stop()        停止线程运行
 suspend()     挂起（暂停）线程运行
 resume()      恢复线程运行
 ```
+
+#### 守护线程
+
+```
+默认情况下，java中的线程需要等待所有线程运行完毕之后才结束，但是有一种特殊线程叫做守护线程，只要非守护线程运行结束了，即使守护线程没有执行完毕，也会强制结束
+```
+
+> 垃圾回收器线程就是一种守护线程
+>
+> Tomcat中的Acceptor和 Poller线程都是守护线程，所以 Tomcat接收到 shutdown命令之后，不会等待处理完当前请求
 
 ### 死锁
 
@@ -376,6 +400,40 @@ count++ 代码
 匙给他。t2 线程这时才可以进入 obj 房间，锁住了门拿上钥匙，执行它的 count-- 代码
 ```
 
+```java
+package com.ecnu.concurrent;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j(topic = "c.Test")
+public class MutliDemo {
+    static int count = 0;
+    static final Object lock = new Object();
+
+    public static void main(String[] args) throws InterruptedException {
+        Thread t1 = new Thread(()->{
+           for (int i = 0; i < 10000; i++) {
+               synchronized (lock) {
+                   count++;
+               }
+           }
+        });
+        Thread t2 = new Thread(()->{
+            for (int i = 0; i < 10000; i++) {
+                synchronized (lock){
+                    count--;
+                }
+            }
+        });
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        log.info("count:{}",count);
+    }
+}
+```
+
 方法上的 synchronized
 
 ```JAVA
@@ -422,6 +480,27 @@ synchronized(Test.class) {
   - 如果该对象没有逃离方法的作用访问，它是线程安全的	
   - 如果该对象逃离方法的作用范围，需要考虑线程安全
 
+#### 线程安全类
+
+- Sting
+- Integer
+- StringBuffer
+- Random
+- Vector
+- Hashtable
+- Java.util.concurrent包下面的类
+
+这里所说的安全是指，多个线程调用同一个实例的某个方法，是线程安全的
+
+
+
+- 每个方法是原子的
+- 多个方法的组合不是原子的
+
+#### 不可变类线程安全性
+
+String、Integer等都是不可变类，内部状态不可更改，因此它们的方法都是线程安全的
+
 ### Monitor 概念
 
 Java 对象头
@@ -465,7 +544,7 @@ Mark Word 中就被设置指向 Monitor 对象的指针
 
 - 刚开始 Monitor 中 Owner 为 null
 - 当 Thread-2 执行 synchronized(obj) 就会将 Monitor 的所有者 Owner 置为 Thread-2，Monitor中只能有一
-  个 Owner
+  个 Owner·
 - 在 Thread-2 上锁的过程中，如果 Thread-3，Thread-4，Thread-5 也来执行 synchronized(obj)，就会进入
   EntryList BLOCKED
 - Thread-2 执行完同步代码块的内容，然后唤醒 EntryList 中等待的线程来竞争锁，竞争的时是非公平的
@@ -686,7 +765,7 @@ lock.notifyAll();
 }
 ```
 
-### 保护性暂停
+### 同步模式之保护性暂停
 
 ```
 有一个结果需要从一个线程传递到另一个线程，让他们关联同一个 GuardedObject
@@ -695,51 +774,152 @@ JDK 中，join 的实现、Future 的实现，采用的就是此模式
 因为要等待另一方的结果，因此归类到同步模式
 ```
 
+#### 实现
+
 <img src="concurrent\保护性暂停.png" style="zoom:67%;" />
 
 ```java
-class GuardedObject {
-private Object response;
-private final Object lock = new Object();
-public Object get() {
-synchronized (lock) {
-// 条件不满足则等待
-while (response == null) {
-try {
-lock.wait();
-} catch (InterruptedException e) {
-e.printStackTrace();
-}
-}
-return response;
-}
-}
-public void complete(Object response) {
-synchronized (lock) {
-// 条件满足，通知等待线程
-this.response = response;
-lock.notifyAll();
-}
-}
-}
-public static void main(String[] args) {
-GuardedObject guardedObject = new GuardedObject();
-new Thread(() -> {
-try {
-// 子线程执行下载
-List<String> response = download();
-log.debug("download complete...");
-guardedObject.complete(response);
-} catch (IOException e) {
-e.printStackTrace();
-}
-}).start();
-log.debug("waiting...");
-// 主线程阻塞等待
-Object response = guardedObject.get();
-log.debug("get response: [{}] lines", ((List<String>) response).size());
+class GuardObject {
+    private Object response;
+
+    public Object get(long timeout) {
+        synchronized (this) {
+            long start = System.currentTimeMillis();
+            long passedTime = 0;
+            while (response == null) {
+                long waitTime = timeout - passedTime;
+                if (waitTime <= 0) {
+                    break;
+                }
+                try {
+                    this.wait(waitTime);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                passedTime = System.currentTimeMillis() - start;
+            }
+            return response;
+        }
+    }
+
+    public void complete(Object response) {
+        synchronized (this) {
+            this.response = response;
+            this.notifyAll();
+        }
+    }
 }
 ```
+
+#### 解耦
+
+<img src="../images/protect_stop_2.png" alt="截屏2024-07-10 23.54.05" style="zoom:67%;" />
+
+```java
+列表遍历过程中不能进行remove
+class People extends Thread{
+    @Override
+    public void run() {
+        GuardObject guardObject = MailBoxs.createGuardObject();
+        System.out.println("people start id "+ guardObject.getId());
+        Object mail = guardObject.get(5000);
+        System.out.println("people end id "+ guardObject.getId()+" mail is "+mail);
+
+    }
+}
+class PostMan extends Thread {
+    private int id;
+    private String mail;
+    public PostMan(int id, String mail) {
+        this.id = id;
+        this.mail = mail;
+        System.out.println("postman start id "+ id);
+    }
+    @Override
+    public void run() {
+        GuardObject guardObject = MailBoxs.getGuardObject(id);
+        System.out.println("send mail is "+id+" mail is "+mail);
+        guardObject.complete(mail);
+    }
+}
+
+class MailBoxs {
+    private static int id=1;
+    private static Map<Integer,GuardObject> map = new Hashtable<>();
+    public static GuardObject createGuardObject() {
+        GuardObject guardObject = new GuardObject(genID());
+        System.out.println("gen id is "+guardObject.getId());
+        map.put(guardObject.getId(),guardObject);
+            return guardObject;
+    }
+    public static GuardObject getGuardObject(int id) {
+        return map.get(id);
+    }
+    private static synchronized int genID() {
+        return id++;
+    }
+    public static Set<Integer> getIds() {
+        return map.keySet();
+    }
+}
+
+class GuardObject {
+    private int id;
+    private Object response;
+
+    // public GuardObject() {
+    // }
+
+        public GuardObject(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public Object get(long timeout) {
+        synchronized (this) {
+            long start = System.currentTimeMillis();
+            long passedTime = 0;
+            while (this.response == null) {
+                long waitTime = timeout - passedTime;
+                if (waitTime <= 0) {
+                    break;
+                }
+                try {
+                    this.wait(waitTime);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                passedTime = System.currentTimeMillis() - start;
+            }
+            return response;
+        }
+    }
+
+    public void complete(Object response) {
+        synchronized (this) {
+            this.response = response;
+            this.notifyAll();
+        }
+    }
+}
+```
+
+### 异步模式之生产者消费者
+
+要点
+
+- 与保护性暂停不同，不需要产生的结果和消费的线程一一对应
+- 消费队列可以用来平衡生产和消费的线程资源
+- 生产者仅负责产生数据，不关心数据如何处理，而消费者专心处理结果数据
+- 消息队列是有容量限制的，满时不会加入数据，空时不会消耗数据
+- JDK 中的各种阻塞队列，就是采用这种模式
+
+![截屏2024-07-15 23.20.13](../images/consumer.png)
+
+
 
 ### Park/Unpark
 
@@ -761,6 +941,68 @@ LockSupport.unpark(暂停线程对象)
 3. park & unpark 可以先 unpark，而 wait & notify 不能先 notify
 ```
 
+### 线程状态
+
+<img src="../images/截屏2024-07-24 23.16.09.png" alt="截屏2024-07-24 23.16.09" style="zoom:67%;" />
+
+假设有线程Theat t
+
+#### 情况 1 NEW -》RUNNABLE
+
+- 当调用t.start()方法是，由NEW -> RUNNABLE
+
+#### 情况 2 RUNNABLE 《--》WAITING
+
+t线程用 synchronized(obj)获取对象锁后
+
+- 调用 obj.wait()方法时，线程从 RUNNABLE --》WAITING
+- 调用 obj.notify，obj.notifyAll(),t.interrupt()时
+  - 竞争锁成功，t线程从WAITING --》 RUNNING
+  - 失败 t线程从 WAITING --》BLOCKED
+
+#### 情况 3 RUNNABLE 《--》WAITING
+
+- 当前线程调用t.join()方法时 RUNNABLE --》WAITING
+- t 线程结束，或者调用interrupt() WAITING --》 RUNNING
+
+#### 情况 4 RUNNABLE 《--》WAITING
+
+- 调用 park 方法 RUNNABLE --》WAITING
+- 调用 unpark 方法 或者调用interrupt() WAITING --》 RUNNING
+
+#### 情况 5 RUNNABLE 《--》TIMED_WAITING
+
+t线程用 synchronized(obj)获取对象锁后
+
+- 调用 obj.wait(long n)方法时，线程从 RUNNABLE --》TIMED_WAITING
+- 超过 n 毫秒或调用 obj.notify，obj.notifyAll(),t.interrupt()时
+  - 竞争锁成功，t线程从TIMED_WAITING --》 RUNNING
+  - 失败 t线程从 TIMED_WAITING --》BLOCKED
+
+#### 情况 6 RUNNABLE 《--》TIMED_WAITING
+
+- 当前线程调用t.join(long n)方法时 RUNNABLE --》TIMED_WAITING
+- 超过 n 毫秒或 t 线程结束，或者调用interrupt() WAITING --》 RUNNING
+
+#### 情况 7 RUNNABLE 《--》TIMED_WAITING
+
+- 调用 Thread.sleep(long n) 方法 RUNNABLE --》TIMED_WAITING
+- 超时 TIMED_WAITING --》 RUNNING
+
+#### 情况 8 RUNNABLE 《--》TIMED_WAITING
+
+- 调用 parkNanos(long nanos) 或者 parkUntil(long millis)方法 RUNNABLE --》TIMED_WAITING
+- 调用 unpark 方法 或者调用interrupt() 或者超市 TIMED_WAITING --》 RUNNING
+
+#### 情况 9 RUNNABLE 《--》BLOCKED
+
+- 获取对象锁失败 t线程从 WAITING --》BLOCKED
+- 线程竞争成功 BLOCKED --》 RUNNABLE
+
+#### 情况 10 RUNNABLE 《--》TERMINATED
+
+所有线程运行完毕
+
 ### ReentrantLock
 
 相对于 synchronized 它具备如下特点
@@ -774,47 +1016,989 @@ LockSupport.unpark(暂停线程对象)
 
 与 synchronized 一样，都支持可重入
 
+#### 基本语法
+
 ```java
 // 获取锁
 reentrantLock.lock();
 try {
-// 临界区
+	// 临界区
 } finally {
-// 释放锁
-reentrantLock.unlock();
+	// 释放锁
+	reentrantLock.unlock();
 }
 ```
 
-条件变量
+#### 可重入
 
 ```
-synchronized 中也有条件变量，就是我们讲原理时那个 waitSet 休息室，当条件不满足时进入 waitSet 等待
-ReentrantLock 的条件变量比 synchronized 强大之处在于，它是支持多个条件变量的，这就好比
-synchronized 是那些不满足条件的线程都在一间休息室等消息
-而 ReentrantLock 支持多间休息室，有专门等烟的休息室、专门等早餐的休息室、唤醒时也是按休息室来唤
-醒
-使用要点：
-await 前需要获得锁
-await 执行后，会释放锁，进入 conditionObject 等待
-await 的线程被唤醒（或打断、或超时）取重新竞争 lock 锁
-竞争 lock 锁成功后，从 await 后继续执行
+可重入是指同一个线程，如果首次获得这把锁，那么因为它是这把锁的拥有者，因此有权利再次获取这把锁，如果是不可重入锁，那么第二次获得锁时，自己也会被锁挡住
 ```
+
+```java
+package com.ecnu.concurrent;
+
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.locks.ReentrantLock;
+
+
+@Slf4j(topic = "c.Test")
+public class ReentrantLockDemo {
+    private static ReentrantLock lock = new ReentrantLock();
+    public static void main(String[] args) {
+        lock.lock();
+        try {
+            log.info("main function");
+            m1();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private static void m1() {
+        lock.lock();
+        try {
+            log.info("m1 function");
+            m2();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private static void m2() {
+        lock.lock();
+        try {
+            log.info("m2 function");
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+```
+
+#### 可打断
+
+主动打断，避免死锁
+
+```java
+ private static void testInterrupt()  {
+        Thread thread = new Thread(() -> {
+            try {
+                log.info("try get lock");
+                lock.lockInterruptibly();
+            } catch (Exception e) {
+                log.error("get lock error", e);
+                log.info("not get lock return");
+                return;
+            }
+            try {
+                log.info("get lock");
+            } finally {
+                lock.unlock();
+            }
+        },"t1");
+        lock.lock();
+        thread.start();
+        log.info("main interupted thread");
+        thread.interrupt();
+        System.out.println("testInterrupt end");
+    }
+```
+
+#### 锁超时
+
+使用方法：tryLock() 不带参数，表示尝试获取锁，立马返回结果
+
+```java
+private static void testTryLock() {
+        Thread thread = new Thread(() -> {
+            if(!lock.tryLock()) {
+                log.info("not get lock");
+                return;
+            }
+            try {
+                log.info("get lock");
+            } finally {
+                lock.unlock();
+            }
+        }, "thread");
+        lock.lock();
+        thread.start();
+    }
+```
+
+tryLock() 带时间参数，表示等待时间，如果获取到了，继续执行，获取不到 return
+
+```java
+private static void testTryLockTime() throws InterruptedException {
+        Thread thread = new Thread(() -> {
+            try {
+                if(!lock.tryLock(3, TimeUnit.SECONDS)) {
+                    log.info("not get lock");
+                    return;
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            try {
+                log.info("get lock");
+            } finally {
+                lock.unlock();
+            }
+        }, "thread");
+        log.info("get lock success");
+        lock.lock();
+        thread.start();
+        Thread.sleep(1000);
+        log.info("release lock success");
+        lock.unlock();
+    }
+```
+
+##### 哲学家就餐问题
+
+synchronized,tryLock()
+
+```java
+package com.ecnu.concurrent;
+
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.locks.ReentrantLock;
+
+@Slf4j(topic = "c.Main")
+public class PhilosopherDemo {
+    public static void main(String[] args) {
+        Chopstick c1 = new Chopstick("1");
+        Chopstick c2 = new Chopstick("2");
+        Chopstick c3 = new Chopstick("3");
+        Chopstick c4 = new Chopstick("4");
+        Chopstick c5 = new Chopstick("5");
+        new Philosopher("p1",c1,c2).start();
+        new Philosopher("p2",c2,c3).start();
+        new Philosopher("p3",c3,c4).start();
+        new Philosopher("p4",c4,c5).start();
+        new Philosopher("p5",c5,c1).start();
+    }
+}
+
+
+@Slf4j(topic = "c.Philosopher")
+class Philosopher extends Thread {
+    Chopstick left;
+    Chopstick right;
+
+    public Philosopher(String name, Chopstick left, Chopstick right) {
+        super(name);
+        this.left = left;
+        this.right = right;
+    }
+
+    // @Override
+    // public void run() {
+    //    while (true) {
+    //        synchronized (left) {
+    //            synchronized (right) {
+    //                eat();
+    //            }
+    //        }
+    //    }
+    //}
+    @Override
+      public void run() {
+          while (true) {
+              if (left.tryLock()) {
+                  try {
+                      if (right.tryLock()) {
+                          try {
+                              eat();
+                          } finally {
+                              right.unlock();
+                          }
+                      }
+                  } finally {
+                      left.unlock();
+                  }
+              }
+          }
+      }
+
+    private void eat() {
+        log.info("eat.....");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+class Chopstick extends ReentrantLock {
+    String name;
+    public Chopstick(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "Chopstick{" +
+                "name='" + name + '\'' +
+                '}';
+    }
+}
+```
+
+#### 锁公平
+
+```java
+    /**
+     * Creates an instance of {@code ReentrantLock}.
+     * This is equivalent to using {@code ReentrantLock(false)}.
+     */
+    public ReentrantLock() {
+        sync = new NonfairSync();
+    }
+
+    /**
+     * Creates an instance of {@code ReentrantLock} with the
+     * given fairness policy.
+     *
+     * @param fair {@code true} if this lock should use a fair ordering policy
+     */
+    public ReentrantLock(boolean fair) {
+        sync = fair ? new FairSync() : new NonfairSync();
+    }
+```
+
+#### 条件变量
+
+synchronized 中也有条件变量，就是我们讲原理时那个 waitSet 休息室，当条件不满足时进入 waitSet 等待
+
+ReentrantLock 的条件变量比 synchronized 强大之处在于，它是支持多个条件变量的，这就好比
+
+- synchronized 是那些不满足条件的线程都在一间休息室等消息
+
+- 而 ReentrantLock 支持多间休息室，有专门等烟的休息室、专门等早餐的休息室、唤醒时也是按休息室来唤
+
+  醒
+
+使用要点：
+
+- await 前需要获得锁
+- await 执行后，会释放锁，进入 conditionObject 等待
+- await 的线程被唤醒（或打断、或超时）取重新竞争 lock 锁
+- 竞争 lock 锁成功后，从 await 后继续执行
+
+```java
+package com.ecnu.concurrent;
+
+
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
+
+
+@Slf4j(topic = "c.Test")
+public class WaitDemo {
+    private static boolean hasA = false;
+    private static boolean hasB = false;
+    private static ReentrantLock ROOM = new ReentrantLock();
+    private static Condition conditionA = ROOM.newCondition();
+    private static Condition conditionB = ROOM.newCondition();
+    public static void main(String[] args) throws InterruptedException {
+        new Thread(() -> {
+            ROOM.lock();
+            try {
+                while (!hasA) {  // 防止虚假唤醒，当 conditionA 有多个线程比如 C 被唤醒，无法执行 A
+                    log.info("not get A, wait");
+                    try {
+                        conditionA.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                log.info("get A, work A");
+            } finally {
+                ROOM.unlock();
+            }
+        },"A").start();
+        new Thread(() -> {
+            ROOM.lock();
+            try {
+                while (!hasA) {
+                    log.info("not get B, wait");
+                    try {
+                        conditionB.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                log.info("get B, work B");
+            } finally {
+                ROOM.unlock();
+            }
+        },"B").start();
+        TimeUnit.SECONDS.sleep(2);
+        new Thread(() -> {
+            ROOM.lock();
+            try {
+                hasA = true;
+                conditionA.signal();
+            } finally {
+                ROOM.unlock();
+            }
+        },"sendA").start();
+        TimeUnit.SECONDS.sleep(2);
+        new Thread(() -> {
+            ROOM.lock();
+            try {
+                hasB = true;
+                conditionB.signal();
+            } finally {
+                ROOM.unlock();
+            }
+        },"sendB").start();
+    }
+}
+
+
+12:13:38 [A] c.Test - not get A, wait
+12:13:38 [B] c.Test - not get B, wait
+12:13:40 [A] c.Test - get A, work A
+12:13:42 [B] c.Test - get B, work B
+```
+
+### 同步模式之顺序控制
+
+#### 固定顺序
+
+##### wait-notify
+
+先打印 2，后打印 1
+
+```java
+package com.ecnu.concurrent;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j(topic = "c.Test")
+public class OrderDemo {
+    private static Object lock = new Object();
+    private static boolean runTwoFirst = false;
+    public static void main(String[] args) {
+        Thread t1 = new Thread(()->{
+            synchronized (lock){
+                while(!runTwoFirst){
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                log.info("1");
+            }
+        },"A");
+        Thread t2 = new Thread(()->{
+            synchronized (lock){
+                runTwoFirst = true;
+                log.info("2");
+                lock.notify();
+            }
+        },"B");
+        t1.start();
+        t2.start();
+
+    }
+}
+```
+
+##### park unpark
+
+```java
+private static void testParkUnpark(){
+        Thread t1 = new Thread(()->{
+           park();
+           log.info("1");
+        });
+        Thread t2 = new Thread(()->{
+           unpark(t1);
+           log.info("2");
+        });
+        t1.start();
+        t2.start();
+    }
+```
+
+#### 交替输出
+
+线程 1 输出a 五次，线程 2 输出 b 五次，线程3 输出 c 五次 abcabcabcabcabc
+
+##### wait notify
+
+```java
+package com.ecnu.concurrent;
+
+public class SequenceDemo {
+    public static void main(String[] args) {
+        WaitNotify waitNotify = new WaitNotify(1,5);
+        new Thread(() ->{
+            waitNotify.printNumber("a",1,2);
+        }).start();
+        new Thread(() ->{
+            waitNotify.printNumber("b",2,3);
+        }).start();
+        new Thread(() ->{
+            waitNotify.printNumber("c",3,1);
+        }).start();
+    }
+}
+
+class WaitNotify{
+    private int flag;
+    private int loopNumber;
+    public WaitNotify(int flag, int loopNumber){
+        this.flag = flag;
+        this.loopNumber = loopNumber;
+    }
+    public void printNumber(String msg, int waitFlag, int nextFlag) {
+        for (int i = 0; i < loopNumber; i++) {
+            synchronized (this) {
+                while (flag != waitFlag) {
+                    try {
+                        this.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                System.out.print(msg);
+                flag = nextFlag;
+                this.notifyAll();
+            }
+        }
+    }
+}
+
+```
+
+##### ReentrantLock
+
+```java
+package com.ecnu.concurrent;
+
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class AwaitDemo {
+    public static void main(String[] args) throws InterruptedException {
+        AwaitSignal awaitSignal = new AwaitSignal(5);
+        Condition a = awaitSignal.newCondition();
+        Condition b = awaitSignal.newCondition();
+        Condition c = awaitSignal.newCondition();
+        new Thread(() -> {
+            awaitSignal.printNumber("a",a,b);
+        }).start();
+        new Thread(() -> {
+            awaitSignal.printNumber("b",b,c);
+        }).start();
+        new Thread(() -> {
+            awaitSignal.printNumber("c",c,a);
+        }).start();
+        Thread.sleep(1000);
+        awaitSignal.lock();
+        try {
+            a.signal();
+        } finally {
+            awaitSignal.unlock();
+        }
+    }
+}
+class AwaitSignal extends ReentrantLock {
+    private int loopNumber;
+
+    public AwaitSignal(int loopNumber) {
+        this.loopNumber = loopNumber;
+    }
+    public void printNumber(String msg , Condition current, Condition nextCondition) {
+        for (int i = 0; i < loopNumber; i++) {
+            this.lock();
+            try {
+                try {
+                    current.await();
+                    System.out.print(msg);
+                    nextCondition.signal();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            } finally {
+                this.unlock();
+            }
+        }
+    }
+}
+```
+
+##### Park unpark
+
+```java
+package com.ecnu.concurrent;
+
+import java.util.concurrent.locks.LockSupport;
+
+public class ParkDemo {
+    static Thread t1;
+    static Thread t2;
+    static Thread t3;
+    public static void main(String[] args) {
+        ParkUnpark parkUnpark = new ParkUnpark(5);
+        t1=new Thread(()->{
+            parkUnpark.printNumber("a",t2);
+        });
+        t2=new Thread(()->{
+            parkUnpark.printNumber("b",t3);
+        });
+        t3=new Thread(()->{
+            parkUnpark.printNumber("c",t1);
+        });
+        t1.start();
+        t2.start();
+        t3.start();
+        LockSupport.unpark(t1);
+    }
+}
+
+class ParkUnpark {
+    private int loopNumber;
+    public ParkUnpark(int loopNumber) {
+        this.loopNumber = loopNumber;
+    }
+    public void printNumber(String msg, Thread nextthread) {
+        for (int i = 0; i < loopNumber; i++) {
+            LockSupport.park();
+            System.out.print(msg);
+            LockSupport.unpark(nextthread);
+        }
+    }
+}
+
+```
+
+
 
 ## 3. JMM
+
+### 内存模型
 
 JMM 即 Java Memory Model，它定义了主存、工作内存抽象概念，底层对应着 CPU 寄存器、缓存、硬件内存、
 CPU 指令优化等。
 JMM 体现在以下几个方面
 
+- 原子性 - 保证指令不会受到线程上下文切换的影响
+- 可见性 - 保证指令不会受 cpu 缓存的影响
+- 有序性 - 保证指令不会受 cpu 指令并行优化的影响
+
+#### 可见性
+
+##### 退不出循环
+
+main 线程对run 变量进行修改，对于 t 线程不可见，导致了 t 线程无法停止
+
+```java
+	package com.ecnu.concurrent;
+
+public class VisableDemo {
+    static boolean run = true;
+    public static void main(String[] args) throws InterruptedException {
+        Thread t = new Thread(() -> {
+            while (run) {
+
+            }
+        });
+        t.start();
+        Thread.sleep(1000);
+        run = false;
+    }
+}
+
 ```
-原子性 - 保证指令不会受到线程上下文切换的影响
-可见性 - 保证指令不会受 cpu 缓存的影响
-有序性 - 保证指令不会受 cpu 指令并行优化的影响
+
+> [!NOTE]
+>
+> ```
+> System.out.println("a");
+> ```
+>
+> 加了 print 打印之后也可以终止循环，原因在于 print 是被 sychronize 修饰
+
+![截屏2024-07-28 00.14.39](../images/截屏2024-07-28 00.14.39.png)
+
+<img src="../images/截屏2024-07-28 00.17.02.png" alt="截屏2024-07-28 00.17.02" style="zoom:67%;" />
+
+<img src="../images/截屏2024-07-28 00.18.42.png" alt="截屏2024-07-28 00.18.42" style="zoom:67%;" />
+
+##### 解决方案
+
+volatile （易变关键字）
+
+```
+可以用来修饰成员变量和静态成员变量，可以避免线程从自己的工作缓存中查找变量的值，必须到主存中获取，线程操作 volatile变量都是操作主存， synchronize 也可以
+```
+
+#### 可见性和原子性
+
+可见性保证在多个线程之中，一个线程对volatile 变量的修改，对另一个线程可见，不能保证原子性
+
+##### 两阶段终止 volatile
+
+```java
+package com.ecnu.concurrent;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j(topic = "c.TwoTest")
+public class TwoPhaseTest {
+    public static void main(String[] args) throws InterruptedException {
+        log.debug("start main");
+        // TwoPhaseTermination twoPhaseTermination = new TwoPhaseTermination();
+        // twoPhaseTermination.start();
+        // Thread.sleep(3500);
+        // twoPhaseTermination.stop();
+
+        TwoPhaseTerminationVolatile volatileTwoPhaseTermination = new TwoPhaseTerminationVolatile();
+        volatileTwoPhaseTermination.start();
+        Thread.sleep(3500);
+        volatileTwoPhaseTermination.stop();
+    }
+}
+
+@Slf4j(topic = "c.volatile")
+class TwoPhaseTerminationVolatile {
+    private volatile boolean stop = false;
+    private Thread thread;
+
+    public void start () {
+        thread = new Thread(() -> {
+            while (true) {
+                if (stop) {
+                    log.info("stop is true break");
+                    break;
+                }
+                try {
+                    Thread.sleep(1000);
+                    log.info("monitor thread");
+                } catch (InterruptedException ignored) {
+                }
+
+            }
+        });
+        thread.start();
+    }
+    public void stop() {
+        stop = true;
+        thread.interrupt();
+    }
+}
+```
+
+#### 同步模式之Balking
+
+Balking（犹豫）模式用在一个线程发现另一个线程或者本线程已经做了某一件相同的事，那么本线程无需再做，直接结束返回
+
+```java
+ private volatile boolean starting = false;
+
+    public void start () {
+        synchronized (this) {
+            if (starting) {
+                return;
+            }
+            starting = true;
+        }
+      // 真正启动监控线程
+    }
+```
+
+#### 有序性
+
+volatile 可以保证共享变量的有序性，防止指令重排序
+
+#### volatile （可见性和防止指令重排）
+
+volatile的底层实现原理是内存屏障，Memory Barrier
+
+- 写指令会加入写屏障
+- 读指令会加入读屏障
+
+#### double check lock
+
+饿汉单例双重检验模式
+
+```java
+final  class Singleton {
+    private Singleton() {
+    }
+    private static Singleton INSTANCE = null;
+    public static Singleton getInstance() {
+        if (INSTANCE == null) {
+            synchronized (Singleton.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new Singleton();
+                }
+            }
+        }
+        return INSTANCE;
+    }
+}
+```
+
+> [!WARNING]
+>
+> t1 线程发生指令重排，先给 INSTANCE 赋值，还没有调用构造方法，t2 线程判断 INSTANCE 不为空，返回 INSTANCE 对象使用，但是 INSTANCE 对象还没有构造成功 （未初始化完毕的单例）
+
+解决方法
+
+```java
+final  class Singleton {
+    private Singleton() {
+    }
+    // private static Singleton INSTANCE = null;
+    private static volatile Singleton INSTANCE = null;
+    public static Singleton getInstance() {
+        if (INSTANCE == null) {
+            synchronized (Singleton.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new Singleton();
+                }
+            }
+        }
+        return INSTANCE;
+    }
+}
 ```
 
 ## 4.无锁并发
 
-### LongAdder
+### CAS
+
+配合 volatile
+
+```java
+ while (true) {
+            int prev = atomicInteger.get();
+            int next = prev + 1;
+            if (atomicInteger.compareAndSet(prev, next)) {
+                break;
+            }
+        }
+```
+
+### 原子整数
+
+- AtomicBoolean
+- AtomicInteger
+- AtomicLong
+
+```java
+private static void testAtomicInteger() {
+        AtomicInteger atomicInteger = new AtomicInteger(0);
+        System.out.println(atomicInteger.getAndIncrement()); // i++
+        System.out.println(atomicInteger.incrementAndGet()); // ++i
+        System.out.println(atomicInteger.getAndAdd(5)); // 2
+        System.out.println(atomicInteger.addAndGet(5)); // 12
+        System.out.println(atomicInteger.get());
+  
+  			System.out.println(atomicInteger.updateAndGet(value -> value * 10)); // 120
+        System.out.println(atomicInteger.getAndUpdate(value -> value * 10)); // 120
+        System.out.println(atomicInteger.get()); // 1200
+    }
+```
+
+其他操作实现
+
+```java
+public final int updateAndGet(IntUnaryOperator updateFunction) {
+        int prev = get(), next = 0;
+        for (boolean haveNext = false;;) {
+            if (!haveNext)
+                next = updateFunction.applyAsInt(prev);
+            if (weakCompareAndSetVolatile(prev, next))
+                return next;
+            haveNext = (prev == (prev = get()));
+        }
+    }
+```
+
+### 原子引用
+
+为什么需要原子引用类型? 需要保护其他引用类型数据
+
+- AtomicReference
+- AtomicMarkableReference
+- AtomicStampedReference
+
+#### ABA 问题
+
+```java
+private static void testABA() {
+        String prev = atomicReference.get();
+        new Thread(()->{
+            System.out.println("A -> B is: "+ atomicReference.compareAndSet(atomicReference.get(), "B"));
+        }).start();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        new Thread(()->{
+            System.out.println("B -> A is: "+atomicReference.compareAndSet(atomicReference.get(), "A"));
+
+        }).start();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Main A -> C is: "+atomicReference.compareAndSet(prev, "C"));
+
+    }
+```
+
+#### 解决 ABA 问题
+
+```java
+private static void testSolveABA() {
+        String prev = atomicStampedReference.getReference();
+        int stamp = atomicStampedReference.getStamp();
+        System.out.println("prev = " + prev + ", stamp = " + stamp);
+        new Thread(()->{
+            int stampOne  = atomicStampedReference.getStamp();
+            System.out.println("stampOne = " + stampOne);
+            System.out.println("A -> B is: "+ atomicStampedReference.compareAndSet(atomicStampedReference.getReference(), "B",stampOne,stampOne+1));
+        }).start();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        new Thread(()->{
+            int stampTwo = atomicStampedReference.getStamp();
+            System.out.println("stampTwo = " + stampTwo);
+            System.out.println("B -> A is: "+atomicStampedReference.compareAndSet(atomicStampedReference.getReference(), "B",stampTwo,stampTwo+1));
+
+        }).start();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Main A -> C is: "+atomicStampedReference.compareAndSet(prev, "C",stamp,stamp+1));
+    }
+```
+
+### 原子数组
+
+- AtomicIntegerArray;
+- AtomicLongArray;
+- AtomicIntegerArray
+
+```java
+testAtomicArray(
+                () -> new int[10],
+                (array) -> array.length,
+                (array, index) ->array[index]++,
+                array -> System.out.println(Arrays.toString(array))
+        );
+        testAtomicArray(
+                () -> new AtomicIntegerArray(10),
+                (array) -> array.length(),
+                (array, index) -> array.getAndIncrement(index),
+                array -> System.out.println(array)
+        );
+
+/*
+    * 参数一、提供数组、可以是线程不安全数组或者线程安全数组
+    * 参数二、获取数组长度的方法
+    * 参数三、自增方法，回传array，index
+    * 参数四、打印数组的方法
+    * */
+    // Supplier 提供者 无中生有（）-> 结果
+    // Function 函数，一个参数一个结果 （参数）-> 结果， BiFunction (参数 1，参数 2) -> 结果
+    // Consumer 消费者 一个参数没结果 （参数）-> void， BiConsumer (参数 1，参数 2) -> void
+
+    private static <T> void testAtomicArray(
+            Supplier<T> arraySupplier,
+            Function<T, Integer> lengthFun,
+            BiConsumer<T, Integer> consumer,
+            Consumer<T> printConsumer
+    ) {
+        List<Thread> threads = new ArrayList<>();
+        T array = arraySupplier.get();
+        int length = lengthFun.apply(array);
+        for (int i = 0; i < length; i++) {
+            // 每个线程对数组进行10000次操作
+            threads.add(new Thread(() -> {
+                for (int j = 0; j < 10000; j++) {
+                    consumer.accept(array, j%length);
+                }
+            }));
+        }
+        threads.forEach(Thread::start);
+        threads.forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+        printConsumer.accept(array);
+
+    }
+
+[8718, 8738, 8789, 8706, 8788, 8729, 8765, 8776, 8754, 8713]
+[10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000]
+```
+
+### 字段更新器
+
+- AtomicReferenceFieldUpdater;
+- AtomicIntegerFieldUpdater;
+- AtomicLongFieldUpdater
+
+利用字段更新器，可以针对对象的某个域（Field）进行原子操作，只能配合volatile修饰的字段使用，否则会出现异常
+
+> [!WARNING]
+>
+> Exception in thread "main" java.lang.IllegalArgumentException: Must be volatile type
+
+```java
+private static void testFiled() {
+        Student student = new Student();
+        AtomicReferenceFieldUpdater updater = AtomicReferenceFieldUpdater.newUpdater(Student.class, String.class, "name");
+        System.out.println(updater.compareAndSet(student, null, "tom"));
+        System.out.println(student);
+    }
+
+class Student{
+    volatile String name;
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "name='" + name + '\'' +
+                '}';
+    }
+}
+```
+
+### 原子累加
+
+#### LongAdder源码
 
 ```java
 // 累加单元数组, 懒惰初始化
@@ -825,17 +2009,1117 @@ transient volatile long base;
 transient volatile int cellsBusy;
 ```
 
+#### CAS 锁
+
+```java
+package com.ecnu.concurrent;
+
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+@Slf4j(topic = "c.Test")
+public class LongAdderDemo {
+    public static void main(String[] args) {
+        testCasLock();
+    }
+
+    private static void testCasLock() {
+        CasLock casLock = new CasLock();
+        new Thread(()->{
+            log.info("begin");
+            casLock.lock();
+            try {
+                log.info("lock...");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } finally {
+                casLock.unlock();
+            }
+        }).start();
+        new Thread(()->{
+            log.info("begin");
+            casLock.lock();
+            try {
+                log.info("lock...");
+            } finally {
+                casLock.unlock();
+            }
+        }).start();
+
+    }
+}
+
+@Slf4j(topic = "c.Test")
+class CasLock {
+    // 0 未加锁 1表示加锁
+    private AtomicInteger atomicInteger = new AtomicInteger(0);
+
+    public void lock() {
+        while (true) {
+            if (atomicInteger.compareAndSet(0,1)) {
+                break;
+            }
+        }
+    }
+    public void unlock() {
+        atomicInteger.set(0);
+        log.info("unlock");
+    }
+}
+```
+
+#### 原理之伪共享
+
+其中 Cell即为累加单元
+
+```java
+// 防止缓存行伪共享
+@jdk.internal.vm.annotation.Contended 
+	static final class Cell {
+        volatile long value;
+        Cell(long x) { value = x; }
+    		// 最重要的方法，用来 cas 累加，prev 代表旧值，next 表示新值
+        final boolean cas(long cmp, long val) {
+            return VALUE.weakCompareAndSetRelease(this, cmp, val);
+        }
+    // 省略不重要的代码
+}
+```
+
+<img src="../images/截屏2024-07-29 23.11.19.png" alt="截屏2024-07-29 23.11.19" style="zoom:67%;" />
+
+| 从 CPU | 大约需要的时钟周期              |
+| ------ | ------------------------------- |
+| 寄存器 | 1 cycle （4GHZ的 CPU约为0.2ns） |
+| L1     | 3-4 cycle                       |
+| L2     | 10-20 cycle                     |
+| L3     | 40-45 cycle                     |
+| 内存   | 120-240 cycle                   |
+
+因为 CPU与内存的速度差异大，需要预先读取数据到缓存来提升效率
+
+而缓存以缓存行为单位，每个缓存对应一块内存，一般是64 byte （8 个 long）
+
+缓存的加入会造成副本的产生，即一份数据会缓存在不同核心的缓存行中
+
+CPU 要保证数据一致性，如果某个 CPU 更改了数据，其他CPU 核心对应的整个缓存行必须失效
+
+<img src="../images/截屏2024-07-29 23.38.17.png" alt="截屏2024-07-29 23.38.17" style="zoom:67%;" />
+
+因为 Cell 是数组形式，在内存中连续存储，一个 Cell 对象是 24 个字节（16 个字节头+8 个字节的 value）因此缓存行可以存下两个缓存对象，问题来了：
+
+- CPU Core-0要修改 Cell[0]
+- CPU Core-1要修改 Cell[1]
+
+无论谁修改成功，都会导致缓存行失效
+
+@jdk.internal.vm.annotation.Contended 用来解决这个问题，原理是在对象后面加入 128 个字节，让 CPU读取到两个缓存行中
+
+<img src="../images/截屏2024-07-29 23.52.48.png" alt="截屏2024-07-29 23.52.48" style="zoom:67%;" />
+
+#### add
+
+```java
+    /**
+     * Adds the given value.
+     *
+     * @param x the value to add
+     */
+    public void add(long x) {
+        Cell[] cs; long b, v; int m; Cell c;
+        if ((cs = cells) != null || !casBase(b = base, b + x)) {
+            int index = getProbe();
+            boolean uncontended = true;
+            if (cs == null || (m = cs.length - 1) < 0 ||
+                (c = cs[index & m]) == null ||
+                !(uncontended = c.cas(v = c.value, v + x)))
+                longAccumulate(x, null, uncontended, index);
+        }
+    }
+```
+
+<img src="../images/截屏2024-07-29 23.55.30.png" alt="截屏2024-07-29 23.55.30" style="zoom:67%;" />
+
+#### longAccumulate
+
+代码分析
+
+```java
+else if (cellsBusy == 0 && cells == cs && casCellsBusy()) {
+                try {                           // Initialize table
+                    if (cells == cs) {
+                        Cell[] rs = new Cell[2];
+                        rs[index & 1] = new Cell(x);
+                        cells = rs;
+                        break;
+                    }
+                } finally {
+                    cellsBusy = 0;
+                }
+            }
+            // Fall back on using base
+            else if (casBase(v = base,
+                             (fn == null) ? v + x : fn.applyAsLong(v, x)))
+                break;
+```
+
+![截屏2024-07-30 00.05.59](../images/截屏2024-07-30 00.05.59.png)
+
+```java
+if ((c = cs[(n - 1) & index]) == null) {
+                    if (cellsBusy == 0) {       // Try to attach new Cell
+                        Cell r = new Cell(x);   // Optimistically create
+                        if (cellsBusy == 0 && casCellsBusy()) {
+                            try {               // Recheck under lock
+                                Cell[] rs; int m, j;
+                                if ((rs = cells) != null &&
+                                    (m = rs.length) > 0 &&
+                                    rs[j = (m - 1) & index] == null) {
+                                    rs[j] = r;
+                                    break;
+                                }
+                            } finally {
+                                cellsBusy = 0;
+                            }
+                            continue;           // Slot is now non-empty
+                        }
+                    }
+                    collide = false;
+                }
+```
+
+![截屏2024-07-30 00.09.50](../images/截屏2024-07-30 00.09.50.png)
+
+```java
+else if (!wasUncontended)       // CAS already known to fail
+                    wasUncontended = true;      // Continue after rehash
+                else if (c.cas(v = c.value,
+                               (fn == null) ? v + x : fn.applyAsLong(v, x)))
+                    break;
+                else if (n >= NCPU || cells != cs)
+                    collide = false;            // At max size or stale
+                else if (!collide)
+                    collide = true;
+                else if (cellsBusy == 0 && casCellsBusy()) {
+                    try {
+                        if (cells == cs)        // Expand table unless stale
+                            cells = Arrays.copyOf(cs, n << 1);
+                    } finally {
+                        cellsBusy = 0;
+                    }
+                    collide = false;
+                    continue;                   // Retry with expanded table
+                }
+                index = advanceProbe(index);
+```
+
+![截屏2024-07-30 00.11.51](../images/截屏2024-07-30 00.11.51.png)
+
+#### sum
+
+```java
+    /**
+     * Returns the current sum.  The returned value is <em>NOT</em> an
+     * atomic snapshot; invocation in the absence of concurrent
+     * updates returns an accurate result, but concurrent updates that
+     * occur while the sum is being calculated might not be
+     * incorporated.
+     *
+     * @return the sum
+     */
+    public long sum() {
+        Cell[] cs = cells;
+        long sum = base;
+        if (cs != null) {
+            for (Cell c : cs)
+                if (c != null)
+                    sum += c.value;
+        }
+        return sum;
+    }
+```
+
+### Unsafe
+
+Unsafe对象提供非常底层，操作内存，线程的方法，Unsafe 对象不能直接调用，只能通过反射
+
+```java
+package com.ecnu.concurrent;
+
+import sun.misc.Unsafe;
+
+
+import java.lang.reflect.Field;
+
+public class UnsafeDemo {
+    public static void main(String[] args) throws NoSuchFieldException, IllegalAccessException {
+        Field  unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+        unsafeField.setAccessible(true);
+        Unsafe unsafe = (Unsafe) unsafeField.get(null);
+        System.out.println(unsafe);
+    }
+}
+
+```
+
+#### Unsafe Cas 操作
+
+```java
+package com.ecnu.concurrent;
+
+import sun.misc.Unsafe;
+
+
+import java.lang.reflect.Field;
+
+public class UnsafeDemo {
+    public static void main(String[] args) throws NoSuchFieldException, IllegalAccessException {
+        Field  unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+        unsafeField.setAccessible(true);
+        Unsafe unsafe = (Unsafe) unsafeField.get(null);
+        System.out.println(unsafe);
+
+        // 获取偏移地址
+        Long idOffset = unsafe.objectFieldOffset(Teacher.class.getDeclaredField("age"));
+        Long nameOffset = unsafe.objectFieldOffset(Teacher.class.getDeclaredField("name"));
+
+        Teacher teacher = new Teacher();
+
+        // 执行 cas 操作
+        unsafe.compareAndSwapInt(teacher, idOffset, 0, 1);
+        unsafe.compareAndSwapObject(teacher,nameOffset,null, "tom");
+
+        // 验证
+        System.out.println(teacher);
+    }
+}
+
+class Teacher {
+    volatile int age;
+    volatile String name;
+
+
+    @Override
+    public String toString() {
+        return "Teacher{" +
+                "age=" + age +
+                ", name='" + name + '\'' +
+                '}';
+    }
+}
+
+
+sun.misc.Unsafe@85ede7b
+Teacher{age=1, name='tom'}
+```
+
+Unsafe 模拟 AtomicInteger 实现
+
+```java
+package com.ecnu.concurrent.unsafedemo;
+
+import sun.misc.Unsafe;
+
+import java.lang.reflect.Field;
+
+public class UnsafeAccessor {
+    private static final Unsafe unsafe;
+    static {
+        try {
+            Field field = Unsafe.class.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            unsafe = (Unsafe) field.get(null);
+        }  catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Unsafe getUnsafe() {
+        return unsafe;
+    }
+}
+
+package com.ecnu.concurrent.unsafedemo;
+
+import sun.misc.Unsafe;
+
+public class MyUnsafeDemo {
+    public static void main(String[] args) {
+
+    }
+}
+
+class MyAtomicInteger{
+    private volatile int value;
+    private static final long valueOffset;
+    private static final Unsafe UNSAFE;
+    static {
+        UNSAFE = UnsafeAccessor.getUnsafe();
+        try {
+            valueOffset = UNSAFE.objectFieldOffset(MyAtomicInteger.class.getDeclaredField("value"));
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public MyAtomicInteger(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return value;
+    }
+    public void decrement(int amount) {
+        while (true) {
+            int prev = value;
+            int next = prev - amount;
+            if (UNSAFE.compareAndSwapInt(this, valueOffset, prev, next)) {
+                break;
+            }
+        }
+    }
+}
+
+```
+
+
+
 ## 5.共享模型之不可变
 
-### final 的使用
+- 不可变类的使用
+- 不可变类的设计
+- 无状态类设计
+
+Changed
+
+```java
+package com.ecnu.concurrent;
+
+import lombok.extern.slf4j.Slf4j;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
+
+
+@Slf4j(topic = "c.Sync")
+public class UnChangeDemo {
+    public static void main(String[] args) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        for (int i = 0; i < 10; i++) {
+            new Thread(() -> {
+                try {
+                    log.info("{}", simpleDateFormat.parse("1951-04-21"));
+                } catch (ParseException e) {
+                    log.error("{}", e);
+                }
+            }).start();
+        }
+
+    }
+}
 
 ```
-发现该类、类中所有属性都是 final 的
-属性用 final 修饰保证了该属性是只读的，不能修改
-类用 final 修饰保证了该类中的方法不能被覆盖，防止子类无意间破坏不可变性
+
+Unchange
+
+```java
+private static void unChange() {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        for (int i = 0; i < 10; i++) {
+            new Thread(() -> {
+                TemporalAccessor temporalAccessor = dateTimeFormatter.parse("2020-01-01");
+                log.info("{}",temporalAccessor);
+            }).start();
+        }
+    }
 ```
+
+### 不可变类的设计
+
+String不可变类
+
+```java
+ @Stable
+    private final byte[] value;
+
+    /**
+     * The identifier of the encoding used to encode the bytes in
+     * {@code value}. The supported values in this implementation are
+     *
+     * LATIN1
+     * UTF16
+     *
+     * @implNote This field is trusted by the VM, and is a subject to
+     * constant folding if String instance is constant. Overwriting this
+     * field after construction will cause problems.
+     */
+    private final byte coder;
+
+    /** Cache the hash code for the string */
+    private int hash; // Default to 0
+```
+
+#### final 的使用
+
+发现该类、类中所有属性都是 final 的
+
+- 属性用 final 修饰保证了该属性是只读的，不能修改
+- 类用 final 修饰保证了该类中的方法不能被覆盖，防止子类无意间破坏不可变性
+
+#### 保护性拷贝
+
+传入引用对象之后，采用复制方式，创建一个副本，防止外部修改
+
+### 享元模式
+
+当需要重用数量有限的同一类对象时
+
+#### 体现
+
+##### 包装类
+
+在 JDK 中，Boolean，Byte，Short，Integer，Long，Character等包装类提供了 valueOf 方法，例如 Long 的valueOf 会缓存-128-127之间的 Long 对象，这个范围内的对象会被重用，大于这个返回才会新建 Long 对象
+
+```java
+private static class LongCache {
+        private LongCache() {}
+
+        static final Long[] cache;
+        static Long[] archivedCache;
+
+        static {
+            int size = -(-128) + 127 + 1;
+
+            // Load and use the archived cache if it exists
+            CDS.initializeFromArchive(LongCache.class);
+            if (archivedCache == null || archivedCache.length != size) {
+                Long[] c = new Long[size];
+                long value = -128;
+                for(int i = 0; i < size; i++) {
+                    c[i] = new Long(value++);
+                }
+                archivedCache = c;
+            }
+            cache = archivedCache;
+        }
+    }
+@IntrinsicCandidate
+    public static Long valueOf(long l) {
+        final int offset = 128;
+        if (l >= -128 && l <= 127) { // will cache
+            return LongCache.cache[(int)l + offset];
+        }
+        return new Long(l);
+    }
+```
+
+> [!CAUTION]
+>
+> Byte，Short，Long 缓存的范围是-128-127
+>
+> Character范围是 0-127
+>
+> Integer -128-127，最小值不能变，最大值可以通过虚拟机参数控制 Djava.lang.Integer.IntegerCache.hing
+>
+> Boolean缓存了 TRUE 和 FALSE
+
+#### 自定义连接池
+
+```java
+package com.ecnu.concurrent;
+
+
+import lombok.extern.slf4j.Slf4j;
+
+import java.sql.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicIntegerArray;
+
+@Slf4j(topic = "c.PoolDemo")
+public class ConnectPoolDemo {
+    public static void main(String[] args) {
+        Pool pool = new Pool(2);
+        for (int i = 0; i < 5; i++) {
+            new Thread(()->{
+                Connection connection = pool.borrow();
+                try {
+                    Thread.sleep(new Random().nextInt(1000));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                pool.free(connection);
+            }).start();
+        }
+    }
+
+}
+
+
+@Slf4j(topic = "c.Pool")
+class Pool {
+    private int poolSize;
+    private Connection[] connections;
+    // 0表示空闲， 1表示繁忙
+    private AtomicIntegerArray states;
+    public Pool(int poolSize) {
+        this.poolSize = poolSize;
+        this.connections = new Connection[poolSize];
+        this.states = new AtomicIntegerArray(new int[poolSize]);
+        for (int i = 0; i < poolSize; i++) {
+            connections[i] = new MockConnection("conn" + (i+1));
+        }
+    }
+
+    public Connection borrow() {
+        while (true) {
+            for (int i = 0; i < poolSize; i++) {
+                if (states.get(i) == 0) {
+                    if (states.compareAndSet(i,0,1)) {
+                        log.info("borrow connection {}", connections[i]);
+                        return connections[i];
+                    }
+                }
+            }
+            synchronized (this) {
+                try {
+                    log.info("wait...");
+                    this.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void free(Connection connection) {
+        for (int i = 0; i < poolSize; i++) {
+            if (connections[i] == connection) {
+                this.states.set(i,0);
+                log.info("free {}", connection);
+                synchronized (this) {
+                    this.notifyAll();
+                }
+                return;
+            }
+        }
+    }
+}
+
+class MockConnection implements Connection {
+    private String name;
+    public MockConnection(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "MockConnection{" +
+                "name='" + name + '\'' +
+                '}';
+    }
+
+    @Override
+    public Statement createStatement() throws SQLException {
+        return null;
+    }
+
+    @Override
+    public PreparedStatement prepareStatement(String sql) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public CallableStatement prepareCall(String sql) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public String nativeSQL(String sql) throws SQLException {
+        return "";
+    }
+
+    @Override
+    public void setAutoCommit(boolean autoCommit) throws SQLException {
+
+    }
+
+    @Override
+    public boolean getAutoCommit() throws SQLException {
+        return false;
+    }
+
+    @Override
+    public void commit() throws SQLException {
+
+    }
+
+    @Override
+    public void rollback() throws SQLException {
+
+    }
+
+    @Override
+    public void close() throws SQLException {
+
+    }
+
+    @Override
+    public boolean isClosed() throws SQLException {
+        return false;
+    }
+
+    @Override
+    public DatabaseMetaData getMetaData() throws SQLException {
+        return null;
+    }
+
+    @Override
+    public void setReadOnly(boolean readOnly) throws SQLException {
+
+    }
+
+    @Override
+    public boolean isReadOnly() throws SQLException {
+        return false;
+    }
+
+    @Override
+    public void setCatalog(String catalog) throws SQLException {
+
+    }
+
+    @Override
+    public String getCatalog() throws SQLException {
+        return "";
+    }
+
+    @Override
+    public void setTransactionIsolation(int level) throws SQLException {
+
+    }
+
+    @Override
+    public int getTransactionIsolation() throws SQLException {
+        return 0;
+    }
+
+    @Override
+    public SQLWarning getWarnings() throws SQLException {
+        return null;
+    }
+
+    @Override
+    public void clearWarnings() throws SQLException {
+
+    }
+
+    @Override
+    public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public Map<String, Class<?>> getTypeMap() throws SQLException {
+        return Map.of();
+    }
+
+    @Override
+    public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
+
+    }
+
+    @Override
+    public void setHoldability(int holdability) throws SQLException {
+
+    }
+
+    @Override
+    public int getHoldability() throws SQLException {
+        return 0;
+    }
+
+    @Override
+    public Savepoint setSavepoint() throws SQLException {
+        return null;
+    }
+
+    @Override
+    public Savepoint setSavepoint(String name) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public void rollback(Savepoint savepoint) throws SQLException {
+
+    }
+
+    @Override
+    public void releaseSavepoint(Savepoint savepoint) throws SQLException {
+
+    }
+
+    @Override
+    public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public Clob createClob() throws SQLException {
+        return null;
+    }
+
+    @Override
+    public Blob createBlob() throws SQLException {
+        return null;
+    }
+
+    @Override
+    public NClob createNClob() throws SQLException {
+        return null;
+    }
+
+    @Override
+    public SQLXML createSQLXML() throws SQLException {
+        return null;
+    }
+
+    @Override
+    public boolean isValid(int timeout) throws SQLException {
+        return false;
+    }
+
+    @Override
+    public void setClientInfo(String name, String value) throws SQLClientInfoException {
+
+    }
+
+    @Override
+    public void setClientInfo(Properties properties) throws SQLClientInfoException {
+
+    }
+
+    @Override
+    public String getClientInfo(String name) throws SQLException {
+        return "";
+    }
+
+    @Override
+    public Properties getClientInfo() throws SQLException {
+        return null;
+    }
+
+    @Override
+    public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public void setSchema(String schema) throws SQLException {
+
+    }
+
+    @Override
+    public String getSchema() throws SQLException {
+        return "";
+    }
+
+    @Override
+    public void abort(Executor executor) throws SQLException {
+
+    }
+
+    @Override
+    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+
+    }
+
+    @Override
+    public int getNetworkTimeout() throws SQLException {
+        return 0;
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        return false;
+    }
+}
+
+```
+
+### final 原理
+
+<img src="../images/截屏2024-08-01 00.06.01.png" alt="截屏2024-08-01 00.06.01" style="zoom:67%;" />
+
+
 
 ## 6. JUC
+
+### 自定义线程池
+
+![截屏2024-08-06 00.13.25](../images/截屏2024-08-06 00.13.25.png)
+
+
+
+```java
+package com.ecnu.concurrent;
+
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
+@Slf4j(topic = "c.TheadPoolMain")
+public class ThreadPoolDemo {
+    public static void main(String[] args) {
+        ThreadPool threadPool = new ThreadPool(TimeUnit.MILLISECONDS,1000,2,10);
+        for (int i = 0; i < 5; i++) {
+            int j = i;
+            threadPool.execute(()->{
+               log.info("{}",j);
+            });
+        }
+    }
+}
+
+
+@Slf4j(topic = "c.TheadPool")
+class ThreadPool {
+    // 任务队列
+    private BlockingQueue<Runnable> taskQueue;
+
+    // 线程集合
+    private HashSet<Worker> workers = new HashSet();
+
+    // 核心线程数
+    private int coreSize;
+
+    // 获取任务超时时间
+    private long timeout;
+
+    private TimeUnit timeUnit;
+
+    // 执行任务
+    public void execute(Runnable task) {
+        // 当任务数没有超过 coreSize时，直接交给 worker对象执行
+        // 当任务数超过coreSize时，加入任务队列暂存
+        synchronized (workers) {
+            if (workers.size() < coreSize) {
+                Worker worker = new Worker(task);
+                log.info("新增 work {}, {}", worker,task);
+                workers.add(worker);
+                worker.start();
+            } else {
+                log.info("加入任务队列 {}", task);
+                taskQueue.put(task);
+                // 1、死等
+                // 2、带超时等待
+                // 3、让调用者放弃执行
+                // 4、让调用者抛出异常
+                // 5、让调用者自己执行任务
+            }
+        }
+
+    }
+
+    public ThreadPool(TimeUnit timeUnit, long timeout, int coreSize, int capacity) {
+        this.timeUnit = timeUnit;
+        this.timeout = timeout;
+        this.coreSize = coreSize;
+        this.taskQueue = new BlockingQueue<>(capacity);
+    }
+
+    class Worker extends Thread {
+        private Runnable task;
+
+        public Worker(Runnable task) {
+            this.task = task;
+        }
+
+
+        @Override
+        public void run() {
+            // 当 task 不为空时执行任务
+            // 当 task执行完毕时，接着从任务队列中获取任务并执行
+            // while (task != null || (task = taskQueue.take()) != null) {
+            while (task != null || (task = taskQueue.poll(timeout,timeUnit)) != null) {
+                try {
+                    log.info("正在执行...{}",task);
+                    task.run();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    task = null;
+                }
+            }
+            synchronized (workers) {
+                log.info("work被移出{}",this);
+                workers.remove(this);
+            }
+        }
+    }
+}
+
+
+
+@Slf4j(topic = "c.BlockQueue")
+class BlockingQueue<T> {
+    // 任务 队列
+    private Deque<T> queue = new ArrayDeque<>();
+
+    // 锁
+    private ReentrantLock lock = new ReentrantLock();
+
+    // 生产者条件变量
+    private Condition fullWaitSet = lock.newCondition();
+
+    // 消费者条件变量
+    private Condition emptyWaitSet = lock.newCondition();
+
+    // 容量
+    private int capacity;
+
+    public BlockingQueue(int capacity) {
+        this.capacity = capacity;
+    }
+
+    // 带超时的阻塞获取
+    public T poll(long timeout, TimeUnit unit) {
+        lock.lock();
+        try {
+            // 将 timeout 统一转换成纳秒
+            long nanos = unit.toNanos(timeout);
+            while (queue.isEmpty()) {
+                try {
+                    if (nanos <= 0) {
+                        return null;
+                    }
+                    nanos = emptyWaitSet.awaitNanos(nanos);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            T t = queue.removeFirst();
+            fullWaitSet.signal();
+            return t;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // 阻塞获取
+    public T take() {
+        lock.lock();
+        try {
+            while (queue.isEmpty()) {
+                try {
+                    emptyWaitSet.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            T t = queue.removeFirst();
+            fullWaitSet.signal();
+            return t;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // 阻塞添加
+    public void put(T t) {
+        lock.lock();
+        try {
+            while (queue.size() == capacity) {
+                try {
+                    fullWaitSet.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            queue.addLast(t);
+            emptyWaitSet.signal();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public int size() {
+        lock.lock();
+        try {
+            return queue.size();
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+```
+
+### ThreadPoolExecutor
+
+![截屏2024-09-02 23.55.22](../images/截屏2024-09-02 23.55.22.png)
+
+#### 线程池状态
+
+ThreadPoolExecutor使用 int
 
 ### AQS
 

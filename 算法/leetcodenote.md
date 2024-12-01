@@ -89,3 +89,10 @@ private boolean isCompleteBinaryTree(Node<E> node){
  }
 ```
 
+## 数学
+
+### 快速幂
+
+https://www.bilibili.com/video/BV16Z4y1M7y1/?spm_id_from=333.999.0.0&vd_source=611b1ef124271a22e110feed4df29d1b
+
+![image-20240320232704938](images/binexp.png)

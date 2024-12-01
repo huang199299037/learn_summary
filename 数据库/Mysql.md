@@ -7522,3 +7522,5 @@ mysql>
 
 event_scheduler其实是一个系统变量，它的值也可以在MySQL服务器启动的时候通过启动参数或者通过配置文件来设置event_scheduler的值。这些所谓
 ```
+
+# Mysql高级
