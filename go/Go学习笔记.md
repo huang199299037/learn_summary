@@ -4,8 +4,6 @@
 
 ## Go概述
 
-
-
 ### 执行流程分析
 
 ```
@@ -79,13 +77,13 @@ var i int (int 默认值为 0)
 
 (2) 第二种：根据值自行判定变量类型(类型推导)
 
-```
+```go
 var num = 10.11
 ```
 
 (3) 第三种：省略var,注意:=左侧的变量不应该是已经声明过的，否则会导致编译错误
 
-```
+```go
 name := "tom"
 ```
 
@@ -124,19 +122,205 @@ i = 10.1 false
 
 8) Golang的变量如果没有赋初值，编译器会使用默认值,比如int默认值 0 string默认值为空串，小数默认为 0
 
-### 程序中+号的使用
+#### 获取变量类型的几种方法
 
-1) 当左右两边都是数值型时，则做加法运算
+##### 1.使用 `fmt.Printf` 和 `%T`
 
-2) 当左右两边都是字符串，则做字符串拼接
+```go
+package main
+
+import "fmt"
+
+func main() {
+    var items = []string{"a", "b", "c"}
+    var count = 42
+    var price = 19.99
+    
+    fmt.Printf("items type: %T\n", items) // []string
+    fmt.Printf("count type: %T\n", count) // int
+    fmt.Printf("price type: %T\n", price) // float64
+}
+```
+
+##### 2.使用 `reflect` 包
+
+```go
+package main
+
+import (
+    "fmt"
+    "reflect"
+)
+
+func main() {
+    var name = "Alice"
+    var age = 30
+    var scores = []int{95, 87, 92}
+    
+    fmt.Println("name type:", reflect.TypeOf(name))    // string
+    fmt.Println("age type:", reflect.TypeOf(age))      // int
+    fmt.Println("scores type:", reflect.TypeOf(scores)) // []int
+    
+    // 获取类型名称
+    fmt.Println("scores type name:", reflect.TypeOf(scores).String())
+    
+    // 获取类型的 Kind（基础类型）
+    fmt.Println("scores kind:", reflect.TypeOf(scores).Kind()) // slice
+}
+```
+
+##### 3.使用类型断言
+
+```go
+package main
+
+import "fmt"
+
+func printType(v interface{}) {
+    switch v.(type) {
+    case int:
+        fmt.Println("Type: int")
+    case string:
+        fmt.Println("Type: string")
+    case []int:
+        fmt.Println("Type: []int")
+    case float64:
+        fmt.Println("Type: float64")
+    default:
+        fmt.Printf("Type: %T\n", v)
+    }
+}
+
+func main() {
+    printType(42)        // Type: int
+    printType("hello")   // Type: string
+    printType([]int{1,2,3}) // Type: []int
+}
+```
+
+#### 格式化输出
+
+##### 通用格式化占位符
+
+| 占位符 | 说明             | 示例                        |
+| :----- | :--------------- | :-------------------------- |
+| `%v`   | 默认格式         | `fmt.Printf("%v", data)`    |
+| `%+v`  | 结构体显示字段名 | `fmt.Printf("%+v", struct)` |
+| `%#v`  | Go 语法表示      | `fmt.Printf("%#v", data)`   |
+| `%T`   | 类型表示         | `fmt.Printf("%T", data)`    |
+| `%%`   | 字面百分号       | `fmt.Printf("100%%")`       |
+
+##### 综合示例
+
+```go
+package main
+
+import "fmt"
+
+type Product struct {
+	Name     string
+	Price    float64
+	Quantity int
+}
+
+func main() {
+	// 综合格式化示例
+	product := Product{"Laptop", 999.99, 5}
+	numbers := []int{1, 2, 3, 4, 5}
+
+	// 表格形式输出
+	fmt.Printf("产品信息:\n")
+	fmt.Printf("名称: %-10s | 价格: $%8.2f | 数量: %3d\n",
+		product.Name, product.Price, product.Quantity)
+
+	// 数值格式化
+	fmt.Printf("\n数值格式化:\n")
+	fmt.Printf("十进制: %d, 十六进制: 0x%X, 二进制: %b\n", 255, 255, 255)
+
+	// 字符串格式化
+	fmt.Printf("\n字符串格式化:\n")
+	fmt.Printf("原始: %s, 带引号: %q, 十六进制: %x\n", "Hello", "Hello", "Hello")
+
+	// 切片格式化
+	fmt.Printf("\n切片格式化:\n")
+	fmt.Printf("默认: %v, 详细: %#v\n", numbers, numbers)
+
+	// 百分比显示
+	progress := 0.756
+	fmt.Printf("\n进度: %.1f%%\n", progress*100) // 进度: 75.6%
+
+	// 文件大小格式化
+	fileSize := 1520435
+	fmt.Printf("文件大小: %.2f MB\n", float64(fileSize)/(1024*1024))
+  
+  // 错误格式化
+  err := fmt.Errorf("文件 %s 未找到", "test.txt")
+	fmt.Printf("错误: %v\n", err)    // 错误: 文件 test.txt 未找到
+	fmt.Printf("错误详细: %+v\n", err) // 错误详细: 文件 test.txt 未找到
+  // 索引
+  fmt.Printf("%[2]d %[1]d %[2]d\n", 10, 20) // 20 10 20
+}
+
+产品信息:
+名称: Laptop     | 价格: $  999.99 | 数量:   5
+
+数值格式化:
+十进制: 255, 十六进制: 0xFF, 二进制: 11111111
+
+字符串格式化:
+原始: Hello, 带引号: "Hello", 十六进制: 48656c6c6f
+
+切片格式化:
+默认: [1 2 3 4 5], 详细: []int{1, 2, 3, 4, 5}
+
+进度: 75.6%
+文件大小: 1.45 MB
+```
+
+##### 格式化输出到不同目标
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
+func main() {
+
+	name := "Bob"
+	age := 25
+
+	// 输出到标准输出
+	fmt.Printf("Name: %s, Age: %d\n", name, age)
+
+	// 输出到字符串
+	s := fmt.Sprintf("Name: %s, Age: %d", name, age)
+	fmt.Println("生成的字符串:", s)
+
+	// 输出到文件
+	file, _ := os.Create("output.txt")
+	fmt.Fprintf(file, "Name: %s, Age: %d", name, age)
+
+	// 输出到缓冲区
+	var buf strings.Builder
+	fmt.Fprintf(&buf, "Name: %s, Age: %d", name, age)
+	fmt.Println("缓冲区内容:", buf.String())
+
+}
+Name: Bob, Age: 25
+生成的字符串: Name: Bob, Age: 25
+缓冲区内容: Name: Bob, Age: 25
+文件output.txt内容：Name: Bob, Age: 25
+```
 
 ### 数据类型的基本介绍
 
-![](go学习笔记\基本数据类型.png)
+#### 整数类型
 
-### 整数类型
-
-整型的使用细节
+##### 整型的使用细节
 
 1) Golang各整数类型分：有符号和无符号，int uint的大小和系统有关。
 
@@ -152,14 +336,21 @@ i = 10.1 false
 3) 如何在程序查看某个变量的字节大小和数据类型（使用较多）
 
 ```go
-fmt.Printf("n 类型 %T 字节数 %d", n1, unsafe.Sizeof(n))
+	fmt.Println(a)
+	fmt.Printf("a 类型 %T 字节数 %d", a, unsafe.Sizeof(a))
+	fmt.Println()
+	var b float64
+	fmt.Printf("b 类型 %T 字节数 %d", b, unsafe.Sizeof(b))
+
+a 类型 int 字节数 8
+b 类型 float64 字节数 8b type is float64
 ```
 
-4) Golang程序中整型变量在使用时，遵守保小不保大的原则，即：在保证程序正确运行下，尽量使用占用空间小的数据类型。【如：年龄】byte 0~255 与uint8等价
+4) Golang程序中整型变量在使用时，遵守保小不保大的原则，即：在保证程序正确运行下，尽量使用占用空间小的数据类型。【如：年龄】**byte 0~255 与uint8等价**
 
 5) bit:计算机中的最小存储单位。byte:计算机中基本存储单元。[二进制再详细说]1byte=8bit
 
-### 小数类型(float)
+#### 小数类型(float)
 
 ```
 单精度 float32 4字节
@@ -174,21 +365,60 @@ fmt.Printf("n 类型 %T 字节数 %d", n1, unsafe.Sizeof(n))
 
 十进制数形式：如：5.12  .512(必须有小数点）=>0.512
 
-科学计数法形式:如：5.1234e2 = 5.12*10的2次方 5.12E-2 = 5.12/10的2次方
+```go
+	var num1 = 2.34
+	var num2 = .345
+	fmt.Println(num1)
+	fmt.Println(num2)
+
+2.34
+0.345
+```
+
+科学计数法形式:如：5.1234e2 = 5.12*10的2次方 5.12E-2 = 5.12/(10的2次方)
+
+```go
+	var num3 = 2e2
+	var num4 = 2E2
+	fmt.Println(num3)
+	fmt.Println(num4)
+
+200
+200
+
+	var num5 = 2e-2
+	fmt.Println(num5)
+0.02
+```
 
 4) 通常情况下，应该使用float64，因为它比float32更精确。[开发中，推荐使用float64]
 
-### 字符类型
+#### 字符类型
 
 ```
 Golang中没有专门的字符类型，如果要存储单个字符(字母)，一般使用byte来保存。
 字符串就是一串固定长度的字符连接起来的字符序列。Go的字符串是由单个字节连接起来的。也就是说对于传统的字符串是由字符组成的，而Go的字符串不同，它是由字节组成的
 ```
 
-输出
+```go
+package main
 
-```
-fmt.Printf("%c", n)
+import "fmt"
+
+func main() {
+	var a byte = 'a'
+	fmt.Printf("%c\n", a)
+	fmt.Printf("%d\n", a)
+
+	var c int = '北'
+	fmt.Printf("c:%c\n", c)
+	fmt.Printf("c:%d\n", c)
+
+}
+a
+97
+c:北
+c:21271
 ```
 
 1) 如果我们保存的字符在ASCII表的,比如[0-1,a-z,A-Z..]直接可以保存到byte
@@ -201,7 +431,38 @@ fmt.Printf("%c", n)
 
 5) Go语言的编码都统一成了utf-8。非常的方便，很统一，再也没有编码乱码的困扰了
 
-### 布尔类型
+##### 大小写转换
+
+```go
+package main
+
+import (
+	"fmt"
+	"unicode"
+)
+
+func main() {
+	var chb byte = 'B' + 'a' - 'A'
+	fmt.Printf("%c\n", chb)
+	fmt.Printf("%d\n", chb)
+
+	// 单个字符转换
+	ch := 'a' // 默认是 rune 类型 type rune = int32
+
+	// 检查字符类型
+	fmt.Printf("'%c' 是小写字母: %t\n", ch, unicode.IsLower(ch))
+	fmt.Printf("'%c' 是大写字母: %t\n", ch, unicode.IsUpper(ch))
+	fmt.Printf("'%c' 是字母: %t\n", ch, unicode.IsLetter(ch))
+}
+
+b
+98
+'a' 是小写字母: true
+'a' 是大写字母: false
+'a' 是字母: true
+```
+
+#### 布尔类型
 
 1) 布尔类型也叫bool类型，bool类型数据只允许取值true和false
 
@@ -209,38 +470,83 @@ fmt.Printf("%c", n)
 
 3) bool类型适于逻辑运算，一般用于程序流程控制
 
-### string类型
+```go
+package main
+
+import "fmt"
+
+func main() {
+	bo := true
+	fmt.Printf("%t\n", bo)
+	fmt.Println(bo)
+}
+```
+
+#### string类型
 
 字符串就是一串固定长度的字符连接起来的字符序列。Go的字符串是由单个字节连接起来的。Go语言的字符串的字节使用UTF-8编码标识Unicode文本
 
-1) Go语言的字符串的字节使用UTF-8编码标识Unicode文本，这样Golang统一使用UTF-8编码,中文乱码问题不会再困扰程序员
-
-2) 字符串一旦赋值了，字符串就不能修改了：在Go中字符串是不可变的
-
-3) 字符串的两种表示形式
-
-(1) 双引号,会识别转义字符
-
-(2) 反引号，以字符串的原生形式输出，包括换行和特殊字符，可以实现防止攻击、输出源代码等效果
-
-4) 字符串拼接方式 +
-
 ```go
-var str = "hello" + "world"
-str += "haha"
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	// 1. UTF-8 支持
+	chineseStr := "Hello, 世界！"
+	fmt.Printf("1. UTF-8 字符串: %s\n", chineseStr)
+
+	// 2. 不可变性演示
+	// original := "immutable"
+	// original[0] = 'A' // 这行会编译错误
+
+	// 3. 双引号 vs 反引号
+	doubleQuoted := "第一行\n第二行\t制表符\"引号\""
+	backticked := `第一行\n第二行\t制表符"引号"`
+	fmt.Printf("   双引号: %s\n", doubleQuoted)
+	fmt.Printf("   反引号: %s\n", backticked)
+
+	// 4. 字符串拼接
+	fmt.Println("4. 字符串拼接方式:")
+	part1 := "Go"
+	part2 := "语言"
+	concatenated := part1 + part2
+	fmt.Printf("   + 拼接: %s\n", concatenated)
+
+	// 5. 多行字符串
+	fmt.Println("5. 多行字符串处理:")
+	multi := "这是第一行" + // 加号在最后面
+		"这是第二行" +
+		"这是第三行"
+	fmt.Printf("   多行拼接: %s\n", multi)
+
+	// 性能提示
+	fmt.Println("\n=== 性能提示 ===")
+	fmt.Println("- 大量字符串拼接请使用 strings.Builder")
+	fmt.Println("- 只读多行文本使用反引号")
+	fmt.Println("- 需要转义字符时使用双引号")
+	fmt.Println("- 遍历中文字符请使用 for range")
+}
+
+1. UTF-8 字符串: Hello, 世界！
+   双引号: 第一行
+第二行	制表符"引号"
+   反引号: 第一行\n第二行\t制表符"引号"
+4. 字符串拼接方式:
+   + 拼接: Go语言
+5. 多行字符串处理:
+   多行拼接: 这是第一行这是第二行这是第三行
+
+=== 性能提示 ===
+- 大量字符串拼接请使用 strings.Builder
+- 只读多行文本使用反引号
+- 需要转义字符时使用双引号
+- 遍历中文字符请使用 for range
 ```
 
-5) 当一行字符串太长时，需要使用到多行字符串，可以如下处理
-
-```go
-var str = "hello" + "hello" + (+放末尾)
-"hello" true
-
-var str = "hello" + "hello" 
-+ "hello" false
-```
-
-### 基本数据类型的默认值
+#### 基本数据类型的默认值
 
 在go中，数据类型都有一个默认值，当程序员没有赋值时，就会保留默认值，在go中，默认值又叫零值
 
@@ -251,107 +557,166 @@ var str = "hello" + "hello"
 | 布尔     | false  |
 | 字符串   | “”     |
 
-### 基本数据类型的相互转换
+#### 基本数据类型的相互转换
 
 Golang和java/c不同，Go在不同类型的变量之间赋值时需要显式转换。也就是说Golang中数据类型不能自动转换
 
-表达式T(v)将值v转换为类型T
-
 ```go
-int=> float
-var i = 100
-var n float32 = float32(i)
-低精度转高精度 和 高精度转低精度都可以
+表达式T(v)将值v转换为类型T
+package main
+
+import "fmt"
+
+func main() {
+	// 1、小范围 → 大范围（安全转换）
+	var a int8 = 100
+	var b int16 = int16(a)
+	fmt.Printf("%d\n", a) // 2、原值不变
+	fmt.Printf("%d\n", b)
+
+	// 3、大范围 → 小范围（可能溢出）
+	var m int16 = 300                 // 300超过了int8的范围(-128~127)
+	var n int8 = int8(m)              // 会发生溢出
+	fmt.Printf("m=%d → n=%d\n", m, n) // 300 → 44
+
+}
+
+100
+100
+m=300 → n=44
 ```
 
-1) Go中，数据类型的转换可以是从表示范围小-->表示范围大，也可以范围大--->范围小
-
-2) 被转换的是变量存储的数据(即值)，变量本身的数据类型并没有变化！
-
-3) 在转换中，比如将int64转成int8【-128---127】，编译时不会报错，只是转换的结果是按溢出处理，和我们希望的结果不一样。因此在转换时，需要考虑范围
-
-### 基本数据类型和string的转换
+#### 基本数据类型和string的转换
 
 **基本类型转string类型**
 
-方式1：fmt.Sprintf("%参数",表达式)【个人习惯这个，灵活】
-
 ```go
-var num = 99
-var str string
-str = fmt.Sprintf("%d",num) 浮点型 ("%f",float) 布尔("%t",bool) "q" "true" 
-fmt.Printf("%T %v",str,str)
-```
+package main
 
-方式2：使用strconv包的函数
+import (
+	"fmt"
+	"strconv"
+)
 
-```go
-str = strconv.FormatInt()
+func main() {
+	// 方式1：fmt.Sprintf("%参数",表达式)【灵活】
+	var num = 99
+	str := fmt.Sprintf("%d", num)
+	fmt.Println(str)
+	var num2 = 22.33
+	str2 := fmt.Sprintf("%f", num2)
+	fmt.Printf("num2 = %s, quote num2=%q\n", str2, str2)
+
+	// 方式2：strconv
+	str3 := strconv.FormatInt(int64(num), 10)
+	fmt.Printf("%s, %T\n", str3, str3)
+	str4 := strconv.Itoa(num)
+	fmt.Printf("%s, %T", str4, str4)
+}
+
+99
+num2 = 22.330000, quote num2="22.330000"
+99, string
+99, string
 ```
 
 **string类型转基本数据类型**
 
-使用时strconv包的函数
+```go
+package main
 
+import (
+	"fmt"
+	"runtime"
+	"strconv"
+	"unsafe"
+)
+
+func main() {
+	//1、在Go语言中，int类型的大小是平台相关的， 转换 int32和 int64需要显示转换
+	//32位系统：int是32位（4字节），与int32相同
+	//64位系统：int是64位（8字节），与int64相同
+	var i int
+	fmt.Printf("当前系统架构: %s\n", runtime.GOARCH)
+	fmt.Printf("int类型大小: %d 字节\n", unsafe.Sizeof(i))
+	fmt.Printf("int32类型大小: %d 字节\n", unsafe.Sizeof(int32(0)))
+	fmt.Printf("int64类型大小: %d 字节\n", unsafe.Sizeof(int64(0)))
+	if unsafe.Sizeof(i) == 4 {
+		fmt.Println("当前int是32位的")
+	} else {
+		fmt.Println("当前int是64位的")
+	}
+
+	// 2、str 转 int, 正常情况
+	str := "99"
+	num, _ := strconv.ParseInt(str, 10, 64)
+	fmt.Println(num)
+
+	// bitSize移除
+	str1 := "138"
+	num1, err := strconv.ParseInt(str1, 10, 8)
+	fmt.Printf("%T, %v\n", num1, num1)
+	fmt.Printf("%T, %v\n", err, err)
+
+	// 无法转换
+	str2 := "hello"
+	num2, err2 := strconv.ParseInt(str2, 10, 8)
+	fmt.Printf("%T, %v\n", num2, num2)
+	fmt.Printf("%T, %v\n", err2, err2)
+
+}
+
+当前系统架构: arm64
+int类型大小: 8 字节
+int32类型大小: 4 字节
+int64类型大小: 8 字节
+当前int是64位的
+99
+int64, 127
+*strconv.NumError, strconv.ParseInt: parsing "138": value out of range
+int64, 0
+*strconv.NumError, strconv.ParseInt: parsing "hello": invalid syntax
 ```
-var b , _ = strconv.ParseBool()
-```
-
-**string转基本数据类型的注意事项**
-
-在将String类型转成基本数据类型时，要确保String类型能够转成有效的数据，比如我们可以把"123",转成一个整数，但是不能把"hello"转成一个整数，如果这样做，Golang直接将其转成0，其它类型也是一样的道理.float=>0 bool=>false
 
 ### 指针
 
-**基本介绍**
+```go
+package main
 
-1) 基本数据类型，变量存的就是值，也叫值类型
+import "fmt"
 
-2) 获取变量的地址，用&，比如：varnumint,获取num的地址：&num
+func main() {
+	i := 12
+	var ptr *int = &i
+	fmt.Printf("%v\n", ptr)
+	fmt.Printf("%v\n", &ptr)
+	fmt.Printf("%v\n", *ptr)
+	fmt.Printf("%p\n", ptr)
+}
 
-![](go学习笔记\指针1.png)
+0x14000098020
+0x1400009a030
+12
+0x14000098020
 
-3) 指针类型，指针变量存的是一个地址，这个地址指向的空间存的才是值
-
-比如：var ptr *int = &num
-
-![](go学习笔记\指针2.png)
-
-4) 获取指针类型所指向的值，使用：*，比如：var ptr  *int,使用 *ptr 获取 ptr 指向的值
-
-**指针的使用细节**
-
-1) 值类型，都有对应的指针类型，形式为*数据类型，比如int的对应的指针就是 *int,float32对应的指针类型就是 *float32,依次类推。
-
-2) 值类型包括：基本数据类型int系列,float系列,bool,string、数组和结构体struct
-
-**值类型和引用类型**
-
-1) 值类型：基本数据类型int系列,float系列,bool,string、数组和结构体struct
-
-2) 引用类型：指针、slice切片、map、管道chan、interface等都是引用类型
-
-**值类型和引用类型的使用特点**
-
-1) 值类型：变量直接存储值，内存通常在栈中分配
-
-2) 引用类型：变量存储的是一个地址，这个地址对应的空间才真正存储数据(值)，内存通常在堆上分配，当没有任何变量引用这个地址时，该地址对应的数据空间就成为一个垃圾，由GC来回收
-
-3) 内存的栈区和堆区示意图
-
-![](go学习笔记\栈和堆.png)
+1、值类型，都有对应的指针类型，形式为*数据类型，比如int的对应的指针就是 *int,float32对应的指针类型就是 *float32,依次类推
+2、值类型和引用类型
+  1) 值类型：基本数据类型int系列,float系列,bool,string、数组和结构体struct
+  2) 引用类型：指针、slice切片、map、管道chan、interface等都是引用类型
+3、值类型和引用类型的使用特点
+  1) 值类型：变量直接存储值，内存通常在栈中分配
+  2) 引用类型：变量存储的是一个地址，这个地址对应的空间才真正存储数据(值)，内存通常在堆上分配，当没有任何变量引用这个地址时，该地址对应的数据空间就成为一个垃圾，由GC来回收
+```
 
 ### 标识符的命名规范
 
-1) Golang对各种变量、方法、函数等命名时使用的字符序列称为标识符
+Golang对各种变量、方法、函数等命名时使用的字符序列称为标识符, 凡是自己可以起名字的地方都叫标识符
 
-2) 凡是自己可以起名字的地方都叫标识符
-
-**标识符的命名规则**
+#### **标识符的命名规则**
 
 1) 由26个英文字母大小写，0-9，_组成
 
-2) 数字不可以开头
+2) 数字不可以开头 
 
 3) Golang中严格区分大小写
 
@@ -361,7 +726,7 @@ var b , _ = strconv.ParseBool()
 
 6) 不能以系统保留关键字作为标识符
 
-**标识符命名注意事项**
+#### **标识符命名注意事项**
 
 1) 包名：保持package的名字和目录保持一致，尽量采取有意义的包名，简短，有意义，不要和标准库不要冲突fmt
 
@@ -369,43 +734,75 @@ var b , _ = strconv.ParseBool()
 
 3) **如果变量名、函数名、常量名首字母大写，则可以被其他的包访问；如果首字母小写，则只能在本包中使用**(注：可以简单的理解成，首字母大写是公开的，首字母小写是私有的),在golang没有public,private等关键字
 
+4) 文件名使用小写字符，单词间用**下划线**分隔
+
 ## 运算符
-
-1) 算术运算符
-
-2) 赋值运算符
-
-3) 比较运算符/关系运算符
-
-4) 逻辑运算符
-
-5) 位运算符
-
-6) 其它运算符
 
 ### 算术运算符
 
-1) 对于除号"/"，它的整数除和小数除是有区别的：整数之间做除法时，只保留整数部分而舍弃小数部分。例如：x:=19/5,结果是3
-
-2) 当对一个数取模时，可以等价a%b=a-a/b*b，这样我们可以看到取模的一个本质运算。
-
-3) Golang的自增自减只能当做一个独立语言使用时，不能这样使用
-
 ```go
-var a int 
-a = i++ false
+package main
 
-i++
-a = i true
+import "fmt"
+
+func main() {
+	var num int = 10 / 3 // 不保留小数 
+	fmt.Printf("%d\n", num)
+
+	var num1 float32 = 10 / 3  // 不保留小数
+	fmt.Println(num1)
+	fmt.Printf("%f\n", num1)
+
+	var num2 float32 = 10.0 / 3 // 保留小数
+	fmt.Println(num2)
+	fmt.Printf("%f\n", num2)
+
+	// 取模 a%b=a-a/b*b  -10 - (-10)/3 * 3 = -10+9 = -1
+	var num3 int = 10 % 3
+	fmt.Println(num3)
+	var num4 int = (-10) % 3
+	fmt.Println(num4)
+
+	// ++ --只能独立使用，否则报错， 不能前置++i,错误
+	var i = 8
+	var a int
+	//a = i++  // 错误
+	//a = i-- // 错误
+	//if i++ > 0 { // 错误
+	//}
+	i++
+	a = i
+	fmt.Println(i)
+	fmt.Println(a)
+
+}
+
+3
+3
+3.000000
+3.3333333
+3.333333
+1
+-1
+9
+9
 ```
-
-4) Golang的++和--只能写在变量的后面，不能写在变量的前面，即：只有a++ a--没有++a  --a
 
 ### 关系运算符
 
-1) 关系运算符的结果都是bool型，也就是要么是true，要么是false
+```go
+package main
 
+import "fmt"
+
+func main() {
+	fmt.Println(1 == 2)
+}
+
+false
+1) 关系运算符的结果都是bool型，也就是要么是true，要么是false
 2) 关系运算符组成的表达式，我们称为关系表达式：a>b
+```
 
 ### 逻辑运算符
 
@@ -429,7 +826,7 @@ a = i true
 
 有两个变量，a和b，要求将其进行交换，但是不允许使用中间变量，最终打印结果
 
-```
+```go
 a = a + b
 b = a - b
 a = a - b
@@ -437,114 +834,658 @@ a = a - b
 
 ### 键盘输入语句
 
-1) 导入fmt包
+#### fmt
 
-2) 调用fmt包的fmt.Scanln()或者fmt.Scanf()
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var name string
+	var age int
+
+	// 为什么需要 &？
+	// Scan函数需要修改name和age变量的值
+	// 如果不传递地址，Scan只能得到变量的副本，无法修改原变量
+
+	// 1. fmt.Scan - 读取多个值，空格分隔
+	fmt.Print("请输入姓名和年龄（空格分隔）: ")
+	n, err := fmt.Scan(&name, &age)
+	if err ! = nil {
+		fmt.Println("输入错误:", err)
+		return
+	}
+	fmt.Printf("成功读取 %d 个值: 姓名=%s, 年龄=%d\n", n, name, age)
+
+	// 清空缓冲区（重要！）
+	fmt.Scanln()
+
+	// 2. fmt.Scanln - 读取一行，空格分隔
+	fmt.Print("请输入姓名和年龄（空格分隔）: ")
+	n, err = fmt.Scanln(&name, &age)
+	if err ! = nil {
+		fmt.Println("输入错误:", err)
+		return
+	}
+	fmt.Printf("成功读取 %d 个值: 姓名=%s, 年龄=%d\n", n, name, age)
+
+	// 3. fmt.Scanf - 格式化读取
+	var score float64
+	fmt.Print("请输入姓名-年龄-分数（格式：张三-20-95.5）: ")
+	n, err = fmt.Scanf("%s-%d-%f", &name, &age, &score)
+	if err ! = nil {
+		fmt.Println("输入错误:", err)
+		return
+	}
+	fmt.Printf("成功读取 %d 个值: %s %d %.1f\n", n, name, age, score)
+}
+
+请输入姓名和年龄（空格分隔）: tom 12
+成功读取 2 个值: 姓名=tom, 年龄=12
+
+请输入姓名和年龄（空格分隔）: jerry 15
+成功读取 2 个值: 姓名=jerry, 年龄=15
+请输入姓名-年龄-分数（格式：张三-20-95.5）: kevin-18-90
+输入错误: input does not match format
+```
+
+#### bufio
+
+```go
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+)
+
+func main() {
+	reader := bufio.NewReader(os.Stdin)
+
+	// 读取单行字符串
+	fmt.Print("请输入一行文字: ")
+	text, _ := reader.ReadString('\n')
+	text = strings.TrimSpace(text) // 去除换行符和空格
+	fmt.Printf("你输入的是: '%s'\n", text)
+
+	// 读取整数
+	fmt.Print("请输入一个整数: ")
+	numStr, _ := reader.ReadString('\n')
+	numStr = strings.TrimSpace(numStr)
+	num, err := strconv.Atoi(numStr)
+	if err ! = nil {
+		fmt.Println("输入的不是有效整数")
+		return
+	}
+	fmt.Printf("整数: %d\n", num)
+
+	// 读取多个整数（空格分隔）
+	fmt.Print("请输入多个整数（空格分隔）: ")
+	numsStr, _ := reader.ReadString('\n')
+	numsStr = strings.TrimSpace(numsStr)
+	numStrs := strings.Split(numsStr, " ")
+
+	var nums []int
+	for _, s := range numStrs {
+		n, err := strconv.Atoi(s)
+		if err ! = nil {
+			fmt.Printf("'%s' 不是有效整数\n", s)
+			continue
+		}
+		nums = append(nums, n)
+	}
+	fmt.Printf("整数数组: %v\n", nums)
+}
+
+请输入一行文字: hello world
+你输入的是: 'hello world'
+请输入一个整数: 12
+整数: 12
+请输入多个整数（空格分隔）: 12 45 666 777
+整数数组: [12 45 666 777]
+
+// 示例输入（多行，每行一个或多个数）： 一直都直到 EOF
+// 1 2
+// 3 4 5
+// 6
+for {
+        // 读取一行
+        line, err := reader.ReadString('\n')
+        if err ! = nil {
+            if err == io.EOF {
+                break
+            }
+            fmt.Println("读取错误:", err)
+            break
+        }
+```
 
 ### 进制
 
-1) 二进制：0,1，满2进1。在golang中，不能直接使用二进制来表示一个整数，它沿用了c的特点。
+```go
+package main
 
-2) 十进制：0-9，满10进1。
+import "fmt"
 
-3) 八进制：0-7，满8进1.以数字0开头表示。
+func main() {
+	num := 255
 
-4) 十六进制：0-9及A-F，满16进1.以0x或0X开头表示。此处的A-F不区分大小写。
+	// 十进制输出（默认）
+	fmt.Printf("十进制: %d\n", num) // 255
+	str := fmt.Sprintf("%b", num)
+	fmt.Println("二进制:", str)
+
+	// 二进制输出
+	fmt.Printf("二进制: %b\n", num) // 11111111
+
+	// 八进制输出
+	fmt.Printf("八进制: %o\n", num)     // 377
+	fmt.Printf("带前缀的八进制: %O\n", num) // 0o377 (Go 1.13+)
+
+	// 十六进制输出
+	fmt.Printf("小写十六进制: %x\n", num)      // ff
+	fmt.Printf("大写十六进制: %X\n", num)      // FF
+	fmt.Printf("带前缀的小写十六进制: %#x\n", num) // 0xff
+	fmt.Printf("带前缀的大写十六进制: %#X\n", num) // 0XFF
+}
+
+十进制: 255
+二进制: 11111111
+二进制: 11111111
+八进制: 377
+带前缀的八进制: 0o377
+小写十六进制: ff
+大写十六进制: FF
+带前缀的小写十六进制: 0xff
+带前缀的大写十六进制: 0XFF
+```
 
 ## 程序流程控制
 
+### if
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+	// 1. 基本语法（无括号）
+	x := 10
+	if x > 5 {
+		fmt.Println("x大于5")
+	}
+
+	// 2. 带初始化语句（变量作用域限定在if块内）
+	if y := 20; y > x {
+		fmt.Printf("y=%d 大于 x=%d\n", y, x)
+	}
+	// 这里不能访问 y
+
+	// 3. 错误处理模式（Go语言特色）
+	if num, err := strconv.Atoi("123"); err ! = nil {
+		fmt.Printf("转换失败: %v\n", err)
+	} else {
+		fmt.Printf("转换成功: %d\n", num)
+	}
+
+	// 4. 类型断言：检查接口值的具体类型 基本语法：value.(Type)
+	var value interface{} = "hello"
+	if str, ok := value.(string); ok {
+		fmt.Printf("是字符串: %s\n", str)
+	}
+
+	// 5. 提前返回模式（避免深层嵌套）
+	if err := validateInput(""); err ! = nil {
+		fmt.Printf("验证失败: %v\n", err)
+		return
+	}
+	fmt.Println("验证成功")
+}
+
+func validateInput(input string) error {
+	if input == "" {
+		return fmt.Errorf("输入不能为空")
+	}
+	if len(input) < 3 {
+		return fmt.Errorf("输入至少3个字符")
+	}
+	return nil
+}
+
+x大于5
+y=20 大于 x=10
+转换成功: 123
+是字符串: hello
+验证失败: 输入不能为空
+```
+
 ### switch分支控制
 
-1) switch语句用于基于不同条件执行不同动作，每一个case分支都是唯一的，从上到下逐一测试，直到匹配为止。
+```go
+package main
 
-2) 匹配项后面也**不需要再加break**
+import "fmt"
 
-**switch的使用的注意事项和细节**
+func main() {
+	// 1. 基本switch（自动break）
+	fruit := "apple"
+	switch fruit {
+	case "apple":
+		fmt.Println("这是苹果")
+	case "banana":
+		fmt.Println("这是香蕉")
+	default:
+		fmt.Println("未知水果")
+	}
 
-1) case/switch后是一个表达式(即：常量值、变量、一个有返回值的函数等都可以)
+	// 2. 多条件case
+	day := 3
+	switch day {
+	case 1, 7:
+		fmt.Println("周末")
+	case 2, 3, 4, 5, 6:
+		fmt.Println("工作日")
+	}
 
-2) case后的各个表达式的值的数据类型，必须和switch的表达式数据类型一致
+	// 3. 表达式switch（无标签）
+	score := 85
+	switch {
+	case score >= 90:
+		fmt.Println("优秀")
+	case score >= 80:
+		fmt.Println("良好") // 输出：良好
+	case score >= 60:
+		fmt.Println("及格")
+	default:
+		fmt.Println("不及格")
+	}
 
-3) case后面可以带多个表达式，使用逗号间隔。比如case表达式1,表达式2
+	// 4. 类型switch（重点！）
+	var value interface{} = "hello"
+	switch v := value.(type) {
+	case string:
+		fmt.Printf("字符串: %s\n", v) // 输出：字符串: hello
+	case int:
+		fmt.Printf("整数: %d\n", v)
+	default:
+		fmt.Printf("未知类型: %T\n", v)
+	}
 
-4) case后面的表达式如果是常量值(字面量)，则要求不能重复
+	// 5. fallthrough穿透
+	num := 2
+	switch num {
+	case 2:
+		fmt.Println("是2")
+		fallthrough // 继续执行下一个case
+	case 3:
+		fmt.Println("是2或是3") // 也会输出
+	case 4:
+		fmt.Println("是 4")
+	}
+}
 
-5) case后面不需要带break,程序匹配到一个case后就会执行对应的代码块，然后退出switch，如果一个都匹配不到，则执行default
-
-6) default语句不是必须的
-
-7) switch后也可以不带表达式，类似if--else分支来使用
-
-8) switch后也可以直接声明/定义一个变量，分号结束，不推荐
-
-9) switch穿透-fallthrough，如果在case语句块后增加fallthrough,则会继续执行下一个case，也叫switch穿透(默认只能穿透一层)
-
-10) TypeSwitch：switch语句还可以被用于type-switch来判断某个interface变量中实际指向的变量类型
+这是苹果
+工作日
+良好
+字符串: hello
+是2
+是2或是3
+```
 
 ### for循环控制
 
-1) Golang提供for-range的方式，可以方便遍历字符串和数组
+```go
+package main
 
-```
-for index, val := range str {
+import "fmt"
 
+func main() {
+	// 1. 基本for循环（类似其他语言的for）
+	fmt.Println("=== 基本for循环 ===")
+	for i := 0; i < 3; i++ {
+		fmt.Printf("i = %d\n", i)
+	}
+  // 作用域在 for 中
+	//fmt.Println(i) 错误
+
+	// 2. while风格的循环（只有条件）
+	fmt.Println("\n=== while风格循环 ===")
+	count := 0
+	for count < 3 {
+		fmt.Printf("count = %d\n", count)
+		count++
+	}
+
+	// 3. 无限循环（需要break退出）
+	fmt.Println("\n=== 无限循环 ===")
+	infiniteCount := 0
+	for {
+		fmt.Printf("无限循环 %d\n", infiniteCount)
+		infiniteCount++
+		if infiniteCount >= 2 {
+			break
+		}
+	}
+
+	// 4. for-range遍历（重点！）
+	fmt.Println("\n=== for-range遍历 ===")
+	fruits := []string{"apple", "banana", "orange"}
+	for index, fruit := range fruits {
+		fmt.Printf("索引: %d, 水果: %s\n", index, fruit)
+	}
+
+	// 5. for-range遍历map
+	fmt.Println("\n=== for-range遍历map ===")
+	scores := map[string]int{"Alice": 90, "Bob": 85}
+	for name, score := range scores {
+		fmt.Printf("姓名: %s, 分数: %d\n", name, score)
+	}
+
+	// 6. continue和break
+	fmt.Println("\n=== continue和break ===")
+	for i := 0; i < 5; i++ {
+		if i == 1 {
+			continue // 跳过本次循环
+		}
+		if i == 3 {
+			break // 终止循环
+		}
+		fmt.Printf("处理: %d\n", i)
+	}
 }
-```
+
+=== 基本for循环 ===
+i = 0
+i = 1
+i = 2
+
+=== while风格循环 ===
+count = 0
+count = 1
+count = 2
+
+=== 无限循环 ===
+无限循环 0
+无限循环 1
+
+=== for-range遍历 ===
+索引: 0, 水果: apple
+索引: 1, 水果: banana
+索引: 2, 水果: orange
+
+=== for-range遍历map ===
+姓名: Alice, 分数: 90
+姓名: Bob, 分数: 85
+
+=== continue和break ===
+处理: 0
+处理: 2
 
 如果我们的字符串含有中文，那么传统的遍历字符串方式，就是错误，会出现乱码。原因是传统的对字符串的遍历是按照字节来遍历，而一个汉字在utf8编码是对应3个字节。如何解决需要要将str转成[]rune切片
-
-```
 var str1 = "hello"
 str2 := []rune(str)
 ```
 
-### while和do..while的实现
-
-Go语言**没有while和do...while语法**，这一点需要同学们注意一下，如果我们需要使用类似其它语言(比如java/c的while和do...while)，可以通过for循环来实现其使用效果
+### 没有while和do..while
 
 ### Break
 
-(1) break默认会跳出最近的for循环
+```go
+package main
 
-2) break后面可以指定标签，跳出标签对应的for循环
+import "fmt"
 
-```
-label:
-for {
- break label
+func main() {
+	// 1. 基本break - 跳出当前循环
+	fmt.Println("=== 基本break ===")
+	for i := 0; i < 5; i++ {
+		if i == 3 {
+			break // 当i等于3时跳出循环
+		}
+		fmt.Printf("i = %d\n", i)
+	}
+
+	// 2. 嵌套循环中的break - 只跳出内层循环
+	fmt.Println("\n=== 嵌套循环break ===")
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			if j == 1 {
+				break // 只跳出内层的j循环
+			}
+			fmt.Printf("i=%d, j=%d\n", i, j)
+		}
+	}
+
+	// 3. 带标签的break - 跳出指定循环（重点！）
+	fmt.Println("\n=== 带标签的break ===")
+OuterLoop:
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			if i == 1 && j == 1 {
+				break OuterLoop // 直接跳出外层循环
+			}
+			fmt.Printf("带标签: i=%d, j=%d\n", i, j)
+		}
+	}
 }
+
+=== 基本break ===
+i = 0
+i = 1
+i = 2
+
+=== 嵌套循环break ===
+i=0, j=0
+i=1, j=0
+i=2, j=0
+
+=== 带标签的break ===
+带标签: i=0, j=0
+带标签: i=0, j=1
+带标签: i=0, j=2
+带标签: i=1, j=0
 ```
 
 ### Continue
 
-continue语句用于结束本次循环，继续执行下一次循环。continue语句出现在多层嵌套的循环语句体中时，可以通过标签指明要跳过的是哪一层循环,这个和前面的break标签的使用的规则一样.
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// 1. 基本continue - 跳过本次循环
+	fmt.Println("=== 基本continue ===")
+	for i := 0; i < 5; i++ {
+		if i == 2 {
+			continue // 跳过i=2的这次循环
+		}
+		fmt.Printf("i = %d\n", i)
+	}
+
+	// 2. 嵌套循环中的continue - 只跳过内层循环的当前迭代
+	fmt.Println("\n=== 嵌套循环continue ===")
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			if j == 1 {
+				continue // 只跳过内层循环中j=1的情况
+			}
+			fmt.Printf("i=%d, j=%d\n", i, j)
+		}
+	}
+
+	// 3. 带标签的continue - 跳到指定循环的下一次迭代（重点！）
+	fmt.Println("\n=== 带标签的continue ===")
+OuterLoop:
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			if i == 1 && j == 1 {
+				continue OuterLoop // 直接跳到外层循环的下一次迭代
+			}
+			fmt.Printf("带标签: i=%d, j=%d\n", i, j)
+		}
+	}
+}
+
+=== 基本continue ===
+i = 0
+i = 1
+i = 3
+i = 4
+
+=== 嵌套循环continue ===
+i=0, j=0
+i=0, j=2
+i=1, j=0
+i=1, j=2
+i=2, j=0
+i=2, j=2
+
+=== 带标签的continue ===
+带标签: i=0, j=0
+带标签: i=0, j=1
+带标签: i=0, j=2
+带标签: i=1, j=0
+带标签: i=2, j=0
+带标签: i=2, j=1
+带标签: i=2, j=2
+```
 
 ### Goto
 
-1) Go语言的goto语句可以无条件地转移到程序中指定的行。
+```go
+package main
 
-2) goto语句通常与条件语句配合使用。可用来实现条件转移，跳出循环体等功能。
+import "fmt"
 
-3) 在Go程序设计中一般**不主张使用goto语句**，以免造成程序流程的混乱，使理解和调试程序都产生困难
+func main() {
+    // 基本goto语法
+    fmt.Println("开始")
+    
+    goto Label1 // 跳转到Label1标签
+    
+    fmt.Println("这行不会执行") // 被跳过了
+    
+Label1:
+    fmt.Println("跳转到这里")
+    
+    // 另一个例子
+    i := 0
+    
+Loop:
+    fmt.Printf("i = %d\n", i)
+    i++
+    if i < 3 {
+        goto Loop // 跳回Loop标签，形成循环
+    }
+    
+    fmt.Println("结束")
+}
 
-goto label
-
-...
-
-label: 
-
-statemen
+开始
+跳转到这里
+i = 0
+i = 1
+i = 2
+结束
+```
 
 ### Return
 
-1) 如果return是在普通的函数，则表示跳出该函数，即不再执行函数中return后面代码，也可以理解成终止函数。
+```go
+package main
 
-2) 如果return是在main函数，表示终止main函数，也就是说终止程序
+import "fmt"
+
+// 1. 无返回值函数
+func noReturnFunc() {
+    fmt.Println("执行无返回值函数")
+    return // 可省略，函数末尾自动return
+}
+
+// 2. 单返回值函数
+func singleReturn() int {
+    fmt.Println("返回单个值")
+    return 42 // 返回整数
+}
+
+// 3. 多返回值函数
+func multiReturn() (int, string) {
+    fmt.Println("返回多个值")
+    return 100, "hello" // 返回两个值
+}
+
+// 4. 命名返回值
+func namedReturn() (result int, message string) {
+    // 返回值已在函数签名中声明
+    result = 200
+    message = "world"
+    return // 自动返回已赋值的result和message
+}
+
+// 5. 提前返回
+func earlyReturn(x int) string {
+    if x < 0 {
+        return "负数" // 条件满足时提前返回
+    }
+    if x == 0 {
+        return "零" // 另一个提前返回
+    }
+    return "正数" // 默认返回
+}
+
+func main() {
+    // 调用无返回值函数
+    noReturnFunc()
+    
+    // 接收单返回值
+    value := singleReturn()
+    fmt.Printf("单返回值: %d\n", value)
+    
+    // 接收多返回值
+    num, str := multiReturn()
+    fmt.Printf("多返回值: %d, %s\n", num, str)
+    
+    // 忽略部分返回值
+    numOnly, _ := multiReturn() // 忽略第二个返回值
+    fmt.Printf("只取第一个返回值: %d\n", numOnly)
+    
+    // 命名返回值
+    n, msg := namedReturn()
+    fmt.Printf("命名返回值: %d, %s\n", n, msg)
+    
+    // 提前返回示例
+    fmt.Printf("earlyReturn(-5): %s\n", earlyReturn(-5))
+    fmt.Printf("earlyReturn(0): %s\n", earlyReturn(0))
+    fmt.Printf("earlyReturn(10): %s\n", earlyReturn(10))
+}
+
+执行无返回值函数
+返回单个值
+单返回值: 42
+返回多个值
+多返回值: 100, hello
+返回多个值
+只取第一个返回值: 100
+命名返回值: 200, world
+earlyReturn(-5): 负数
+earlyReturn(0): 零
+earlyReturn(10): 正数
+```
 
 ## 函数、包和错误处理
 
-### 函数定义
+### 函数
 
+```go
 func 函数名（形参列表）(返回值列表){
 
 执行语句
@@ -552,8 +1493,9 @@ func 函数名（形参列表）(返回值列表){
 return 返回值列表
 
 }
+```
 
-### 函数使用的注意事项和细节讨论
+#### 函数使用的注意事项和细节讨论
 
 1) Go函数不支持函数重载
 
@@ -561,47 +1503,209 @@ return 返回值列表
 
 3) 函数既然是一种数据类型，因此在Go中，函数可以作为形参，并且调用
 
+### 包
+
+1. **包声明**：`package 包名`（每个文件必须）
+2. **主包**：`package main` + `func main()` 程序入口
+3. **导入**：`import "包路径"`
+4. **导出规则**：首字母大写的标识符可被外部访问
+5. **初始化**：`init()` 函数在导入时自动执行
+6. **模块管理**：`go.mod` 定义模块和依赖
+7. m "myapp/utils"         // 别名导入
+
 ### init函数
 
-**基本介绍**
+```go
+// 每一个源文件都可以包含一个init函数，该函数会在main函数执行前，被Go运行框架调用，也就是说init会在main函数前被调用
+package main
 
-每一个源文件都可以包含一个init函数，该函数会在main函数执行前，被Go运行框架调用，也就是说init会在main函数前被调用
+import "fmt"
 
-**inti函数的注意事项和细节**
+var global = "hello world"
 
-1) 如果一个文件同时包含全局变量定义，init函数和main函数，则执行的流程全局变量定义->init函数->main函数
+func init() {
+	fmt.Println("global:", global)
+}
 
-2) init函数最主要的作用，就是完成一些初始化的工作
+func main() {
+	fmt.Println("main:", global)
+}
 
-3) 细节说明:面试题：案例如果main.go和utils.go都含有变量定义，init函数时，执行的流程又是怎么样的呢
-
-![](go学习笔记\init.png)
+执行的流程全局变量定义->init函数->main函数
+global: hello world
+main: hello world
+```
 
 ### 匿名函数
 
-**介绍**
+```go
+package main
 
-Go支持匿名函数，匿名函数就是没有名字的函数，如果我们某个函数只是希望使用一次，可以考虑使用匿名函数，匿名函数也可以实现多次调用
+import "fmt"
 
-**匿名函数使用方式**
+func main() {
+	// 1. 基本匿名函数 - 赋值给变量
+	add := func(a, b int) int {
+		return a + b
+	}
+	result := add(3, 4)
+	fmt.Printf("3 + 4 = %d\n", result)
 
-1）在定义匿名函数时就直接调用，这种方式匿名函数只能调用一次
+	// 2. 立即执行匿名函数
+	func() {
+		fmt.Println("立即执行的匿名函数")
+	}()
+}
 
-2）将匿名函数赋给一个变量(函数变量)，再通过该变量来调用匿名函数
+3 + 4 = 7
+立即执行的匿名函数
+```
 
 ### 闭包
 
-基本介绍：闭包就是一个函数和与其相关的引用环境组合的一个整体(实体)
+**闭包（Closure）** 是一个函数值，它引用了其函数体之外的变量。这个函数可以访问并操作这些外部变量，即使这些变量已经离开了它们原本的作用域。
 
-### 函数的defer
+```go
+package main
 
-在函数中，程序员经常需要创建资源(比如：数据库连接、文件句柄、锁等)，为了在函数执行完毕后，及时的释放资源，Go的设计者提供defer(延时机制)
+import "fmt"
 
-1) 当go执行到一个defer时，不会立即执行defer后的语句，而是将defer后的语句压入到一个栈中[我为了讲课方便，暂时称该栈为defer栈],然后继续执行函数下一个语句
+func main() {
+	// 1. 基本闭包 - 捕获外部变量
+	counter := 0
+	increment := func() int {
+		counter++ // 捕获并修改外部变量
+		return counter
+	}
 
-2) 当函数执行完毕后，在从defer栈中，依次从栈顶取出语句执行(注：遵守栈先入后出的机制)
+	fmt.Printf("计数: %d\n", increment()) // 1
+	fmt.Printf("计数: %d\n", increment()) // 2
+	fmt.Printf("计数: %d\n", increment()) // 3
+	fmt.Printf("最终计数: %d\n", counter)   // 3
 
-3) 在defer将语句放入到栈时，也会将相关的值拷贝同时入栈
+	// 2. 闭包记住状态 - 计数器工厂
+	createCounter := func() func() int {
+		count := 0 // 这个变量被闭包"记住"
+		return func() int {
+			count++
+			return count
+		}
+	}
+
+	counter1 := createCounter()
+	counter2 := createCounter()
+
+	fmt.Printf("计数器1: %d\n", counter1()) // 1
+	fmt.Printf("计数器1: %d\n", counter1()) // 2
+	fmt.Printf("计数器2: %d\n", counter2()) // 1 (独立的计数)
+	fmt.Printf("计数器1: %d\n", counter1()) // 3
+
+	// 3. 带参数的闭包
+	multiplier := func(factor int) func(int) int {
+		return func(x int) int {
+			return x * factor
+		}
+	}
+
+	double := multiplier(2)
+	triple := multiplier(3)
+
+	fmt.Printf("双倍: %d\n", double(5)) // 10
+	fmt.Printf("三倍: %d\n", triple(5)) // 15
+
+	// 4. 1.20 版本及以下循环中的闭包陷阱（重点！）
+	var funcs []func()
+	for i := 0; i < 3; i++ {
+		// 错误：所有闭包都捕获同一个i变量
+		funcs = append(funcs, func() {
+			fmt.Printf("错误: i = %d\n", i)
+		})
+	}
+
+	for _, f := range funcs {
+		f() // 全部输出 i = 3
+	}
+
+	// 正确：创建局部副本
+	var correctFuncs []func()
+	for i := 0; i < 3; i++ {
+		j := i // 创建局部变量副本
+		correctFuncs = append(correctFuncs, func() {
+			fmt.Printf("正确: j = %d\n", j)
+		})
+	}
+
+	for _, f := range correctFuncs {
+		f() // 正确输出 j = 0, 1, 2
+	}
+}
+计数: 1
+计数: 2
+计数: 3
+最终计数: 3
+计数器1: 1
+计数器1: 2
+计数器2: 1
+计数器1: 3
+双倍: 10
+三倍: 15
+i = 3
+i = 3
+i = 3
+i = 0
+i = 1
+i = 2
+
+
+package main
+
+import "fmt"
+
+func main() {
+	// 现代1.21 版本及以上Go中，每次迭代都会创建新的循环变量
+	for i := 0; i < 3; i++ {
+		// 每次迭代的 i 都是新的变量实例
+		func() {
+			fmt.Printf("迭代 %d: i地址 = %p\n", i, &i)
+		}()
+	}
+}
+
+迭代 0: i地址 = 0x14000104020
+迭代 1: i地址 = 0x14000104030
+迭代 2: i地址 = 0x1400010403
+```
+
+### defer
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// 1. 基本用法 - 延迟执行
+	defer fmt.Println("最后执行")
+	fmt.Println("先执行")
+
+	// 2. 执行顺序 - 后进先出
+	defer fmt.Println("第三")
+	defer fmt.Println("第二")
+	defer fmt.Println("第一")
+
+	// 3. 参数立即求值
+	x := 1
+	defer fmt.Println("x =", x) // 输出 x = 1
+	x = 2
+}
+
+先执行
+x = 1
+第一
+第二
+第三
+最后执行
+```
 
 ### 函数参数传递方式
 
@@ -609,7 +1713,7 @@ Go支持匿名函数，匿名函数就是没有名字的函数，如果我们某
 
 2) 引用传递
 
-其实，不管是值传递还是引用传递，传递给函数的都是变量的副本，不同的是，值传递的是值的拷贝，引用传递的是地址的拷贝，一般来说，地址拷贝效率高，因为数据量小，而值拷贝决定拷贝的数据大小，数据越大，效率越低
+**其实，不管是值传递还是引用传递，传递给函数的都是变量的副本，不同的是，值传递的是值的拷贝，引用传递的是地址的拷贝，一般来说，地址拷贝效率高，因为数据量小，而值拷贝决定拷贝的数据大小，数据越大，效率越低**
 
 **值类型和引用类型**
 
@@ -629,269 +1733,1165 @@ Go支持匿名函数，匿名函数就是没有名字的函数，如果我们某
 
 ### 字符串常用的系统函数
 
-1) 统计字符串的长度，按字节len(str) （golang同意utf-8编码，字母和数字一个字节，汉字占三个字节）
+```go
+package main
 
-2) 字符串遍历，同时处理有中文的问题r:=[]rune(str)
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
-3) 字符串转整数:n,err:=strconv.Atoi("12")
+func main() {
+	str := " Hello, Go World! "
 
-4) 整数转字符串str=strconv.Itoa(12345)
+	// 1. 长度和基础操作
+	fmt.Printf("1. 长度: %d\n", len(str))
+	fmt.Printf("2. 去空格: \"%s\"\n", strings.TrimSpace(str))
 
-5) 字符串转[]byte: varbytes = []byte("hello go")
+	// 3. 大小写转换
+	fmt.Printf("3. 大写: %s\n", strings.ToUpper("hello"))
+	fmt.Printf("4. 小写: %s\n", strings.ToLower("HELLO"))
 
-6) []byte转字符串:str=string([]byte{97,98,99})
+	// 5. 包含判断
+	fmt.Printf("5. 包含Go: %t\n", strings.Contains(str, "Go"))
+	fmt.Printf("6. 前缀: %t\n", strings.HasPrefix(str, " Hello"))
+	fmt.Printf("7. 后缀: %t\n", strings.HasSuffix(str, "World! "))
 
-7)10进制转2,8,16进制:str=strconv.FormatInt(123,2)//2->8,16
+	// 8. 查找和索引
+	fmt.Printf("8. Go位置: %d\n", strings.Index(str, "Go"))
+	fmt.Printf("9. 最后o位置: %d\n", strings.LastIndex(str, "o"))
 
-8) 查找子串是否在指定的字符串中:strings.Contains("seafood","foo")//true
+	// 10. 替换
+	fmt.Printf("10. 替换: %s\n", strings.Replace(str, "World", "Golang", 1))
 
-9) 统计一个字符串有几个指定的子串：strings.Count("ceheese","e")//4
+	// 11. 分割和连接
+	parts := strings.Split("a,b,c", ",")
+	fmt.Printf("11. 分割: %v\n", parts)
+	fmt.Printf("12. 连接: %s\n", strings.Join(parts, "-"))
 
-10) 不区分大小写的字符串比较(==是区分字母大小写的):fmt.Println(strings.EqualFold("abc","Abc"))//true
+	// 13. 重复
+	fmt.Printf("13. 重复: %s\n", strings.Repeat("Go", 3))
 
-11) 返回子串在字符串第一次出现的index值，如果没有返回-1:strings.Index("NLT_abc","abc")//4
-
-12)返回子串在字符串最后一次出现的index，如没有返回-1:strings.LastIndex("gogolang","go") //3
-
-13) 将指定的子串替换成另外一个子串:strings.Replace("gogohello","go","go语言",n)n可以指定你希望替换几个，如果n=-1表示全部替换
-
-14) 按照指定的某个字符，为分割标识，将一个字符串拆分成**字符串数组**：strings.Split("hello,wrold,ok",",")
-
-15) 将字符串的字母进行大小写的转换:strings.ToLower("Go")//go strings.ToUpper("Go")//GO
-
-16) 将字符串左右两边的空格去掉：strings.TrimSpace("   nalon  egoph  erntrn  ")
-
-17) 将字符串左右两边指定的字符去掉：strings.Trim("! hello! "," !")//将左右两边!和""去掉
-
-18) 将字符串左边指定的字符去掉：strings.TrimLeft("! hello! ","! ")//将左边!和""去掉
-
-19) 将字符串右边指定的字符去掉：strings.TrimRight("! hello! ","!")//将右边!和""去掉
-
-20) 判断字符串是否以指定的字符串开头:strings.HasPrefix("ftp://192.168.10.1","ftp")//true
-
-21) 判断字符串是否以指定的字符串结束:strings.HasSuffix("NLT_abc.jpg","abc")//false
+	// 14. 类型转换
+	numStr := "123"
+	num, _ := strconv.Atoi(numStr)
+	fmt.Printf("14. 字符串转数字: %d\n", num)
+	fmt.Printf("15. 数字转字符串: %s\n", strconv.Itoa(456))
+}
+1. 长度: 18
+2. 去空格: "Hello, Go World!"
+3. 大写: HELLO
+4. 小写: hello
+5. 包含Go: true
+6. 前缀: true
+7. 后缀: true
+8. Go位置: 8
+9. 最后o位置: 12
+10. 替换:  Hello, Go Golang! 
+11. 分割: [a b c]
+12. 连接: a-b-c
+13. 重复: GoGoGo
+14. 字符串转数字: 123
+15. 数字转字符串: 456
+```
 
 ### 时间和日期相关函数
 
-1) 时间和日期相关函数，需要导入time包
-
-2) time.Time类型，用于表示时间
-
 ```go
-now := time.now()
-now.Year()
-```
+package main
 
-3) 格式化日期时间
-
-方式1:就是使用Printf或者SPrint
-
-方式2:使用time.Format()方法完成:
-
-"2006/01/02 15:04:05"这个字符串的各个数字是固定的，必须是这样写。"2006/01/02 15:04:05"这个字符串各个数字可以自由的组合，这样可以按程序需求来返回时间和日期
-
-4) 时间的常量
-
-```
-const(
-Nanosecond Duration=1//纳秒
-Microsecond=1000*Nanosecond //微秒
-Millisecond=1000*Microsecond //毫秒
-Second=1000*Millisecond/ /秒
-Minute=60*Second //分钟
-Hour=60*Minute //小时
+import (
+	"fmt"
+	"time"
 )
-```
 
-常量的作用:在程序中可用于获取指定时间单位的时间，比如想得到100毫秒100*time.Millisecond
+func main() {
+	// 1. 获取当前时间
+	now := time.Now()
+	fmt.Printf("1. 当前时间: %v\n", now)
 
-5) time的Unix和UnixNano的方法
+	// 2. 获取时间组成部分
+	fmt.Printf("2. 年: %d, 月: %d, 日: %d\n",
+		now.Year(), now.Month(), now.Day())
+	fmt.Printf("3. 时: %d, 分: %d, 秒: %d\n",
+		now.Hour(), now.Minute(), now.Second())
 
-```
-Unix时间戳 秒
-UnixNano时间戳 纳秒
+	// 4. 格式化时间（重点！）
+	fmt.Printf("4. 标准格式: %s\n", now.Format("2006-01-02 15:04:05"))
+	fmt.Printf("5. 日期格式: %s\n", now.Format("2006/01/02"))
+	fmt.Printf("6. 时间格式: %s\n", now.Format("15:04:05"))
 
+	// 7. 时间戳
+	fmt.Printf("7. 秒时间戳: %d\n", now.Unix())
+	fmt.Printf("8. 毫秒时间戳: %d\n", now.UnixMilli())
+
+	// 9. 时间计算
+	tomorrow := now.Add(24 * time.Hour)
+	fmt.Printf("9. 明天: %s\n", tomorrow.Format("2006-01-02"))
+
+	yesterday := now.Add(-24 * time.Hour)
+	fmt.Printf("10. 昨天: %s\n", yesterday.Format("2006-01-02"))
+
+	// 11. 时间比较
+	fmt.Printf("11. 现在在明天之前: %t\n", now.Before(tomorrow))
+	fmt.Printf("12. 现在在昨天之后: %t\n", now.After(yesterday))
+
+	// 13. 创建特定时间
+	specificTime := time.Date(2024, 1, 1, 12, 0, 0, 0, time.Local)
+	fmt.Printf("13. 特定时间: %s\n", specificTime.Format("2006-01-02 15:04:05"))
+
+	// 14. 解析字符串时间
+	timeStr := "2024-12-25 18:30:00"
+	parsedTime, _ := time.Parse("2006-01-02 15:04:05", timeStr)
+	fmt.Printf("14. 解析时间: %s\n", parsedTime.Format("2006-01-02 15:04:05"))
+
+	// 15. 时间差
+	duration := tomorrow.Sub(now)
+	fmt.Printf("15. 到明天还有: %.0f 小时\n", duration.Hours())
+}
+
+1. 当前时间: 2025-10-18 20:21:32.283935 +0800 CST m=+0.000104667
+2. 年: 2025, 月: 10, 日: 18
+3. 时: 20, 分: 21, 秒: 32
+4. 标准格式: 2025-10-18 20:21:32
+5. 日期格式: 2025/10/18
+6. 时间格式: 20:21:32
+7. 秒时间戳: 1760790092
+8. 毫秒时间戳: 1760790092283
+9. 明天: 2025-10-19
+10. 昨天: 2025-10-17
+11. 现在在明天之前: true
+12. 现在在昨天之后: true
+13. 特定时间: 2024-01-01 12:00:00
+14. 解析时间: 2024-12-25 18:30:00
+15. 到明天还有: 24 小时
 ```
 
 ### 内置函数
 
-1) len：用来求长度，比如string、array、slice、map、channel
+```go
+package main
 
-2) new：用来分配内存，主要用来分配值类型，比如int、float32,struct...返回的是指针
+import "fmt"
 
-3) make：用来分配内存，主要用来分配引用类型，比如channel、map、slice。
+func main() {
+    // 1. len - 获取长度/容量
+    arr := [3]int{1, 2, 3}
+    slice := []int{1, 2, 3, 4, 5}
+    str := "hello"
+    m := map[string]int{"a": 1, "b": 2}
+    
+    fmt.Printf("1. 数组长度: %d\n", len(arr))
+    fmt.Printf("2. 切片长度: %d\n", len(slice))
+    fmt.Printf("3. 字符串长度: %d\n", len(str))
+    fmt.Printf("4. map长度: %d\n", len(m))
+
+    // 2. new - 分配内存，返回指针
+    ptr := new(int)
+    *ptr = 100
+    fmt.Printf("5. new创建指针: %p, 值: %d\n", ptr, *ptr)
+    
+    // 3. make - 初始化切片、map、channel
+    // 切片
+    s := make([]int, 3, 5) // 长度3，容量5
+    fmt.Printf("6. make切片: len=%d, cap=%d, %v\n", len(s), cap(s), s)
+    
+    // map
+    dict := make(map[string]int)
+    dict["key"] = 42
+    fmt.Printf("7. make map: %v\n", dict)
+    
+    // channel
+    ch := make(chan int, 2) // 缓冲大小为2
+    ch < - 1
+    ch < - 2
+    fmt.Printf("8. make channel: %d, %d\n", < -ch, < -ch)
+}
+
+1. 数组长度: 3
+2. 切片长度: 5
+3. 字符串长度: 5
+4. map长度: 2
+5. new创建指针: 0x14000112020, 值: 100
+6. make切片: len=3, cap=5, [0 0 0]
+7. make map: map[key:42]
+8. make channel: 1, 2
+```
+
+#### new
+
+`new` 用于为值类型分配内存，并返回指向该类型的**指针**。
+
+##### 语法：
+
+```go
+func new(Type) *Type
+```
+
+##### 特点：
+
+- 返回指向新分配零值的指针
+- 适用于所有类型
+- 内存被初始化为零值
+
+ ```go
+  // 为基本类型分配内存
+  p1 := new(int)      // *int, 指向 0
+  p2 := new(string)   // *string, 指向 ""
+  p3 := new(bool)     // *bool, 指向 false
+ // 为结构体分配内存
+ type Person struct {
+     Name string
+     Age  int
+ }
+ p4 := new(Person)   // *Person, 指向 {Name: "", Age: 0}
+ ```
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// 1. 直接声明指针 - 零值nil
+	var p1 *int
+	fmt.Printf("1. 直接声明指针: %p, 值: %v\n", p1, p1)
+
+	// 2. 使用new - 分配内存并初始化为零值
+	p2 := new(int)
+	fmt.Printf("2. new创建指针: %p, 指向的值: %d\n", p2, *p2)
+
+	// 3. 赋值操作对比
+	// p1 是 nil，直接解引用会panic
+	// *p1 = 100  // 运行时panic!
+
+	// p2 指向有效的内存，可以安全赋值
+	*p2 = 100
+	fmt.Printf("3. 赋值后: %d\n", *p2)
+
+	// 4. 取地址操作符 vs new
+	x := 42
+	p3 := &x       // 取现有变量的地址
+	p4 := new(int) // 创建新内存
+
+	fmt.Printf("4. 取地址: %p -> %d\n", p3, *p3)
+	fmt.Printf("5. new创建: %p -> %d\n", p4, *p4)
+
+	// 5. 函数参数中的区别
+	testPointers()
+}
+
+func testPointers() {
+	fmt.Println("\n=== 函数参数测试 ===")
+
+	// 直接声明的nil指针
+	var nilPtr *int
+	processPointer(nilPtr) // 传递nil指针
+
+	// new分配的有效指针
+	validPtr := new(int)
+	*validPtr = 200
+	processPointer(validPtr)
+}
+
+func processPointer(p *int) {
+	if p == nil {
+		fmt.Println("接收到nil指针")
+		return
+	}
+	fmt.Printf("处理指针: %d\n", *p)
+}
+
+1. 直接声明指针: 0x0, 值: <nil>
+2. new创建指针: 0x14000104020, 指向的值: 0
+3. 赋值后: 100
+4. 取地址: 0x14000104028 -> 42
+5. new创建: 0x14000104030 -> 0
+
+=== 函数参数测试 ===
+接收到nil指针
+处理指针: 200
+```
+
+####  make
+
+`make` 用于创建并初始化**切片、map 和 channel**这三种引用类型。
+
+##### 语法：
+
+```go
+// 切片
+func make([]T, len, cap) []T
+
+// map
+func make(map[K]V, initialCapacity) map[K]V
+
+// channel
+func make(chan T, bufferSize) chan T
+```
+
+##### 特点
+
+- 只适用于 slice、map、channel
+- 返回的是**类型本身**，不是指针
+- 会进行初始化，而不仅仅是分配内存
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    // 创建切片
+    slice1 := make([]int, 5)        // 长度=5, 容量=5
+    slice2 := make([]int, 3, 10)    // 长度=3, 容量=10
+    
+    fmt.Printf("slice1: len=%d, cap=%d, %v\n", len(slice1), cap(slice1), slice1)
+    fmt.Printf("slice2: len=%d, cap=%d, %v\n", len(slice2), cap(slice2), slice2)
+    
+    // 创建 map
+    map1 := make(map[string]int)
+    map2 := make(map[string]int, 10) // 指定初始容量
+    
+    map1["a"] = 1
+    map2["b"] = 2
+    fmt.Printf("map1: %v\n", map1)
+    fmt.Printf("map2: %v\n", map2)
+    
+    // 创建 channel
+    ch1 := make(chan int)       // 无缓冲channel
+    ch2 := make(chan int, 10)   // 缓冲大小为10的channel
+    
+    fmt.Printf("ch1: %T\n", ch1)
+    fmt.Printf("ch2: %T\n", ch2)
+}
+```
+
+#### sort
+
+```go
+package main
+
+import (
+	"fmt"
+	"sort"
+)
+
+func main() {
+	// 1. 基本类型排序
+	ints := []int{3, 1, 4, 1, 5, 9, 2, 6}
+	strings := []string{"banana", "apple", "cherry"}
+
+	sort.Ints(ints)       // 整数排序
+	sort.Strings(strings) // 字符串排序
+
+	fmt.Printf("1. 整数排序: %v\n", ints)     // [1 1 2 3 4 5 6 9]
+	fmt.Printf("2. 字符串排序: %v\n", strings) // [apple banana cherry]
+
+	// 2. 检查是否已排序
+	fmt.Printf("3. 是否已排序: %t\n", sort.IntsAreSorted(ints))
+
+	// 3. 自定义排序 - sort.Slice
+	people := []struct {
+		Name string
+		Age  int
+	}{
+		{"Alice", 25},
+		{"Bob", 30},
+		{"Charlie", 20},
+	}
+
+	// 按年龄升序排序
+	sort.Slice(people, func(i, j int) bool {
+		return people[i].Age < people[j].Age
+	})
+	fmt.Printf("4. 按年龄升序: %v\n", people)
+
+	// 按姓名降序排序
+	sort.Slice(people, func(i, j int) bool {
+		return people[i].Name > people[j].Name
+	})
+	fmt.Printf("5. 按姓名降序: %v\n", people)
+
+	// 4. 稳定排序 - sort.SliceStable
+	numbers := []int{3, 1, 4, 1, 5, 9, 2, 6}
+	sort.SliceStable(numbers, func(i, j int) bool {
+		return numbers[i] < numbers[j] // 升序
+	})
+	fmt.Printf("6. 稳定排序: %v\n", numbers)
+
+	// 5. 反向排序
+	sort.Sort(sort.Reverse(sort.IntSlice(ints)))
+	fmt.Printf("7. 反向排序: %v\n", ints) // [9 6 5 4 3 2 1 1]
+
+	// 6. 搜索已排序切片
+	sorted := []int{1, 3, 5, 7, 9}
+	index := sort.SearchInts(sorted, 5)
+	fmt.Printf("8. 搜索5的位置: %d\n", index) // 2
+
+	// 7. 自定义搜索条件
+	index = sort.Search(len(sorted), func(i int) bool {
+		return sorted[i] >= 6 // 第一个 >=6 的元素
+	})
+	fmt.Printf("9. 第一个>=6的元素: %d\n", sorted[index]) // 7
+}
+
+1. 整数排序: [1 1 2 3 4 5 6 9]
+2. 字符串排序: [apple banana cherry]
+3. 是否已排序: true
+4. 按年龄升序: [{Charlie 20} {Alice 25} {Bob 30}]
+5. 按姓名降序: [{Charlie 20} {Bob 30} {Alice 25}]
+6. 稳定排序: [1 1 2 3 4 5 6 9]
+7. 反向排序: [9 6 5 4 3 2 1 1]
+8. 搜索5的位置: 2
+9. 第一个>=6的元素: 7
+```
 
 ### 错误处理
 
-1) Go语言追求简洁优雅，所以，Go语言不支持传统的try...catch...finally这种处理。
+```go
+package main
 
-2) Go中引入的处理方式为：defer,panic,recover
+import (
+	"errors"
+	"fmt"
+)
 
-3) 这几个异常的使用场景可以这么简单描述：Go中可以抛出一个panic的异常，然后在defer中通过recover捕获这个异常，然后正常处理
+func main() {
+	// 1. error - 预期的错误处理
+	result, err := safeDivide(10, 0)
+	if err != nil {
+		fmt.Printf("1. error处理: %v\n", err) // 优雅处理错误
+	} else {
+		fmt.Printf("1. 结果: %d\n", result)
+	}
 
-### 自定义错误
+	// 2. panic - 不可恢复的严重错误
+	fmt.Println("2. 准备触发panic...")
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("3. 捕获到panic: %v\n", r) // 恢复程序执行
+		}
+	}()
 
-Go程序中，也支持自定义错误，使用errors.New和panic内置函数。
+	dangerousDivide(10, 0) // 这会触发panic
+	fmt.Println("这行不会执行")  // 被panic中断
+}
 
-1) errors.New("错误说明"),会返回一个error类型的值，表示一个错误
+// 使用error处理预期错误
+func safeDivide(a, b int) (int, error) {
+	if b == 0 {
+		return 0, errors.New("除数不能为零")
+	}
+	return a / b, nil
+}
 
-2) panic内置函数,接收一个interface{}类型的值（也就是任何值了）作为参数。可以接收error类型的变量，输出错误信息，并退出程序.
+// 使用panic处理不可恢复错误
+func dangerousDivide(a, b int) int {
+	if b == 0 {
+		panic("数学错误：除零操作") // 严重错误，立即停止
+	}
+	return a / b
+}
 
-## 数组与切片
+1. error处理: 除数不能为零
+2. 准备触发panic...
+3. 捕获到panic: 数学错误：除零操作
+```
 
-### 数组定义和内存布局
+## 数组
 
-**数组的定义**
+**重要特性**：
 
-var 数组名 [数组大小]数据类型
+- **值类型**：赋值和传参都会复制整个数组
+- **长度固定**：创建后不能改变长度
+- **可比较**：相同类型的数组可以用 `==` 比较
+- **索引访问**：从0开始，`arr[index]`
 
-var a [5]int 赋初值 a[0]=1a[1]=30....
+```go
+package main
 
-**数组在内存布局(重要)**
+import "fmt"
 
-1) 数组的地址可以通过数组名来获取 &intArr
+func main() {
+	// 1. 数组声明和初始化
+	var arr1 [3]int           // 声明，零值初始化
+	arr2 := [3]int{1, 2, 3}   // 声明并初始化
+	arr3 := [...]int{4, 5, 6} // 编译器推导长度
 
-2) 数组的第一个元素的地址，就是数组的首地址
+	fmt.Printf("1. arr1: %v\n", arr1) // [0 0 0]
+	fmt.Printf("2. arr2: %v\n", arr2) // [1 2 3]
+	fmt.Printf("3. arr3: %v\n", arr3) // [4 5 6]
 
-3) 数组的各个元素的地址间隔是依据数组的类型决定，比如 int64->8 int32->4
+	// 2. 数组长度和容量
+	fmt.Printf("4. arr2长度: %d, 容量: %d\n", len(arr2), cap(arr2))
 
-### 数组使用的注意事项和细节
+	// 3. 数组访问和修改
+	arr2[0] = 100
+	fmt.Printf("5. 修改后arr2: %v\n", arr2) // [100 2 3]
 
-初始化数组
+	// 4. 数组遍历
+	fmt.Printf("6. 数组遍历: ")
+	for i := 0; i < len(arr3); i++ {
+		fmt.Printf("%d ", arr3[i])
+	}
+	fmt.Println()
 
-![](go学习笔记\数组初始化.png)
+	fmt.Printf("7. range遍历: ")
+	for index, value := range arr3 {
+		fmt.Printf("arr3[%d]=%d ", index, value)
+	}
+	fmt.Println()
 
-1) 数组是多个相同类型数据的组合,一个数组一旦声明/定义了,其长度是固定的,不能动态变化
+	// 5. 数组是值类型（重点！）
+	arr4 := arr2 // 复制整个数组
+	arr4[0] = 999
+	fmt.Printf("8. 原数组: %v\n", arr2)  // [100 2 3]
+	fmt.Printf("9. 复制数组: %v\n", arr4) // [999 2 3]
 
-2) var arr []int这时arr就是一个slice切片
+	// 6. 多维数组
+	matrix := [2][3]int{
+		{1, 2, 3},
+		{4, 5, 6},
+	}
+	fmt.Printf("10. 二维数组: %v\n", matrix)
 
-3) 数组中的元素可以是任何数据类型，包括值类型和引用类型，但是不能混用
+	// 7. 数组比较（只有相同长度和类型的数组可以比较）
+	a := [2]int{1, 2}
+	b := [2]int{1, 2}
+	c := [2]int{1, 3}
+	fmt.Printf("11. 数组比较: a==b: %t, a==c: %t\n", a == b, a == c)
 
-4) 数组创建后，如果没有赋值，有默认值(零值)
+	arr5 := [3]int{1, 2, 3}
+	modifyArray(arr5)
+	fmt.Printf("arr5: %v\n", arr5)
 
-数值类型数组：默认值为0
+}
 
-字符串数组：默认值为""
+// 8. 数组作为函数参数（值传递）
+func modifyArray(arr [3]int) {
+	arr[0] = 999
+	fmt.Printf("12. 函数内修改: %v\n", arr)
+}
 
-bool数组：默认值为false
+1. arr1: [0 0 0]
+2. arr2: [1 2 3]
+3. arr3: [4 5 6]
+4. arr2长度: 3, 容量: 3
+5. 修改后arr2: [100 2 3]
+6. 数组遍历: 4 5 6 
+7. range遍历: arr3[0]=4 arr3[1]=5 arr3[2]=6 
+8. 原数组: [100 2 3]
+9. 复制数组: [999 2 3]
+10. 二维数组: [[1 2 3] [4 5 6]]
+11. 数组比较: a==b: true, a==c: false
+12. 函数内修改: [999 2 3]
+arr5: [1 2 3]
+```
 
-5) 长度是数组类型的一部分，在传递函数参数时需要考虑数组的长度
+## 切片
 
-### 切片
+### 底层实现
 
-**切片的使用**
+```
+切片内存布局示例: make([]int, 3, 5)
 
-第一种方式：定义一个切片，然后让切片去引用一个已经创建好的数组
+切片变量 s (在栈上):
++--------+--------+--------+
+|  ptr   |  len   |  cap   |
+| 0x1234 |   3    |   5    |
++--------+--------+--------+
+    |
+    v
+底层数组 (在堆上):
++----+----+----+----+----+
+| 1  | 2  | 3  | 0  | 0  |   ← 已使用3个，剩余2个容量
++----+----+----+----+----+
+索引: 0    1    2    3    4
+```
 
-第二种方式：通过make来创建切片.基本语法：var切片名[]type=make([]type,len,[cap])
+### 重要特性
 
-参数说明:type:就是数据类型len:大小cap：指定切片容量，可选，如果你分配了cap,则要求cap>=len
+**创建方式**：
 
-1) 通过make方式创建切片可以指定切片的大小和容量
+- `var s []int` - nil切片
+- `s := []int{1,2,3}` - 字面量
+- `s := make([]int, len, cap)` - make函数
+- `s := arr[start:end]` - 从数组切片
 
-2) 如果没有给切片的各个元素赋值，那么就会使用默认值[int,float=>0string=>””bool=>false]
+**核心特性**：
 
-3) 通过make方式创建的切片对应的数组是由make底层维护，对外不可见，即只能通过slice去访问各个元素
+- **动态大小**：长度可变，自动扩容
+- **引用语义**：传递切片不会复制底层数据
+- **共享底层**：多个切片可共享同一数组
+- **自动扩容**：append时容量不足会自动增长（通常翻倍）
 
-第三种方式：定义一个切片，直接就指定具体数组，使用原理类似make的方式
+**重要操作**：
 
-**切片的使用的注意事项和细节讨论**
+- `append()` - 追加元素，可能触发扩容
+- `copy()` - 复制切片内容
+- `len()` - 获取长度
+- `cap()` - 获取容量
+- 切片表达式 `[start:end]`
 
-1) 用append内置函数，可以对切片进行动态追加
+**扩容规则**：
 
-**切片append操作的底层原理分析**:
+- 容量不足时自动扩容
+- 通常扩容为原容量的2倍
+- 容量<1024时翻倍，>=1024时增长25%
 
-切片append操作的本质就是对数组扩容
+```go
+package main
 
-go底层会创建一下新的数组newArr(安装扩容后大小)
+import "fmt"
 
-将slice原来包含的元素拷贝到新的数组newArr
+func main() {
+	// 1. 切片的创建方式
+	var s1 []int            // 声明，nil切片
+	s2 := []int{1, 2, 3}    // 字面量创建
+	s3 := make([]int, 3, 5) // make创建，长度3，容量5
 
-slice重新引用到newArr
+	fmt.Printf("1. s1: %v, len=%d, cap=%d, isnil=%t\n", s1, len(s1), cap(s1), s1 == nil)
+	fmt.Printf("2. s2: %v, len=%d, cap=%d\n", s2, len(s2), cap(s2))
+	fmt.Printf("3. s3: %v, len=%d, cap=%d\n", s3, len(s3), cap(s3))
 
-注意newArr是在底层来维护的，程序员不可见
+	// 2. 从数组创建切片
+	arr := [5]int{1, 2, 3, 4, 5}
+	slice1 := arr[1:3] // 从索引1到3（不包括3）
+	slice2 := arr[:3]  // 从开始到索引3
+	slice3 := arr[2:]  // 从索引2到结束
 
-2）切片的拷贝操作
+	fmt.Printf("4. slice1: %v\n", slice1) // [2 3]
+	fmt.Printf("5. slice2: %v\n", slice2) // [1 2 3]
+	fmt.Printf("6. slice3: %v\n", slice3) // [3 4 5]
 
-(1) copy(para1,para2)参数的数据类型是切片
+	// 3. 切片操作会共享底层数组
+	slice1[0] = 999
+	fmt.Printf("7. 修改后原数组: %v\n", arr) // [1 999 3 4 5]
 
-(2) 按照上面的代码来看,slice4和slice5的数据空间是独立，相互不影响
+	// 4. append 操作（重点！）
+	s4 := []int{1, 2, 3}
+	s4 = append(s4, 4)              // 追加单个元素
+	s4 = append(s4, 5, 6, 7)        // 追加多个元素
+	s4 = append(s4, []int{8, 9}...) // 追加切片， ...切片解压缩
+
+	fmt.Printf("8. 追加后: %v, len=%d, cap=%d\n", s4, len(s4), cap(s4))
+
+	// 5. 容量自动增长
+	s5 := make([]int, 0, 2) // 容量2
+	fmt.Printf("9. 初始: len=%d, cap=%d\n", len(s5), cap(s5))
+	s5 = append(s5, 1, 2) // 容量刚好
+	fmt.Printf("10. 追加2个: len=%d, cap=%d\n", len(s5), cap(s5))
+	s5 = append(s5, 3) // 容量不够，自动扩容
+	fmt.Printf("11. 追加第3个: len=%d, cap=%d\n", len(s5), cap(s5))
+
+	// 6. copy 操作
+	src := []int{1, 2, 3, 4, 5}
+	dst := make([]int, 3)
+	n := copy(dst, src) // 复制元素
+	dst[0] = 100
+	fmt.Printf("12. 复制了 %d 个元素: src is: %v, dst is %v\n", n, src, dst)
+
+	// 7. 切片遍历
+	fmt.Printf("13. 遍历切片: ")
+	for i, v := range s2 {
+		fmt.Printf("s2[%d]=%d ", i, v)
+	}
+	fmt.Println()
+
+	s6 := []int{1, 2, 3, 4, 5}
+	modifySlice(s6)
+	fmt.Println(s6)
+}
+
+// 8. 切片作为函数参数（引用语义）
+func modifySlice(s []int) {
+	s[0] = 100
+}
+
+1. s1: [], len=0, cap=0, isnil=true
+2. s2: [1 2 3], len=3, cap=3
+3. s3: [0 0 0], len=3, cap=5
+4. slice1: [2 3]
+5. slice2: [1 2 3]
+6. slice3: [3 4 5]
+7. 修改后原数组: [1 999 3 4 5]
+8. 追加后: [1 2 3 4 5 6 7 8 9], len=9, cap=12
+9. 初始: len=0, cap=2
+10. 追加2个: len=2, cap=2
+11. 追加第3个: len=3, cap=4
+12. 复制了 3 个元素: src is: [1 2 3 4 5], dst is [100 2 3]
+13. 遍历切片: s2[0]=1 s2[1]=2 s2[2]=3 
+[100 2 3 4 5]
+```
+
+### ...使用
+
+```go
+package main
+
+import "fmt"
+
+// 1. 可变参数函数
+func showNames(names ...string) {
+    for _, name := range names {
+        fmt.Printf("%s ", name)
+    }
+    fmt.Println()
+}
+
+func main() {
+    // 2. 切片展开追加
+    nums := []int{1, 2, 3}
+    var slice []int
+    slice = append(slice, nums...)  // 展开切片
+    fmt.Printf("切片展开: %v\n", slice)
+    
+    // 3. 可变参数调用
+    showNames("Alice", "Bob")           // 直接传参
+    showNames([]string{"Charlie", "David"}...) // 切片展开传参
+    
+    // 4. 数组长度推导
+    arr := [...]int{1, 2, 3, 4, 5}     // 编译器计算长度
+    fmt.Printf("数组长度: %d\n", len(arr))
+}
+
+切片展开: [1 2 3]
+Alice Bob 
+Charlie David 
+数组长度: 5
+```
+
+### 初始化
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	// 初始化一个空的切片 nums
+	var nums []int
+
+	// 初始化一个大小为 7 的切片 nums，元素值默认都为 0
+	nums = make([]int, 7)
+
+	// 初始化一个包含元素 1, 3, 5 的切片 nums
+	nums = []int{1, 3, 5}
+
+	// 初始化一个大小为 7 的切片 nums，其值全都为 2
+	nums = make([]int, 7)
+	for i := range nums {
+		nums[i] = 2
+	}
+
+	fmt.Println(nums)
+
+	// 初始化一个大小为 3 * 3 的布尔切片 dp，其中的值都初始化为 true
+	var dp [][]bool
+	dp = make([][]bool, 3)
+	for i := 0; i < len(dp); i++ {
+		row := make([]bool, 3)
+		for j := range row {
+			row[j] = true
+		}
+		dp[i] = row
+	}
+
+	fmt.Println(dp)
+}
+```
+
+### 常用操作
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	n := 10
+	// 初始化切片，大小为 10，元素值都为 0
+	nums := make([]int, n)
+
+	// 输出：false
+	fmt.Println(len(nums) == 0)
+
+	// 输出：10
+	fmt.Println(len(nums))
+
+	// 在切片尾部插入一个元素 20
+	// append 函数会返回一个新的切片，所以需要将返回值重新赋值给 nums
+	nums = append(nums, 20)
+	// 输出：11
+	fmt.Println(len(nums))
+
+	// 得到切片最后一个元素
+	// 输出：20
+	fmt.Println(nums[len(nums)-1])
+
+	// 删除切片的最后一个元素
+	nums = nums[:len(nums)-1]
+	// 输出：10
+	fmt.Println(len(nums))
+
+	// 可以通过索引直接取值或修改
+	nums[0] = 11
+	// 输出：11
+	fmt.Println(nums[0])
+
+	// 在索引 3 处插入一个元素 99
+	// ... 是展开操作符，表示将切片中的元素展开
+	nums = append(nums[:3], append([]int{99}, nums[3:]...)...)
+
+	// 删除索引 2 处的元素
+	nums = append(nums[:2], nums[3:]...)
+
+	// 交换 nums[0] 和 nums[1]
+	nums[0], nums[1] = nums[1], nums[0]
+
+	// 遍历切片
+	// 输出：0 11 99 0 0 0 0 0 0 0
+	for _, num := range nums {
+		fmt.Print(num, " ")
+	}
+	fmt.Println()
+}
+```
 
 ### string和slice
 
-1) string底层是一个byte数组，因此string也可以进行切片处理
+```go
+package main
 
-2) string是不可变的，也就说不能通过str[0]='z'方式来修改字符串
+import "fmt"
 
-3) 如果需要修改字符串，可以先将string->[]byte切片或者[]rune-切片>修改->重写转成string
+func main() {
+	// ====== 底层相似性 ======
+	str := "Hello,世界"
 
-![](go学习笔记\string修改.png)
+	// 1. 底层都是字节序列
+	fmt.Printf("1. 字符串字节: ")
+	for i := 0; i < len(str); i++ {
+		fmt.Printf("%02x ", str[i])
+	}
+	fmt.Println()
 
-## 排序和查找
+	// 2. 都支持切片操作
+	byteSlice := str[0:5] // 字符串切片 → 新字符串
+	// byteSlice[0] = 'c' 编译错误：无法赋值
+	fmt.Printf("2. 字符串切片: %s\n", byteSlice)
 
-### 二维数组
+	// ====== 相互转换 ======
+	// 3. string → []byte (复制数据)
+	byteArr := []byte(str)
+	byteArr[0] = 'h' // 修改字节切片
+	fmt.Printf("3. 修改字节切片: %s\n", string(byteArr))
+	fmt.Printf("4. 原字符串不变: %s\n", str) // 证明数据被复制
 
-**先声明/定义,再赋值**
+	// 4. string → []rune (处理Unicode)
+	runeArr := []rune(str)
+	fmt.Printf("5. 字符数: %d\n", len(runeArr))
+	fmt.Printf("6. 字节数: %d\n", len(str))
 
-语法:var 数组名  [大小] [大小]类型 
+	// ====== 重要区别 ======
+	// 5. 字符串不可变，切片可变
+	slice := []byte{'H', 'e', 'l', 'l', 'o'}
+	slice[0] = 'h' // 可以直接修改
+	// str[0] = 'h'                 // 编译错误：字符串不可变
 
-再赋值
+	fmt.Printf("7. 切片可变: %s\n", string(slice))
+}
 
-**直接初始化**
+// 6. 函数参数传递的相似性
+func processString(s string) {
+	// s 是只读的
+	fmt.Printf("字符串参数: %s\n", s)
+}
 
-声明：var 数组名 [大小] [大小]类型 = [大小] [大小] 类型 {{初值..},{初值..}}
+func processSlice(s []byte) {
+	// s 可以修改，会影响调用方
+	if len(s) > 0 {
+		s[0] = 'X'
+	}
+}
+
+
+1. 字符串字节: 48 65 6c 6c 6f 2c e4 b8 96 e7 95 8c 
+2. 字符串切片: Hello
+3. 修改字节切片: hello,世界
+4. 原字符串不变: Hello,世界
+5. 字符数: 8
+6. 字节数: 12
+7. 切片可变: hello
+```
+
+### strings.Builder
+
+#### 创建和初始化
+
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    // 方法1: 直接声明
+    var builder1 strings.Builder
+    
+    // 方法2: 使用零值
+    builder2 := strings.Builder{}
+    
+    // 方法3: 使用 new 函数
+    builder3 := new(strings.Builder)
+    
+    fmt.Printf("builder1: %T\n", builder1)
+    fmt.Printf("builder2: %T\n", builder2)
+    fmt.Printf("builder3: %T\n", builder3)
+}
+builder1: strings.Builder
+builder2: strings.Builder
+builder3: *strings.Builder
+```
+
+#### 写入内容
+
+```go
+func writeMethods() {
+    var builder strings.Builder
+    
+    // 1. WriteString - 写入字符串
+    builder.WriteString("Hello, ")
+    builder.WriteString("World!")
+    
+    // 2. Write - 写入字节切片
+    bytes := []byte(" This is bytes.")
+    builder.Write(bytes)
+    
+    // 3. WriteByte - 写入单个字节
+    builder.WriteByte(' ')
+    builder.WriteByte('B')
+    
+    // 4. WriteRune - 写入 Unicode 字符
+    builder.WriteRune(' ')
+    builder.WriteRune('🎉')
+    
+    fmt.Println(builder.String()) // Hello, World! This is bytes. B 🎉
+}
+```
 
 ## Map
 
-### 基本语法
+### 初始化
 
-var map 变量名 map[keytype]valuetype
+```go
+package main
 
-key可以是什么类型
+import (
+    "fmt"
+)
 
-golang中的map，的key可以是很多种类型，比如bool,数字，string,指针,channel,还可以是只包含前面几个类型的接口,结构体,数组
+func main() {
+    // 初始化一个空的哈希表 hashmap
+    var hashmap map[int]string
+    hashmap = make(map[int]string)
 
-通常key为int、string
+    // 初始化一个包含一些键值对的哈希表 hashmap
+    hashmap = map[int]string{
+        1: "one",
+        2: "two",
+        3: "three",
+    }
 
-注意:slice，map还有function不可以，因为这几个没法用==来判断
+    fmt.Println(hashmap)
+}
+```
 
-valuetype 可以是什么类型valuetype的类型和key基本一样
+### 常用操作
 
-通常为:数字(整数,浮点数),string,map,struct
+```go
+package main
 
-**map声明的举例：**
+import (
+    "fmt"
+)
 
-var a map[string]string
+func main() {
+    // 初始化哈希表
+    hashmap := make(map[int]string)
+    hashmap[1] = "one"
+    hashmap[2] = "two"
+    hashmap[3] = "three"
 
-var a map[string]int
+    // 检查哈希表是否为空，输出：false
+    fmt.Println(len(hashmap) == 0)
 
-var a map[int]string
+    // 获取哈希表的大小，输出：3
+    fmt.Println(len(hashmap))
 
-var a map[string]map[string]string
+    // 查找指定键值是否存在
+    // 输出：Key 2 -> two
+    if val, exists := hashmap[2]; exists {
+        fmt.Println("Key 2 ->", val)
+    } else {
+        fmt.Println("Key 2 not found.")
+    }
 
-注意：声明是不会分配内存的，初始化需要make，分配内存后才能赋值和使用
+    // 获取指定键对应的值，若不存在会返回空字符串
+    // 输出：
+    fmt.Println(hashmap[4])
 
-### map的增删改查操作
+    // 插入一个新的键值对
+    hashmap[4] = "four"
 
-**map增加和更新：**
+    // 获取新插入的值，输出：four
+    fmt.Println(hashmap[4])
 
-map["key"]=value//如果key还没有，就是增加，如果key存在就是修改
+    // 删除键值对
+    delete(hashmap, 3)
 
-**map删除：**
+    // 检查删除后键 3 是否存在
+    // 输出：Key 3 not found.
+    if val, exists := hashmap[3]; exists {
+        fmt.Println("Key 3 ->", val)
+    } else {
+        fmt.Println("Key 3 not found.")
+    }
 
-说明：delete(map，"key")，delete是一个内置函数，如果key存在，就删除该key-value,如果key不存在，不操作，但是也不会报错
+    // 遍历哈希表
+    // 输出（顺序可能不同）：
+    // 1 -> one
+    // 2 -> two
+    // 4 -> four
+    for key, value := range hashmap {
+        fmt.Printf("%d -> %s\n", key, value)
+    }
+}
+```
 
-细节说明
+### map重点
 
-如果我们要删除map的所有key,没有一个专门的方法一次删除，可以遍历一下key,逐个删除或者map=make(map[string]string)，make一个新的，让原来的成为垃圾，被gc回收
+**创建方式**：
 
-**map查找:**
+- `var m map[K]V` - nil map（不能直接使用）
+- `m := make(map[K]V)` - 使用 make 创建
+- `m := map[K]V{...}` - 字面量创建
 
-val,error := map[“key”]
+**基本操作**：
 
-### map切片
+- `m[key] = value` - 添加/修改
+- `value := m[key]` - 获取值
+- `delete(m, key)` - 删除键值对
+- `value, exists := m[key]` - 检查键是否存在
 
-切片的数据类型如果是map，则我们称为slice of map，map切片，这样使用则map个数就可以动态变化了
+**重要特性**：
+
+- **无序集合**：遍历顺序不固定
+- **引用类型**：传递 map 不会复制数据
+- **键唯一性**：每个键只能出现一次
+- **零值可用**：不存在的键返回值类型的零值
+- **自动扩容**
+
+**使用注意事项**：
+
+- nil map 不能添加元素，必须先初始化
+- 使用双返回值形式检查键是否存在
+- 并发访问需要加锁（非线程安全）
+
+**性能特点**：
+
+- 基于哈希表实现
+- 查找、插入、删除平均 O(1) 时间复杂度
+- 自动扩容处理
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// 1. Map 的创建和初始化
+	var m1 map[string]int // 声明，nil map, 不分配空间，未初始化，不能直接赋值
+	//m1["key"] = 2
+	//fmt.Println(m1) // panic: assignment to entry in nil map
+
+	m2 := make(map[string]int) // 使用 make 创建
+	m3 := map[string]int{      // 字面量创建
+		"apple":  5,
+		"banana": 3,
+	}
+
+	fmt.Printf("1. m1: %v, isnil: %t\n", m1, m1 == nil)
+	fmt.Printf("2. m2: %v\n", m2)
+	fmt.Printf("3. m3: %v\n", m3)
+
+	// 2. Map 的基本操作
+	// 添加/修改元素
+	m3["orange"] = 8
+	m3["apple"] = 10 // 修改已存在的键
+
+	// 获取元素
+	appleCount := m3["apple"]
+	fmt.Printf("4. apple数量: %d\n", appleCount)
+
+	// 3. 检查键是否存在
+	count, exists := m3["grape"]
+	if exists {
+		fmt.Printf("5. grape数量: %d\n", count)
+	} else {
+		fmt.Printf("5. grape不存在\n")
+	}
+
+	// 4. 删除元素
+	delete(m3, "banana")
+	fmt.Printf("6. 删除banana后: %v\n", m3)
+
+	// 5. 遍历 Map
+	fmt.Printf("7. 遍历map: ")
+	for key, value := range m3 {
+		fmt.Printf("%s:%d ", key, value)
+	}
+	fmt.Println()
+
+	// 6. Map 长度
+	fmt.Printf("8. map长度: %d\n", len(m3))
+
+	// 7. 复杂值类型
+	scores := map[string][]int{
+		"Alice": {85, 90, 78},
+		"Bob":   {92, 88, 95},
+	}
+	fmt.Printf("9. 复杂map: %v\n", scores)
+
+	// 8. Map 作为函数参数
+	modifyMap(m3)
+	fmt.Printf("10. 函数修改后: %v\n", m3)
+}
+
+// Map 作为函数参数是引用传递
+func modifyMap(m map[string]int) {
+	m["watermelon"] = 15
+}
+
+1. m1: map[], isnil: true
+2. m2: map[]
+3. m3: map[apple:5 banana:3]
+4. apple数量: 10
+5. grape不存在
+6. 删除banana后: map[apple:10 orange:8]
+7. 遍历map: orange:8 apple:10 
+8. map长度: 2
+9. 复杂map: map[Alice:[85 90 78] Bob:[92 88 95]]
+10. 函数修改后: map[apple:10 orange:8 watermelon:15]
+```
 
 ### map排序
 
@@ -903,362 +2903,1539 @@ val,error := map[“key”]
 
 3) golang中map的排序，是先将key进行排序，然后根据key值遍历输出即可
 
-### map使用细节
+```go
+package main
 
-1) map是引用类型，遵守引用类型传递的机制，在一个函数接收map，修改后，会直接修改原来的map
+import (
+	"fmt"
+	"sort"
+)
 
-2) map的容量达到后，再想map增加元素，会自动扩容，并不会发生panic，也就是说map能动态的增长键值对(key-value)
+func main() {
+	// 1. 创建测试 map
+	scores := map[string]int{
+		"Charlie": 85,
+		"Alice":   92,
+		"Bob":     78,
+		"David":   96,
+	}
 
-3) map的value也经常使用struct类型，更适合管理复杂的数据(比前面value是一个map更好)
+	fmt.Println("原始map（无序）:", scores)
+
+	// 2. 按键排序（字母顺序）
+	fmt.Println("\n=== 按键排序 ===")
+	keys := make([]string, 0, len(scores))
+	for k := range scores { // 只获取 key 值，可省略最后一个value 获取
+		keys = append(keys, k)
+	}
+	sort.Strings(keys) // 对键排序
+
+	fmt.Print("按键排序结果: ")
+	for _, k := range keys {
+		fmt.Printf("%s:%d ", k, scores[k])
+	}
+	fmt.Println()
+
+	// 3. 按值排序（分数从高到低）
+	fmt.Println("\n=== 按值排序 ===")
+	type kv struct {
+		Key   string
+		Value int
+	}
+
+	var pairs []kv
+	for k, v := range scores {
+		pairs = append(pairs, kv{k, v})
+	}
+
+	// 按值降序排序
+	sort.Slice(pairs, func(i, j int) bool {
+		return pairs[i].Value > pairs[j].Value
+	})
+
+	fmt.Print("按值排序结果: ")
+	for _, pair := range pairs {
+		fmt.Printf("%s:%d ", pair.Key, pair.Value)
+	}
+	fmt.Println()
+
+	// 4. 整数键的排序
+	fmt.Println("\n=== 整数键排序 ===")
+	intMap := map[int]string{
+		300: "三百",
+		100: "一百",
+		200: "二百",
+	}
+
+	intKeys := make([]int, 0, len(intMap))
+	for k := range intMap {
+		intKeys = append(intKeys, k)
+	}
+	sort.Ints(intKeys)
+
+	fmt.Print("整数键排序: ")
+	for _, k := range intKeys {
+		fmt.Printf("%d:%s ", k, intMap[k])
+	}
+	fmt.Println()
+
+	// 5. 自定义排序规则
+	fmt.Println("\n=== 自定义排序 ===")
+	customSort(scores)
+}
+
+func customSort(m map[string]int) {
+	type kv struct {
+		Key   string
+		Value int
+	}
+
+	var pairs []kv
+	for k, v := range m {
+		pairs = append(pairs, kv{k, v})
+	}
+
+	// 自定义排序：先按值降序，值相同时按键升序
+	sort.Slice(pairs, func(i, j int) bool {
+		if pairs[i].Value == pairs[j].Value {
+			return pairs[i].Key < pairs[j].Key
+		}
+		return pairs[i].Value > pairs[j].Value
+	})
+
+	fmt.Print("自定义排序: ")
+	for _, pair := range pairs {
+		fmt.Printf("%s:%d ", pair.Key, pair.Value)
+	}
+	fmt.Println()
+}
+
+
+原始map（无序）: map[Alice:92 Bob:78 Charlie:85 David:96]
+
+=== 按键排序 ===
+按键排序结果: Alice:92 Bob:78 Charlie:85 David:96 
+
+=== 按值排序 ===
+按值排序结果: David:96 Alice:92 Charlie:85 Bob:78 
+
+=== 整数键排序 ===
+整数键排序: 100:一百 200:二百 300:三百 
+
+=== 自定义排序 ===
+自定义排序: David:96 Alice:92 Charlie:85 Bob:78 
+```
 
 ## 面向对象编程
 
-### 结构体
-
-1) Golang也支持面向对象编程(OOP)，但是和传统的面向对象编程有区别，并不是纯粹的面向对象语言。所以我们说Golang支持面向对象编程特性是比较准确的。
-
-2) Golang没有类(class)，Go语言的结构体(struct)和其它编程语言的类(class)有同等的地位，你可以理解Golang是基于struct来实现OOP特性的。
-
-3) Golang面向对象编程非常简洁，去掉了传统OOP语言的继承、方法重载、构造函数和析构函数、隐藏的this指针等等
-
-4) Golang仍然有面向对象编程的继承，封装和多态的特性，只是实现的方式和其它OOP语言不一样，比如继承：Golang没有extends关键字，继承是通过匿名字段来实现。
-
-5) Golang面向对象(OOP)很优雅，OOP本身就是语言类型系统(typesystem)的一部分，通过接口(interface)关联，耦合性低，也非常灵活。后面同学们会充分体会到这个特点。也就是说在Golang中面向接口编程是非常重要的特性
-
-**结构体和结构体变量(实例)的区别和联系**
-
-1) 结构体是自定义的数据类型，代表一类事物.
-
-2) 结构体变量(实例)是具体的，实际的，代表一个具体变量
-
-**如何声明结构体**
-
-基本语法 
-
-type 结构体名称 struct{
-
-field1 type 
-
-field2 type
-
-}
-
-1) 指针，slice，和map的零值都是nil，即还没有分配空间。
-
-2) 不同结构体变量的字段是独立，互不影响，一个结构体变量字段的更改，不影响另外一个,结构体是值类型
-
-**创建结构体变量和访问结构体字段**
-
-方式1 直接声明案例演示:var person Person
-
-方式2-{} 案例演示:var person Person=Person{}
-
-方式3-& 案例:var person *Person=new(Person)
-
-方式4-{} 案例:var person *Person=&Person{}
-
-**说明:**
-
-1) 第3种和第4种方式返回的是结构体指针。
-
-2) 结构体指针访问字段的标准方式应该是：(* 结构体指针).字段名，比如(*person).Name="tom"
-
-3) 但go做了一个简化，也支持结构体指针.字段名,比如person.Name="tom"。更加符合程序员使用的习惯，go编译器底层对person.Name做了转化(*person).Name
-
-**结构体使用注意事项和细节**
-
-1) 结构体的所有字段在内存中是连续的
-
-2) 结构体是用户单独定义的类型，和其它类型进行转换时需要有完全相同的字段(名字、个数和类型)
-
-3) 结构体进行type重新定义(相当于取别名)，Golang认为是新的数据类型，但是相互间可以强转
-
-4) struct的每个字段上，可以写上一个tag,该tag可以通过反射机制获取，常见的使用场景就是序列化和反序列化
+### 1.结构体
 
 ```go
-type name struct{
-Name string `json:"name"`
-Age int `json:"age"`
+package main
+
+import "fmt"
+
+// 结构体定义 - 封装相关数据
+type Person struct {
+    // 字段名大写表示公开，小写表示私有（包内可见）
+    name    string  // 私有字段
+    Age     int     // 公开字段
+    Email   string  // 公开字段
 }
-```
 
-### 方法
-
-Golang中的方法是作用在指定的数据类型上的(即：和指定的数据类型绑定)，因此自定义类型，都可以有方法，而不仅仅是struct
-
-**方法的声明和调用**
-
-```go
-type A struct{
-    Num
-    int
+// 构造函数模式
+func NewPerson(name string, age int, email string) *Person {
+    return &Person{
+        name:  name,
+        Age:   age,
+        Email: email,
+    }
 }
-func(a A) test(){
-    fmt.Println(a.Num)
+
+// Getter方法 - 访问私有字段
+func (p *Person) GetName() string {
+    return p.name
 }
-```
 
-对上面的语法的说明
-
-1) func(a A) test(){}表示A结构体有一方法，方法名为test
-
-2) (a A)体现test方法是和A类型绑定的
-
-**总结**
-
-1) test方法和Person类型绑定
-
-2) test方法只能通过Person类型的变量来调用，而不能直接调用，也不能使用其它类型变量来调用
-
-3) func(p Person) test(){}...p表示哪个Person变量调用，这个p就是它的副本,这点和函数传参非常相似
-
-4) p这个名字，有程序员指定，不是固定,比如修改成person也是可以
-
-**方法的调用和传参机制原理**
-
-说明:
-
-1) 在通过一个变量去调用方法时，其调用机制和函数一样
-
-2) 不一样的地方时，变量调用方法时，该变量本身也会作为一个参数传递到方法(如果变量是值类型，则进行值拷贝，如果变量是引用类型，则进行地质拷贝)
-
-3) 结构体类型是值类型，在方法调用中，遵守值类型的传递机制，是值拷贝传递方式
-
-4) 如程序员希望在方法中，修改结构体变量的值，可以通过结构体指针的方式来处理
-
-5) Golang中的方法作用在指定的数据类型上的(即：和指定的数据类型绑定)，因此自定义类型，都可以有方法，而不仅仅是struct，比如int,float32等都可以有方法
-
-6) 方法的访问范围控制的规则，和函数一样。方法名首字母小写，只能在本包访问，方法首字母大写，可以在本包和其它包访问
-
-7) 如果一个类型实现了String()这个方法，那么fmt.Println默认会调用这个变量的String()进行输出
-
-**方法和函数区别**
-
-1) 调用方式不一样
-
-函数的调用方式: 函数名(实参列表)
-
-方法的调用方式: 变量.方法名(实参列表)
-
-2) 对于普通函数，接收者为值类型时，不能将指针类型的数据直接传递，反之亦然
-
-3) 对于方法（如struct的方法），接收者为值类型时，可以直接用指针类型的变量调用方法，反过来同样也可以
-
-**总结:**
-
-1) 不管调用形式如何，真正决定是值拷贝还是地址拷贝，看这个方法是和哪个类型绑定.
-
-2) 如果是和值类型，比如(pPerson),则是值拷贝，如果和指针类型，比如是(p*Person)则是地址拷贝
-
-### 工厂模式
-
-**说明**
-
-Golang的结构体没有构造函数，通常可以使用工厂模式来解决这个问题
-
-### 封装
-
-1) 对结构体中的属性进行封装
-
-2) 通过方法，包实现封装
-
-### 继承
-
-在Golang中，如果一个struct嵌套了另一个匿名结构体，那么这个结构体可以直接访问匿名结构体的字段和方法，从而实现了继承特性
-
-```go
-嵌套匿名结构体的基本语法
-type Goods struct{
-Name string
-Price int
+// Setter方法 - 修改私有字段
+func (p *Person) SetName(name string) {
+    p.name = name
 }
-type Book struct{
-Goods//这里就是嵌套匿名结构体Goods
-Writer string
-}
-```
 
-**讨论**
-
-1) 结构体可以使用嵌套匿名结构体所有的字段和方法，即：首字母大写或者小写的字段、方法，都可以使用
-
-2) 匿名结构体字段访问可以简化
-
-```
-(1)当我们直接通过b访问字段或方法时，其执行流程如下比如b.Name
-(2)编译器会先看b对应的类型有没有Name,如果有，则直接调用B类型的Name字段
-(3)如果没有就去看B中嵌入的匿名结构体A有没有声明Name字段，如果有就调用,如果没有继续查找..如果都找不到就报错
-```
-
-3) 当结构体和匿名结构体有相同的字段或者方法时，编译器采用就近访问原则访问，如希望访问匿名结构体的字段和方法，可以通过匿名结构体名来区分
-
-4) 结构体嵌入两个(或多个)匿名结构体，如两个匿名结构体有相同的字段和方法(同时结构体本身没有同名的字段和方法)，在访问时，就必须明确指定匿名结构体名字，否则编译报错
-
-5) 如果一个struct嵌套了一个有名结构体，这种模式就是组合，如果是组合关系，那么在访问组合的结构体的字段或方法时，必须带上结构体的名字
-
-6) 嵌套匿名结构体后，也可以在创建结构体变量(实例)时，直接指定各个匿名结构体字段的值
-
-说明
-
-1) 如果一个结构体有int类型的匿名字段，就不能第二个。
-
-2) 如果需要有多个int的字段，则必须给int字段指定名字
-
-**多重继承**
-
-```
-如一个struct嵌套了多个匿名结构体，那么该结构体可以直接访问嵌套的匿名结构体的字段和方法，从而实现了多重继承
-```
-
-### 接口
-
-```
-interface类型可以定义一组方法，但是这些不需要实现。并且interface不能包含任何变量。到某个自定义类型(比如结构体Phone)要使用的时候,在根据具体情况把这些方法写出来(实现)。
-```
-
-**基本语法**
-
-```go
-type 接口名 interface{
-    method1(参数列表) 返回值列表
-    method2(参数列表) 返回值列表
-}
-实现所有方法
-```
-
-1) 接口里的所有方法都没有方法体，即接口的方法都是没有实现的方法。接口体现了程序设计的多态和高内聚低偶合的思想。
-
-2) Golang中的接口，不需要显式的实现。只要一个变量，含有接口类型中的所有方法，那么这个变量就实现这个接口。因此，Golang中没有implement这样的关键字
-
-**注意事项和细节**
-
-1) 接口本身不能创建实例,但是可以指向一个实现了该接口的自定义类型的变量(实例)
-
-2) 接口中所有的方法都没有方法体,即都是没有实现的方法。
-
-3) 在Golang中，一个自定义类型需要将某个接口的所有方法都实现，我们说这个自定义类型实现了该接口。
-
-4) 一个自定义类型只有实现了某个接口，才能将该自定义类型的实例(变量)赋给接口类型
-
-5) 只要是自定义数据类型，就可以实现接口，不仅仅是结构体类型
-
-6) 一个自定义类型可以实现多个接口
-
-7) Golang接口中不能有任何变量
-
-8) 一个接口(比如A接口)可以继承多个别的接口(比如B,C接口)，这时如果要实现A接口，也必须将B,C接口的方法也全部实现
-
-9) interface类型默认是一个指针(引用类型)，如果没有对interface初始化就使用，那么会输出nil
-
-10) 空接口interface{}没有任何方法，所以所有类型都实现了空接口,即我们可以把任何一个变量赋给空接口
-
-**接口vs继承**
-
-1) 当A结构体继承了B结构体，那么A结构就自动的继承了B结构体的字段和方法，并且可以直接使用
-
-2) 当A结构体需要扩展功能，同时不希望去破坏继承关系，则可以去实现某个接口即可，因此我们可以认为：实现接口是对继承机制的补充
-
-接口和继承解决的解决的问题不同
-
-继承的价值主要在于：解决代码的复用性和可维护性。
-
-接口的价值主要在于：设计，设计好各种规范(方法)，让其它自定义类型去实现这些方法。
-
-接口比继承更加灵活Person Student BirdAble LittleMonkey接口比继承更加灵活，继承是满足is-a的关系，而接口只需满足like-a的关系
-
-接口在一定程度上实现代码解耦
-
-### 多态
-
-变量(实例)具有多种形态。面向对象的第三大特征，在Go语言，多态特征是通过接口实现的。可以按照统一的接口来调用不同的实现。这时接口变量就呈现不同的形态
-
-**接口体现多态的两种形式**
-
-```
-多态参数 在前面的Usb接口案例，Usbusb，即可以接收手机变量，又可以接收相机变量，就体现了Usb接口多态。
-多态数组 演示一个案例：给Usb数组中，存放Phone结构体和Camera结构体变量
-```
-
-### 类型断言
-
-类型断言，由于接口是一般类型，不知道具体类型，如果要转成具体类型，就需要使用类型断言  xx.(类型)
-
-如何在进行断言时，带上检测机制，如果成功就ok,否则也不要报panic
-
-```go
-var x interface
-var b float32=1.1
-x=b
-y,ok:=x.(float32)
-if ok==true{
+func main() {
+    // 创建对象实例
+    person1 := NewPerson("张三", 25, "zhang@example.com")
     
-}else{
+    // 访问公开字段
+    fmt.Printf("年龄: %d, 邮箱: %s\n", person1.Age, person1.Email)
     
+    // 通过方法访问私有字段
+    fmt.Printf("姓名: %s\n", person1.GetName())
+    
+    // 修改私有字段
+    person1.SetName("张小三")
+    fmt.Printf("修改后姓名: %s\n", person1.GetName())
 }
+
+年龄: 25, 邮箱: zhang@example.com
+姓名: 张三
+修改后姓名: 张小三
 ```
+
+### 2.方法
+
+值接收者 vs 指针接收者
+
+
+```go
+package main
+
+import "fmt"
+
+type BankAccount struct {
+    accountNumber string
+    balance       float64
+    owner         string
+}
+
+// 构造函数
+func NewBankAccount(number, owner string, initialBalance float64) *BankAccount {
+    return &BankAccount{
+        accountNumber: number,
+        balance:       initialBalance,
+        owner:         owner,
+    }
+}
+
+// 值接收者方法 - 不修改原对象，适合只读操作
+func (b BankAccount) DisplayInfo() {
+    fmt.Printf("账户: %s, 户主: %s, 余额: ¥%.2f\n", 
+        b.accountNumber, b.owner, b.balance)
+}
+
+// 指针接收者方法 - 修改原对象，适合写操作
+func (b *BankAccount) Deposit(amount float64) {
+    if amount > 0 {
+        b.balance += amount
+        fmt.Printf("存款成功: +¥%.2f\n", amount)
+    }
+}
+
+// 指针接收者方法
+func (b *BankAccount) Withdraw(amount float64) bool {
+    if amount > 0 && b.balance >= amount {
+        b.balance -= amount
+        fmt.Printf("取款成功: -¥%.2f\n", amount)
+        return true
+    }
+    fmt.Printf("取款失败: 余额不足\n")
+    return false
+}
+
+// 指针接收者方法
+func (b *BankAccount) Transfer(amount float64, target *BankAccount) bool {
+    if b.Withdraw(amount) {
+        target.Deposit(amount)
+        fmt.Printf("转账成功: %s → %s, 金额: ¥%.2f\n", 
+            b.accountNumber, target.accountNumber, amount)
+        return true
+    }
+    return false
+}
+
+func main() {
+    // 创建账户
+    account1 := NewBankAccount("001", "Alice", 1000.0)
+    account2 := NewBankAccount("002", "Bob", 500.0)
+    
+    // 使用方法
+    account1.DisplayInfo()
+    account2.DisplayInfo()
+    
+    account1.Deposit(200.0)
+    account1.Withdraw(100.0)
+    account1.Transfer(300.0, account2)
+    
+    fmt.Println("\n操作后状态:")
+    account1.DisplayInfo()
+    account2.DisplayInfo()
+}
+
+账户: 001, 户主: Alice, 余额: ¥1000.00
+账户: 002, 户主: Bob, 余额: ¥500.00
+存款成功: +¥200.00
+取款成功: -¥100.00
+取款成功: -¥300.00
+存款成功: +¥300.00
+转账成功: 001 → 002, 金额: ¥300.00
+
+操作后状态:
+账户: 001, 户主: Alice, 余额: ¥800.00
+账户: 002, 户主: Bob, 余额: ¥800.00
+```
+
+### 3.接口
+
+接口定义和实现
+
+```go
+package main
+
+import (
+    "fmt"
+    "math"
+)
+
+// 定义接口 - 行为契约
+type Shape interface {
+    Area() float64
+    Perimeter() float64
+    Name() string
+}
+
+type Drawable interface {
+    Draw()
+}
+
+// 矩形实现
+type Rectangle struct {
+    Width  float64
+    Height float64
+}
+
+func (r Rectangle) Area() float64 {
+    return r.Width * r.Height
+}
+
+func (r Rectangle) Perimeter() float64 {
+    return 2 * (r.Width + r.Height)
+}
+
+func (r Rectangle) Name() string {
+    return "矩形"
+}
+
+func (r Rectangle) Draw() {
+    fmt.Printf("绘制%s: 宽%.1f, 高%.1f\n", r.Name(), r.Width, r.Height)
+}
+
+// 圆形实现
+type Circle struct {
+    Radius float64
+}
+
+func (c Circle) Area() float64 {
+    return math.Pi * c.Radius * c.Radius
+}
+
+func (c Circle) Perimeter() float64 {
+    return 2 * math.Pi * c.Radius
+}
+
+func (c Circle) Name() string {
+    return "圆形"
+}
+
+func (c Circle) Draw() {
+    fmt.Printf("绘制%s: 半径%.1f\n", c.Name(), c.Radius)
+}
+
+// 三角形实现
+type Triangle struct {
+    A, B, C float64
+}
+
+func (t Triangle) Area() float64 {
+    // 使用海伦公式
+    s := t.Perimeter() / 2
+    return math.Sqrt(s * (s - t.A) * (s - t.B) * (s - t.C))
+}
+
+func (t Triangle) Perimeter() float64 {
+    return t.A + t.B + t.C
+}
+
+func (t Triangle) Name() string {
+    return "三角形"
+}
+
+func (t Triangle) Draw() {
+    fmt.Printf("绘制%s: 边长%.1f,%.1f,%.1f\n", t.Name(), t.A, t.B, t.C)
+}
+
+// 使用接口的函数
+func PrintShapeInfo(s Shape) {
+    fmt.Printf("%s - 面积: %.2f, 周长: %.2f\n", 
+        s.Name(), s.Area(), s.Perimeter())
+}
+
+func DrawShapes(drawables []Drawable) {
+    fmt.Println("开始绘制图形:")
+    for _, d := range drawables {
+        d.Draw()
+    }
+}
+
+func main() {
+    // 创建不同形状
+    shapes := []Shape{
+        Rectangle{Width: 5, Height: 3},
+        Circle{Radius: 4},
+        Triangle{A: 3, B: 4, C: 5},
+    }
+    
+    drawables := []Drawable{
+        Rectangle{Width: 5, Height: 3},
+        Circle{Radius: 4},
+        Triangle{A: 3, B: 4, C: 5},
+    }
+    
+    // 多态：统一处理不同实现
+    fmt.Println("=== 图形信息 ===")
+    for _, shape := range shapes {
+        PrintShapeInfo(shape)
+    }
+    
+    fmt.Println()
+    DrawShapes(drawables)
+    
+    // 类型断言
+    fmt.Println("\n=== 类型断言示例 ===")
+    for _, shape := range shapes {
+        if circle, ok := shape.(Circle); ok {
+            fmt.Printf("发现圆形，半径: %.1f\n", circle.Radius)
+        }
+    }
+    
+    // 类型开关
+    fmt.Println("\n=== 类型开关示例 ===")
+    for _, shape := range shapes {
+        switch s := shape.(type) {
+        case Rectangle:
+            fmt.Printf("矩形: 宽%.1f, 高%.1f\n", s.Width, s.Height)
+        case Circle:
+            fmt.Printf("圆形: 半径%.1f\n", s.Radius)
+        case Triangle:
+            fmt.Printf("三角形: 边长%.1f,%.1f,%.1f\n", s.A, s.B, s.C)
+        default:
+            fmt.Printf("未知图形: %T\n", s)
+        }
+    }
+}
+
+=== 图形信息 ===
+矩形 - 面积: 15.00, 周长: 16.00
+圆形 - 面积: 50.27, 周长: 25.13
+三角形 - 面积: 6.00, 周长: 12.00
+
+开始绘制图形:
+绘制矩形: 宽5.0, 高3.0
+绘制圆形: 半径4.0
+绘制三角形: 边长3.0,4.0,5.0
+
+=== 类型断言示例 ===
+发现圆形，半径: 4.0
+
+=== 类型开关示例 ===
+矩形: 宽5.0, 高3.0
+圆形: 半径4.0
+三角形: 边长3.0,4.0,5.0
+```
+
+### 4.组合
+
+结构体嵌入和方法提升
+
+```go
+package main
+
+import "fmt"
+
+// 基础类型
+type Animal struct {
+    Name string
+    Age  int
+}
+
+func (a *Animal) Speak() {
+    fmt.Printf("%s发出声音\n", a.Name)
+}
+
+func (a *Animal) Sleep() {
+    fmt.Printf("%s在睡觉\n", a.Name)
+}
+
+// 通过嵌入实现组合
+type Dog struct {
+    Animal        // 嵌入Animal，获得其所有字段和方法
+    Breed  string // 狗特有的字段
+}
+
+// 重写方法
+func (d *Dog) Speak() {
+    fmt.Printf("%s汪汪叫 (品种: %s)\n", d.Name, d.Breed)
+}
+
+// 狗特有的方法
+func (d *Dog) Fetch() {
+    fmt.Printf("%s在接飞盘\n", d.Name)
+}
+
+type Cat struct {
+    Animal       // 嵌入Animal
+    Color string // 猫特有的字段
+}
+
+// 重写方法
+func (c *Cat) Speak() {
+    fmt.Printf("%s喵喵叫 (颜色: %s)\n", c.Name, c.Color)
+}
+
+// 猫特有的方法
+func (c *Cat) Climb() {
+    fmt.Printf("%s在爬树\n", c.Name)
+}
+
+// 接口定义
+type Pet interface {
+    Speak()
+    Sleep()
+    GetName() string
+}
+
+func (a *Animal) GetName() string {
+    return a.Name
+}
+
+func PlayWithPet(p Pet) {
+    fmt.Printf("和%s玩耍: ", p.GetName())
+    p.Speak()
+}
+
+func main() {
+    // 创建对象
+    dog := &Dog{
+        Animal: Animal{Name: "旺财", Age: 3},
+        Breed:  "金毛",
+    }
+    
+    cat := &Cat{
+        Animal: Animal{Name: "咪咪", Age: 2},
+        Color:  "白色",
+    }
+    
+    // 使用嵌入的方法（方法提升）
+    dog.Sleep()  // 来自Animal
+    cat.Sleep()  // 来自Animal
+    
+    // 使用重写的方法
+    dog.Speak()  // Dog自己的实现
+    cat.Speak()  // Cat自己的实现
+    
+    // 使用特有的方法
+    dog.Fetch()
+    cat.Climb()
+    
+    // 多态：通过接口统一处理
+    fmt.Println("\n=== 多态演示 ===")
+    pets := []Pet{dog, cat}
+    for _, pet := range pets {
+        PlayWithPet(pet)
+    }
+    
+    // 访问嵌入字段
+    fmt.Printf("\n=== 字段访问 ===\n")
+    fmt.Printf("狗的名字: %s, 年龄: %d\n", dog.Name, dog.Age)
+    fmt.Printf("猫的名字: %s, 年龄: %d\n", cat.Name, cat.Animal.Age) // 两种访问方式
+}
+
+旺财在睡觉
+咪咪在睡觉
+旺财汪汪叫 (品种: 金毛)
+咪咪喵喵叫 (颜色: 白色)
+旺财在接飞盘
+咪咪在爬树
+
+=== 多态演示 ===
+和旺财玩耍: 旺财汪汪叫 (品种: 金毛)
+和咪咪玩耍: 咪咪喵喵叫 (颜色: 白色)
+
+=== 字段访问 ===
+狗的名字: 旺财, 年龄: 3
+猫的名字: 咪咪, 年龄: 2
+```
+
+### 5.空接口和类型断言
+
+处理任意类型
+
+```go
+package main
+
+import "fmt"
+
+// 空接口可以存储任何值
+func printAny(value interface{}) {
+    fmt.Printf("值: %v, 类型: %T\n", value, value)
+}
+
+// 类型安全的处理
+func processValue(value interface{}) {
+    switch v := value.(type) {
+    case int:
+        fmt.Printf("整数: %d, 平方: %d\n", v, v*v)
+    case string:
+        fmt.Printf("字符串: %s, 长度: %d\n", v, len(v))
+    case bool:
+        fmt.Printf("布尔值: %t, 取反: %t\n", v, !v)
+    case []int:
+        fmt.Printf("整数切片: %v, 长度: %d\n", v, len(v))
+    default:
+        fmt.Printf("未知类型: %T, 值: %v\n", v, v)
+    }
+}
+
+// 类型断言示例
+func safeStringConversion(value interface{}) (string, bool) {
+    if str, ok := value.(string); ok {
+        return str, true
+    }
+    return "", false
+}
+
+func main() {
+    // 空接口可以存储任何类型
+    var anything interface{}
+    
+    anything = 42
+    printAny(anything)
+    
+    anything = "Hello, Go!"
+    printAny(anything)
+    
+    anything = []int{1, 2, 3}
+    printAny(anything)
+    
+    fmt.Println("\n=== 类型安全处理 ===")
+    processValue(100)
+    processValue("Golang")
+    processValue(true)
+    processValue([]int{1, 2, 3, 4, 5})
+    processValue(3.14)
+    
+    fmt.Println("\n=== 类型断言 ===")
+    if str, ok := safeStringConversion("hello"); ok {
+        fmt.Printf("转换成功: %s\n", str)
+    } else {
+        fmt.Println("转换失败")
+    }
+    
+    if str, ok := safeStringConversion(123); ok {
+        fmt.Printf("转换成功: %s\n", str)
+    } else {
+        fmt.Println("转换失败")
+    }
+}
+
+值: 42, 类型: int
+值: Hello, Go!, 类型: string
+值: [1 2 3], 类型: []int
+
+=== 类型安全处理 ===
+整数: 100, 平方: 10000
+字符串: Golang, 长度: 6
+布尔值: true, 取反: false
+整数切片: [1 2 3 4 5], 长度: 5
+未知类型: float64, 值: 3.14
+
+=== 类型断言 ===
+转换成功: hello
+转换失败
+```
+
+### 总结
+
+Go语言面向对象核心特性：
+
+| 特性     | Go实现方式          | 关键点                               |
+| :------- | :------------------ | :----------------------------------- |
+| **封装** | 结构体 + 大小写控制 | 字段/方法名大写公开，小写私有        |
+| **继承** | 结构体嵌入（组合）  | 通过嵌入获得字段和方法，支持方法重写 |
+| **多态** | 接口实现            | 隐式接口，鸭子类型，类型断言         |
+| **抽象** | 接口定义            | 只定义行为，不包含实现               |
+
+### 重要原则：
+
+1. **组合优于继承**：Go通过结构体嵌入实现代码复用
+2. **接口隔离**：定义小而专注的接口
+3. **依赖倒置**：依赖抽象（接口），而不是具体实现
+4. **开闭原则**：对扩展开放，对修改关闭
 
 ## 文件操作
 
+### 基本文件操作
+
+| 操作          | 函数/方法                          | 说明                       |
+| :------------ | :--------------------------------- | :------------------------- |
+| **创建/写入** | `os.Create()`, `os.OpenFile()`     | 创建新文件或覆盖现有文件   |
+| **读取**      | `os.ReadFile()`, `os.Open()`       | 读取整个文件或打开文件句柄 |
+| **追加**      | `os.OpenFile()` with `os.O_APPEND` | 在文件末尾添加内容         |
+| **删除**      | `os.Remove()`                      | 删除文件                   |
+| **信息**      | `os.Stat()`                        | 获取文件元数据             |
+
+```go
+package main
+
+import (
+    "bufio"
+    "fmt"
+    "io"
+    "os"
+    "path/filepath"
+)
+
+func main() {
+    filename := "test.txt"
+    
+    // 1. 写入文件
+    fmt.Println("=== 写入文件 ===")
+    if err := writeFile(filename, "Hello, Go!\n这是第二行\n"); err != nil {
+        fmt.Printf("写入失败: %v\n", err)
+        return
+    }
+    fmt.Println("文件写入成功")
+    
+    // 2. 读取整个文件
+    fmt.Println("\n=== 读取整个文件 ===")
+    if content, err := readFile(filename); err != nil {
+        fmt.Printf("读取失败: %v\n", err)
+    } else {
+        fmt.Printf("文件内容:\n%s", content)
+    }
+    
+    // 3. 逐行读取
+    fmt.Println("\n=== 逐行读取 ===")
+    if err := readLineByLine(filename); err != nil {
+        fmt.Printf("逐行读取失败: %v\n", err)
+    }
+    
+    // 4. 追加内容
+    fmt.Println("\n=== 追加内容 ===")
+    if err := appendToFile(filename, "\n这是追加的内容"); err != nil {
+        fmt.Printf("追加失败: %v\n", err)
+    } else {
+        fmt.Println("内容追加成功")
+    }
+    
+    // 5. 文件信息
+    fmt.Println("\n=== 文件信息 ===")
+    if err := fileInfo(filename); err != nil {
+        fmt.Printf("获取文件信息失败: %v\n", err)
+    }
+    
+    // 6. 复制文件
+    fmt.Println("\n=== 复制文件 ===")
+    copyFile := "test_copy.txt"
+    if err := copyFileContent(filename, copyFile); err != nil {
+        fmt.Printf("复制失败: %v\n", err)
+    } else {
+        fmt.Printf("文件已复制到: %s\n", copyFile)
+    }
+    
+    // 7. 删除文件
+    fmt.Println("\n=== 清理 ===")
+    if err := cleanupFiles([]string{filename, copyFile}); err != nil {
+        fmt.Printf("清理失败: %v\n", err)
+    } else {
+        fmt.Println("文件清理完成")
+    }
+    
+    // 8. 临时文件
+    fmt.Println("\n=== 临时文件 ===")
+    useTempFile()
+}
+
+// 1. 写入文件
+func writeFile(filename, content string) error {
+    // os.O_CREATE: 如果不存在则创建
+    // os.O_WRONLY: 只写模式  
+    // os.O_TRUNC: 如果存在则清空
+    file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    // 使用 bufio 提高写入性能
+    writer := bufio.NewWriter(file)
+    _, err = writer.WriteString(content)
+    if err != nil {
+        return err
+    }
+    
+    // 确保所有数据刷入磁盘
+    return writer.Flush()
+}
+
+// 2. 读取整个文件
+func readFile(filename string) (string, error) {
+    // 使用 os.ReadFile 简化读取（适合小文件）
+    content, err := os.ReadFile(filename)
+    if err != nil {
+        return "", err
+    }
+    return string(content), nil
+}
+
+// 3. 逐行读取（适合大文件）
+func readLineByLine(filename string) error {
+    file, err := os.Open(filename)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    scanner := bufio.NewScanner(file)
+    lineNum := 1
+    for scanner.Scan() {
+        fmt.Printf("第%d行: %s\n", lineNum, scanner.Text())
+        lineNum++
+    }
+    
+    return scanner.Err()
+}
+
+// 4. 追加内容
+func appendToFile(filename, content string) error {
+    // os.O_APPEND: 追加模式
+    file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    _, err = file.WriteString(content)
+    return err
+}
+
+// 5. 获取文件信息
+func fileInfo(filename string) error {
+    info, err := os.Stat(filename)
+    if err != nil {
+        return err
+    }
+    
+    fmt.Printf("文件名: %s\n", info.Name())
+    fmt.Printf("大小: %d 字节\n", info.Size())
+    fmt.Printf("权限: %s\n", info.Mode())
+    fmt.Printf("修改时间: %s\n", info.ModTime())
+    fmt.Printf("是否是目录: %t\n", info.IsDir())
+    
+    return nil
+}
+
+// 6. 复制文件
+func copyFileContent(src, dst string) error {
+    // 打开源文件
+    source, err := os.Open(src)
+    if err != nil {
+        return err
+    }
+    defer source.Close()
+    
+    // 创建目标文件
+    destination, err := os.Create(dst)
+    if err != nil {
+        return err
+    }
+    defer destination.Close()
+    
+    // 使用 io.Copy 高效复制
+    _, err = io.Copy(destination, source)
+    return err
+}
+
+// 7. 清理文件
+func cleanupFiles(files []string) error {
+    for _, file := range files {
+        if err := os.Remove(file); err != nil && !os.IsNotExist(err) {
+            return err
+        }
+    }
+    return nil
+}
+
+// 8. 使用临时文件
+func useTempFile() {
+    // 创建临时文件
+    tempFile, err := os.CreateTemp(".", "temp_*.txt")
+    if err != nil {
+        fmt.Printf("创建临时文件失败: %v\n", err)
+        return
+    }
+    defer os.Remove(tempFile.Name()) // 程序结束时删除
+    
+    fmt.Printf("临时文件: %s\n", tempFile.Name())
+    
+    // 写入临时数据
+    tempFile.WriteString("这是临时数据\n")
+    tempFile.Close()
+    
+    // 读取验证
+    content, _ := os.ReadFile(tempFile.Name())
+    fmt.Printf("临时文件内容: %s", string(content))
+    
+    // 临时文件会自动在 defer 中删除
+}
+
+// 9. 文件存在性检查
+func checkFileExists(filename string) {
+    if _, err := os.Stat(filename); os.IsNotExist(err) {
+        fmt.Printf("文件 %s 不存在\n", filename)
+    } else {
+        fmt.Printf("文件 %s 存在\n", filename)
+    }
+}
+
+// 10. 目录操作示例
+func directoryOperations() {
+    dir := "test_dir"
+    
+    // 创建目录
+    os.Mkdir(dir, 0755)
+    
+    // 在目录中创建文件
+    filepath := filepath.Join(dir, "nested.txt")
+    os.WriteFile(filepath, []byte("嵌套文件内容"), 0644)
+    
+    // 列出目录内容
+    entries, _ := os.ReadDir(dir)
+    fmt.Printf("目录 %s 中的文件:\n", dir)
+    for _, entry := range entries {
+        fmt.Printf("  - %s\n", entry.Name())
+    }
+    
+    // 清理
+    os.RemoveAll(dir)
+}
+
+
+=== 写入文件 ===
+文件写入成功
+
+=== 读取整个文件 ===
+文件内容:
+Hello, Go!
+这是第二行
+
+=== 逐行读取 ===
+第1行: Hello, Go!
+第2行: 这是第二行
+
+=== 追加内容 ===
+内容追加成功
+
+=== 文件信息 ===
+文件名: test.txt
+大小: 50 字节
+权限: -rw-r--r--
+修改时间: 2024-01-15 10:30:45 +0800 CST
+是否是目录: false
+
+=== 复制文件 ===
+文件已复制到: test_copy.txt
+
+=== 清理 ===
+文件清理完成
+
+=== 临时文件 ===
+临时文件: ./temp_123456.txt
+临时文件内容: 这是临时数据
 ```
-输入流 文件到内存 读文件
-输出流 内存到内存 写文件
+
+### 参数
+
+```go
+package main
+
+import (
+    "flag"
+    "fmt"
+    "os"
+    "strings"
+)
+
+// 全局变量存储命令行参数
+var (
+    name     string
+    age      int
+    married  bool
+    salary   float64
+    hobbies  string
+    count    int
+    verbose  bool
+    version  bool
+)
+
+// 初始化命令行参数
+func init() {
+    // 基本类型参数
+    flag.StringVar(&name, "name", "匿名", "用户姓名")
+    flag.StringVar(&name, "n", "匿名", "用户姓名(简写)")
+    
+    flag.IntVar(&age, "age", 0, "用户年龄")
+    flag.IntVar(&age, "a", 0, "用户年龄(简写)")
+    
+    flag.BoolVar(&married, "married", false, "婚姻状况")
+    flag.BoolVar(&married, "m", false, "婚姻状况(简写)")
+    
+    flag.Float64Var(&salary, "salary", 0.0, "月薪")
+    flag.Float64Var(&salary, "s", 0.0, "月薪(简写)")
+    
+    // 特殊参数
+    flag.StringVar(&hobbies, "hobbies", "", "爱好列表(逗号分隔)")
+    flag.IntVar(&count, "count", 1, "重复次数")
+    flag.BoolVar(&verbose, "verbose", false, "详细输出模式")
+    flag.BoolVar(&verbose, "v", false, "详细输出模式(简写)")
+    flag.BoolVar(&version, "version", false, "显示版本信息")
+}
+
+func main() {
+    // 显示自定义用法说明
+    flag.Usage = func() {
+        fmt.Fprintf(os.Stderr, "Usage: %s [OPTIONS] [COMMAND] [ARGUMENTS...]\n", os.Args[0])
+        fmt.Fprintln(os.Stderr, "\nOptions:")
+        flag.PrintDefaults()
+        fmt.Fprintln(os.Stderr, "\nCommands:")
+        fmt.Fprintln(os.Stderr, "  help    显示帮助信息")
+        fmt.Fprintln(os.Stderr, "  greet   打招呼")
+        fmt.Fprintln(os.Stderr, "  repeat  重复消息")
+        fmt.Fprintln(os.Stderr, "\nExamples:")
+        fmt.Fprintf(os.Stderr, "  %s -name Alice -age 25 greet\n", os.Args[0])
+        fmt.Fprintf(os.Stderr, "  %s -n Bob -a 30 -m repeat \"Hello World\"\n", os.Args[0])
+    }
+
+    // 解析命令行参数
+    flag.Parse()
+
+    // 处理特殊标志
+    if version {
+        showVersion()
+        return
+    }
+
+    // 获取非标志参数（命令和参数）
+    args := flag.Args()
+    if len(args) == 0 {
+        flag.Usage()
+        return
+    }
+
+    // 根据命令路由到不同处理函数
+    switch args[0] {
+    case "help":
+        flag.Usage()
+    case "greet":
+        handleGreet(args[1:])
+    case "repeat":
+        handleRepeat(args[1:])
+    default:
+        fmt.Printf("未知命令: %s\n", args[0])
+        flag.Usage()
+    }
+}
+
+// 显示版本信息
+func showVersion() {
+    fmt.Println("命令行工具 v1.0.0")
+    fmt.Println("编译时间: 2024-01-15")
+}
+
+// 处理打招呼命令
+func handleGreet(args []string) {
+    if verbose {
+        fmt.Println("=== 详细模式 ===")
+        fmt.Printf("姓名: %s\n", name)
+        fmt.Printf("年龄: %d\n", age)
+        fmt.Printf("婚姻状况: %t\n", married)
+        fmt.Printf("月薪: ¥%.2f\n", salary)
+        
+        if hobbies != "" {
+            hobbyList := strings.Split(hobbies, ",")
+            fmt.Printf("爱好: %v\n", hobbyList)
+        }
+        fmt.Println("================")
+    }
+    
+    greeting := fmt.Sprintf("你好，%s！", name)
+    if age > 0 {
+        greeting += fmt.Sprintf(" 你今年%d岁", age)
+    }
+    if married {
+        greeting += "，已结婚"
+    } else {
+        greeting += "，未婚"
+    }
+    if salary > 0 {
+        greeting += fmt.Sprintf("，月薪¥%.2f", salary)
+    }
+    
+    fmt.Println(greeting)
+}
+
+// 处理重复命令
+func handleRepeat(args []string) {
+    if len(args) == 0 {
+        fmt.Println("错误: 请提供要重复的消息")
+        return
+    }
+    
+    message := strings.Join(args, " ")
+    
+    if verbose {
+        fmt.Printf("重复设置: 次数=%d, 消息=\"%s\"\n", count, message)
+    }
+    
+    for i := 0; i < count; i++ {
+        fmt.Printf("[%d/%d] %s\n", i+1, count, message)
+    }
+}
+
+// 辅助函数：演示直接使用 flag 包的方法
+func demonstrateFlagMethods() {
+    // 这些是 flag 包的其他有用方法
+    
+    // 1. 直接定义并获取参数值
+    debug := flag.Bool("debug", false, "启用调试模式")
+    port := flag.Int("port", 8080, "服务端口")
+    
+    // 需要调用 flag.Parse() 来解析，但这里只是演示
+    // flag.Parse()
+    
+    // 2. 查看已设置的参数
+    // flag.Visit() 和 flag.VisitAll() 可以遍历参数
+    
+    // 避免未使用变量警告
+    _ = debug
+    _ = port
+}
+```
+
+### JSON
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+// 基础结构体
+type User struct {
+	Name     string   `json:"name"`
+	Age      int      `json:"age"`
+	Email    string   `json:"email,omitempty"` // 为空时不输出
+	Password string   `json:"-"`               // 忽略该字段
+	Tags     []string `json:"tags"`
+}
+
+func main() {
+	// 1. 结构体 → JSON
+	user := User{
+		Name:     "张三", 
+		Age:      25,
+		Tags:     []string{"go", "backend"},
+		Password: "secret",
+	}
+	
+	jsonData, _ := json.MarshalIndent(user, "", "  ")
+	fmt.Println("1. 结构体转JSON:")
+	fmt.Println(string(jsonData))
+
+	// 2. JSON → 结构体
+	jsonStr := `{"name":"李四","age":30,"tags":["java","frontend"]}`
+	var user2 User
+	json.Unmarshal([]byte(jsonStr), &user2)
+	fmt.Println("\n2. JSON转结构体:")
+	fmt.Printf("%+v\n", user2)
+
+	// 3. Map ↔ JSON
+	data := map[string]interface{}{
+		"id":   1,
+		"name": "王五",
+		"data": map[string]string{"key": "value"},
+	}
+	
+	jsonData, _ = json.MarshalIndent(data, "", "  ")
+	fmt.Println("\n3. Map转JSON:")
+	fmt.Println(string(jsonData))
+
+	// 4. 切片 ↔ JSON
+	users := []User{
+		{Name: "用户1", Age: 20},
+		{Name: "用户2", Age: 30},
+	}
+	
+	jsonData, _ = json.MarshalIndent(users, "", "  ")
+	fmt.Println("\n4. 切片转JSON:")
+	fmt.Println(string(jsonData))
+}
+
+1. 结构体转JSON:
+{
+  "name": "张三",
+  "age": 25,
+  "tags": [
+    "go",
+    "backend"
+  ]
+}
+
+2. JSON转结构体:
+{Name:李四 Age:30 Email: Tags:[java frontend] Password:}
+
+3. Map转JSON:
+{
+  "data": {
+    "key": "value"
+  },
+  "id": 1,
+  "name": "王五"
+}
+
+4. 切片转JSON:
+[
+  {
+    "name": "用户1",
+    "age": 20,
+    "tags": null
+  },
+  {
+    "name": "用户2",
+    "age": 30,
+    "tags": null
+  }
+]
 ```
 
 ## 单元测试
 
-### 传统方法的缺点分析
+### 1. 测试文件命名
 
-1) 不方便,我们需要在main函数中去调用，这样就需要去修改main函数，如果现在项目正在运行，就可能去停止项目。
+- 测试文件：`*_test.go`
+- 测试函数：`TestXxx(t *testing.T)`
+- 基准测试：`BenchmarkXxx(b *testing.B)`
+- 示例函数：`ExampleXxx()`
 
-2) 不利于管理，因为当我们测试多个函数或者多个模块时，都需要写在main函数，不利于我们管理和清晰我们思路
+### 2. 表格驱动测试（推荐）
 
-3) 引出单元测试。->testing测试框架可以很好解决问题
+```go
+func TestXxx(t *testing.T) {
+    tests := []struct{
+        name string
+        input string
+        expected string
+    }{
+        {"case1", "input1", "expected1"},
+        {"case2", "input2", "expected2"},
+    }
+    
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            // 测试逻辑
+        })
+    }
+}
+```
 
-### 单元测试-基本介绍
+### 3. 常用断言模式
 
-Go语言中自带有一个轻量级的测试框架testing和自带的gotest命令来实现单元测试和性能测试，testing框架和其他语言中的测试框架类似，可以基于这个框架写针对相应函数的测试用例，也可以基于该框架写相应的压力测试用例。通过单元测试，可以解决如下问题
+```go
+// 相等断言
+if got != want {
+    t.Errorf("got %v, want %v", got, want)
+}
 
-1) 确保每个函数是可运行，并且运行结果是正确的 
+// 错误断言
+if err != nil {
+    t.Fatalf("unexpected error: %v", err)
+}
 
-2) 确保写出来的代码性能是好的，
+// 切片比较
+if !reflect.DeepEqual(got, want) {
+    t.Errorf("got %v, want %v", got, want)
+}
+```
 
-3) 单元测试能及时的发现程序设计或实现的逻辑错误，使问题及早暴露，便于问题的定位解决，而性能测试的重点在于发现程序设计上的一些问题，让程序能够在高并发的情况下还能保持稳定
+### 4. 测试命令
 
-### 单元测试快速入门总结
+| 命令                     | 用途           |
+| :----------------------- | :------------- |
+| `go test`                | 运行测试       |
+| `go test -v`             | 详细输出       |
+| `go test -run Pattern`   | 运行匹配的测试 |
+| `go test -bench Pattern` | 运行基准测试   |
+| `go test -cover`         | 测试覆盖率     |
 
-1) 测试用例文件名必须以_test.go结尾。比如cal_test.go,cal不是固定的。
+### 5. 最佳实践
 
-2) 测试用例函数必须以Test开头，一般来说就是Test+被测试的函数名，比如TestAddUpper
+- 使用表格驱动测试覆盖多种情况
+- 为每个测试用例命名（`t.Run`）
+- 测试边界条件和错误情况
+- 保持测试独立，不依赖执行顺序
+- 并行测试时注意数据竞争
 
-3)TestAddUpper(t * tesing.T)的形参类型必须是*testing.T
+```go
+// math.go
 
-4) 一个测试用例文件中，可以有多个测试用例函数，比如TestAddUpper、TestSub
+package main
 
-5) 运行测试用例指令
+// 简单数学函数
+func Add(a, b int) int {
+    return a + b
+}
 
-(1)cmd>go test 如果运行正确，无日志，错误时，会输出日志
+func Multiply(a, b int) int {
+    return a * b
+}
 
-(2)cmd>go test -v [运行正确或是错误，都输出日志]
+// 业务逻辑函数
+func CalculateDiscount(price float64, isVIP bool) float64 {
+    if price <= 0 {
+        return 0
+    }
+    if isVIP {
+        return price * 0.8 // VIP 8折
+    }
+    if price > 1000 {
+        return price * 0.9 // 满1000打9折
+    }
+    return price
+}
 
-6) 当出现错误时，可以使用t.Fatalf来格式化输出错误信息，并退出程序
+// 字符串处理
+func ReverseString(s string) string {
+    runes := []rune(s)
+    for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+        runes[i], runes[j] = runes[j], runes[i]
+    }
+    return string(runes)
+}
+```
 
-7) t.Logf方法可以输出相应的日志
+```go
+// math_test.go
 
-8) 测试用例函数，并没有放在main函数中，也执行了，这就是测试用例的方便之处[原理图].
+package main
 
-9) PASS表示测试用例运行成功，FAIL表示测试用例运行失败
+import (
+    "testing"
+)
 
-10) 测试单个文件，一定要带上被测试的原文件
+// 1. 基础测试
+func TestAdd(t *testing.T) {
+    result := Add(2, 3)
+    expected := 5
+    if result != expected {
+        t.Errorf("Add(2, 3) = %d; expected %d", result, expected)
+    }
+}
 
-go test -v cal_test.go cal.go
+func TestMultiply(t *testing.T) {
+    result := Multiply(4, 5)
+    expected := 20
+    if result != expected {
+        t.Errorf("Multiply(4, 5) = %d; expected %d", result, expected)
+    }
+}
 
-11) 测试单个方法
+// 2. 表格驱动测试（推荐）
+func TestAdd_TableDriven(t *testing.T) {
+    tests := []struct {
+        name     string
+        a, b     int
+        expected int
+    }{
+        {"正数相加", 2, 3, 5},
+        {"零值相加", 0, 5, 5},
+        {"负数相加", -2, -3, -5},
+        {"正负相加", 5, -3, 2},
+    }
 
-go test -v -test.run TestAddUppe
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            result := Add(tt.a, tt.b)
+            if result != tt.expected {
+                t.Errorf("Add(%d, %d) = %d; expected %d", tt.a, tt.b, result, tt.expected)
+            }
+        })
+    }
+}
 
-## goroutine和channel
+// 3. 边界测试
+func TestCalculateDiscount(t *testing.T) {
+    tests := []struct {
+        name     string
+        price    float64
+        isVIP    bool
+        expected float64
+    }{
+        {"普通用户不满1000", 500, false, 500},
+        {"普通用户满1000", 1500, false, 1350},
+        {"VIP用户小金额", 500, true, 400},
+        {"VIP用户大金额", 1500, true, 1200},
+        {"零价格", 0, false, 0},
+        {"负价格", -100, false, 0},
+    }
 
-### goroutine-基本介绍
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            result := CalculateDiscount(tt.price, tt.isVIP)
+            if result != tt.expected {
+                t.Errorf("CalculateDiscount(%.2f, %t) = %.2f; expected %.2f", 
+                    tt.price, tt.isVIP, result, tt.expected)
+            }
+        })
+    }
+}
+
+// 4. 字符串测试
+func TestReverseString(t *testing.T) {
+    tests := []struct {
+        input    string
+        expected string
+    }{
+        {"hello", "olleh"},
+        {"", ""},
+        {"a", "a"},
+        {"世界", "界世"},
+        {"hello 世界", "界世 olleh"},
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.input, func(t *testing.T) {
+            result := ReverseString(tt.input)
+            if result != tt.expected {
+                t.Errorf("ReverseString(%q) = %q; expected %q", tt.input, result, tt.expected)
+            }
+        })
+    }
+}
+
+// 5. 并行测试
+func TestMultiply_Parallel(t *testing.T) {
+    tests := []struct {
+        a, b, expected int
+    }{
+        {1, 1, 1},
+        {2, 3, 6},
+        {0, 5, 0},
+        {-2, 3, -6},
+    }
+
+    for _, tt := range tests {
+        tt := tt // 重要：创建局部变量
+        t.Run("", func(t *testing.T) {
+            t.Parallel() // 并行执行
+            result := Multiply(tt.a, tt.b)
+            if result != tt.expected {
+                t.Errorf("Multiply(%d, %d) = %d; expected %d", tt.a, tt.b, result, tt.expected)
+            }
+        })
+    }
+}
+
+// 6. 基准测试
+func BenchmarkAdd(b *testing.B) {
+    for i := 0; i < b.N; i++ {
+        Add(100, 200)
+    }
+}
+
+func BenchmarkReverseString(b *testing.B) {
+    for i := 0; i < b.N; i++ {
+        ReverseString("hello world, this is a test string")
+    }
+}
+
+// 7. 示例测试（会出现在文档中）
+func ExampleAdd() {
+    result := Add(3, 4)
+    fmt.Println(result)
+    // Output: 7
+}
+
+func ExampleReverseString() {
+    result := ReverseString("hello")
+    fmt.Println(result)
+    // Output: olleh
+}
+```
+
+```bash
+# 运行所有测试
+go test
+
+# 运行测试并显示详细信息
+go test -v
+
+# 运行特定测试
+go test -v -run TestAdd
+
+# 运行包含"Discount"的测试
+go test -v -run "Discount"
+
+# 运行基准测试
+go test -bench=.
+
+# 运行基准测试并显示内存分配
+go test -bench=. -benchmem
+
+# 生成测试覆盖率报告
+go test -cover
+go test -coverprofile=coverage.out
+go tool cover -html=coverage.out
+
+=== RUN   TestAdd
+--- PASS: TestAdd (0.00s)
+=== RUN   TestMultiply
+--- PASS: TestMultiply (0.00s)
+=== RUN   TestAdd_TableDriven
+=== RUN   TestAdd_TableDriven/正数相加
+=== RUN   TestAdd_TableDriven/零值相加
+=== RUN   TestAdd_TableDriven/负数相加
+=== RUN   TestAdd_TableDriven/正负相加
+--- PASS: TestAdd_TableDriven (0.00s)
+=== RUN   TestCalculateDiscount
+=== RUN   TestCalculateDiscount/普通用户不满1000
+=== RUN   TestCalculateDiscount/普通用户满1000
+=== RUN   TestCalculateDiscount/VIP用户小金额
+=== RUN   TestCalculateDiscount/VIP用户大金额
+=== RUN   TestCalculateDiscount/零价格
+=== RUN   TestCalculateDiscount/负价格
+--- PASS: TestCalculateDiscount (0.00s)
+=== RUN   TestReverseString
+=== RUN   TestReverseString/hello
+=== RUN   TestReverseString/
+=== RUN   TestReverseString/a
+=== RUN   TestReverseString/世界
+=== RUN   TestReverseString/hello_世界
+--- PASS: TestReverseString (0.00s)
+=== RUN   TestMultiply_Parallel
+=== RUN   TestMultiply_Parallel/#00
+=== RUN   TestMultiply_Parallel/#01
+=== RUN   TestMultiply_Parallel/#02
+=== RUN   TestMultiply_Parallel/#03
+--- PASS: TestMultiply_Parallel (0.00s)
+PASS
+coverage: 100.0% of statements
+ok      yourpackage   0.002s
+```
+
+## goroutine
+
+### 基本介绍
 
 **Go协程和Go主线程**
 
@@ -1274,7 +4451,7 @@ Go协程的特点
 
 4) 协程是轻量级的线程
 
-### goroutine-快速入门
+### 快速入门
 
 1) 主线程是一个物理线程，直接作用在cpu上的。是重量级的，非常耗费cpu资源。
 
@@ -1282,158 +4459,747 @@ Go协程的特点
 
 3) Golang的协程机制是重要的特点，可以轻松的开启上万个协程。其它编程语言的并发机制是一般基于线程的，开启过多的线程，资源耗费大，这里就突显Golang在并发上的优势了
 
-### goroutine的调度模型
+```go
+package main
 
-**MPG模式基本介绍**
+import (
+    "fmt"
+    "sync"
+    "time"
+)
 
-![](go学习笔记\mpg.png)
+// 1. 基本Goroutine启动
+func basicGoroutine() {
+    fmt.Println("=== 1. 基本Goroutine ===")
+    
+    // 使用go关键字启动goroutine
+    go func() {
+        fmt.Println("这是在goroutine中执行")
+    }()
+    
+    // 主goroutine等待一下，让上面的goroutine有机会执行
+    time.Sleep(100 * time.Millisecond)
+    fmt.Println("主goroutine结束")
+}
 
-**MPG模式运行的状态1**
+// 2. 带参数的Goroutine
+func goroutineWithParams() {
+    fmt.Println("\n=== 2. 带参数的Goroutine ===")
+    
+    for i := 0; i < 3; i++ {
+        // 注意：直接使用循环变量i会有问题（在Go 1.21+中已修复）
+        go func(id int) {
+            fmt.Printf("Goroutine %d 执行\n", id)
+        }(i) // 通过参数传递
+    }
+    
+    time.Sleep(200 * time.Millisecond)
+}
 
-![](go学习笔记\mpg1.png)
+// 3. 使用WaitGroup同步
+func waitGroupExample() {
+    fmt.Println("\n=== 3. WaitGroup同步 ===")
+    
+    var wg sync.WaitGroup
+    results := make([]string, 0)
+    var mu sync.Mutex // 保护共享数据
+    
+    for i := 0; i < 5; i++ {
+        wg.Add(1) // 增加计数
+        go func(id int) {
+            defer wg.Done() // 完成时减少计数
+            
+            // 模拟工作
+            time.Sleep(100 * time.Millisecond)
+            result := fmt.Sprintf("结果-%d", id)
+            
+            // 保护共享数据访问
+            mu.Lock()
+            results = append(results, result)
+            mu.Unlock()
+            
+            fmt.Printf("Worker %d 完成\n", id)
+        }(i)
+    }
+    
+    wg.Wait() // 等待所有goroutine完成
+    fmt.Printf("所有任务完成，结果: %v\n", results)
+}
 
-**MPG模式运行的状态2**
+// 4. Channel通信
+func channelExample() {
+    fmt.Println("\n=== 4. Channel通信 ===")
+    
+    // 无缓冲channel
+    ch := make(chan string)
+    
+    // 生产者
+    go func() {
+        for i := 0; i < 3; i++ {
+            msg := fmt.Sprintf("消息-%d", i)
+            ch <- msg // 发送消息
+            fmt.Printf("发送: %s\n", msg)
+        }
+        close(ch) // 关闭channel
+    }()
+    
+    // 消费者
+    go func() {
+        for msg := range ch { // 自动检测channel关闭
+            fmt.Printf("接收: %s\n", msg)
+            time.Sleep(100 * time.Millisecond) // 模拟处理时间
+        }
+        fmt.Println("Channel已关闭")
+    }()
+    
+    time.Sleep(500 * time.Millisecond)
+}
 
-![](go学习笔记\mpg2.png)
+// 5. 缓冲Channel
+func bufferedChannelExample() {
+    fmt.Println("\n=== 5. 缓冲Channel ===")
+    
+    // 缓冲大小为3的channel
+    ch := make(chan int, 3)
+    
+    go func() {
+        for i := 0; i < 5; i++ {
+            ch <- i
+            fmt.Printf("发送: %d (缓冲区长度: %d/%d)\n", i, len(ch), cap(ch))
+        }
+        close(ch)
+    }()
+    
+    go func() {
+        for value := range ch {
+            fmt.Printf("接收: %d\n", value)
+            time.Sleep(200 * time.Millisecond) // 慢消费者
+        }
+    }()
+    
+    time.Sleep(2 * time.Second)
+}
 
-### 设置Golang运行的cpu数
+// 6. Select多路复用
+func selectExample() {
+    fmt.Println("\n=== 6. Select多路复用 ===")
+    
+    ch1 := make(chan string)
+    ch2 := make(chan string)
+    
+    // 两个生产者
+    go func() {
+        time.Sleep(100 * time.Millisecond)
+        ch1 <- "来自ch1"
+    }()
+    
+    go func() {
+        time.Sleep(50 * time.Millisecond)
+        ch2 <- "来自ch2"
+    }()
+    
+    // 使用select等待多个channel
+    for i := 0; i < 2; i++ {
+        select {
+        case msg1 := <-ch1:
+            fmt.Printf("收到: %s\n", msg1)
+        case msg2 := <-ch2:
+            fmt.Printf("收到: %s\n", msg2)
+        case <-time.After(300 * time.Millisecond): // 超时
+            fmt.Println("等待超时")
+            return
+        }
+    }
+}
+
+// 7. Worker Pool模式
+func workerPoolExample() {
+    fmt.Println("\n=== 7. Worker Pool模式 ===")
+    
+    jobs := make(chan int, 10)
+    results := make(chan int, 10)
+    
+    // 启动3个worker
+    for w := 1; w <= 3; w++ {
+        go worker(w, jobs, results)
+    }
+    
+    // 发送工作
+    for j := 1; j <= 5; j++ {
+        jobs <- j
+    }
+    close(jobs)
+    
+    // 收集结果
+    for a := 1; a <= 5; a++ {
+        result := <-results
+        fmt.Printf("收到结果: %d\n", result)
+    }
+}
+
+func worker(id int, jobs <-chan int, results chan<- int) {
+    for job := range jobs {
+        fmt.Printf("Worker %d 开始工作 %d\n", id, job)
+        time.Sleep(500 * time.Millisecond) // 模拟工作
+        results <- job * 2
+        fmt.Printf("Worker %d 完成工作 %d\n", id, job)
+    }
+}
+
+// 8. 生产者和消费者模式
+func producerConsumerExample() {
+    fmt.Println("\n=== 8. 生产者和消费者模式 ===")
+    
+    jobs := make(chan int, 5)
+    done := make(chan bool)
+    
+    // 生产者
+    go func() {
+        for i := 1; i <= 5; i++ {
+            jobs <- i
+            fmt.Printf("生产: %d\n", i)
+            time.Sleep(100 * time.Millisecond)
+        }
+        close(jobs)
+    }()
+    
+    // 消费者
+    go func() {
+        for job := range jobs {
+            fmt.Printf("消费: %d\n", job)
+            time.Sleep(200 * time.Millisecond)
+        }
+        done <- true
+    }()
+    
+    <-done // 等待消费者完成
+    fmt.Println("生产消费完成")
+}
+
+func main() {
+    basicGoroutine()
+    goroutineWithParams()
+    waitGroupExample()
+    channelExample()
+    bufferedChannelExample()
+    selectExample()
+    workerPoolExample()
+    producerConsumerExample()
+}
+
+=== 1. 基本Goroutine ===
+这是在goroutine中执行
+主goroutine结束
+
+=== 2. 带参数的Goroutine ===
+Goroutine 0 执行
+Goroutine 1 执行
+Goroutine 2 执行
+
+=== 3. WaitGroup同步 ===
+Worker 0 完成
+Worker 2 完成
+Worker 1 完成
+Worker 3 完成
+Worker 4 完成
+所有任务完成，结果: [结果-0 结果-2 结果-1 结果-3 结果-4]
+
+=== 4. Channel通信 ===
+发送: 消息-0
+接收: 消息-0
+发送: 消息-1
+接收: 消息-1
+发送: 消息-2
+接收: 消息-2
+Channel已关闭
+
+=== 5. 缓冲Channel ===
+发送: 0 (缓冲区长度: 1/3)
+发送: 1 (缓冲区长度: 2/3)
+发送: 2 (缓冲区长度: 3/3)
+接收: 0
+发送: 3 (缓冲区长度: 3/3)
+接收: 1
+发送: 4 (缓冲区长度: 3/3)
+接收: 2
+接收: 3
+接收: 4
+
+=== 6. Select多路复用 ===
+收到: 来自ch2
+收到: 来自ch1
+
+=== 7. Worker Pool模式 ===
+Worker 1 开始工作 1
+Worker 2 开始工作 2
+Worker 3 开始工作 3
+Worker 1 完成工作 1
+Worker 1 开始工作 4
+收到结果: 2
+Worker 2 完成工作 2
+Worker 2 开始工作 5
+收到结果: 4
+Worker 3 完成工作 3
+收到结果: 6
+Worker 1 完成工作 4
+收到结果: 8
+Worker 2 完成工作 5
+收到结果: 10
+
+=== 8. 生产者和消费者模式 ===
+生产: 1
+消费: 1
+生产: 2
+消费: 2
+生产: 3
+生产: 4
+消费: 3
+生产: 5
+消费: 4
+消费: 5
+生产消费完成
+```
+
+## channel
+
+### 1. Channel创建
 
 ```go
-获取cpu个数
-numCPU := runtime.NumCPU()
-预留cpu个数 预留一个
-fmt.Println(numCPU)
+// 无缓冲Channel - 同步通信
+ch1 := make(chan int)
+
+// 缓冲Channel - 异步通信
+ch2 := make(chan int, 10)     // 缓冲大小10
+
+// 单向Channel
+var sendOnly chan < - int       // 只能发送
+var receiveOnly < -chan int    // 只能接收
 ```
 
-### channel(管道)
-
-1) channel本质就是一个数据结构-队列
-
-2) 数据是先进先出【FIFO:firstinfirstout】
-
-3) 线程安全，多goroutine访问时，不需要加锁，就是说channel本身就是线程安全的
-
-4) channel有类型的，一个string的channel只能存放string类型数据
-
-**定义/声明channel**
-
-var 变量名 chan 数据类型
-
-var intChan chan int(intChan用于存放int数据)
-
-var mapChan chan map[int]string(mapChan用于存放map[int]string类型)
-
-var perChan chan Person
-
-var perChan2 chan *Person
-
-```
-channel是引用类型channel必须初始化才能写入数据,即make后才能使用管道是有类型的，intChan只能写入整数int
-```
+### 2. 基本操作
 
 ```go
-//演示一下管道的使用
-//1.创建一个可以存放3个int类型的管道
-var intChan chan int
-intChan=make(chanint,3)
-//2.看看intChan是什么
-fmt.Printf("intChan的值=%vintChan本身的地址=%p\n",intChan,&intChan)
-//3.向管道写入数据
-intChan<-10
-num:=211
-intChan<-num
-intChan<-50
-//intChan<-98 //注意点,当我们给管写入数据时，不能超过其容量
-//4.看看管道的长度和cap(容量)
-fmt.Printf("channellen=%vcap=%v\n",len(intChan),cap(intChan))//3,3
-//5.从管道中读取数据
-var num2 int
-num2=<-intChan
-fmt.Println("num2=",num2)
-fmt.Printf("channellen=%vcap=%v\n",len(intChan),cap(intChan))//2,3
-//6.在没有使用协程的情况下，如果我们的管道数据已经全部取出，再取就会报告deadlock
-num3:=<-intChan
-num4:=<-intChan
-num5:=<-intChan
-fmt.Println("num3=",num3,"num4=",num4,"num5=",num5)
-```
+// 发送数据
+ch < - value
 
-**channel使用的注意事项**
+// 接收数据
+value := < -ch
 
-1) channel中只能存放指定的数据类型
+// 关闭Channel
+close(ch)
 
-2) channle的数据放满后，就不能再放入了
-
-3) 如果从channel取出数据后，可以继续放入
-
-4) 在没有使用协程的情况下，如果channel数据取完了，再取，就会报deadlock
-
-![](go学习笔记\类型断言.png)
-
-### channel的遍历和关闭
-
-**channel的关闭**
-
-使用内置函数close可以关闭channel,当channel关闭后，就不能再向channel写数据了，但是仍然可以从该channel读取数据
-
-```java
-intChain := make(chan int,4)
-	intChain<-100
-	intChain<-200
-	close(intChain)
-
-	//出错
-	//intChain<-300
-	num := <-intChain
-	fmt.Print(num)
-```
-
-**channel的遍历**
-
-channel支持for--range的方式进行遍历，请注意两个细节
-
-1) 在遍历时，如果channel没有关闭，则回出现deadlock的错误
-
-2) 在遍历时，如果channel已经关闭，则会正常遍历数据，遍历完后，就会退出遍历
-
-```go
-close(intChan)
-for value := range intChan {
-	fmt.Println(value)
+// 检查Channel是否关闭
+value, ok := < -ch
+if !ok {
+    // Channel已关闭
 }
 ```
 
-### channel使用细节和注意事项
-
-1) channel可以声明为只读，或者只写性质
-
-```
-var intChan chan<- int	(只写)
-var intChan2 <-chan (只读)
-```
-
-2) 使用select可以解决从管道取数据的阻塞问题
+### 3. Channel遍历
 
 ```go
+// 自动检测关闭
+for value := range ch {
+    // 处理value
+}
+
+// 等价于
 for {
-		select {
-		//注意:这里，如果intChan一直没有关闭，不会一直阻塞而deadlock
-		// ，会自动到下一个case匹配
-		 case v:=<-intChan:
-		 	fmt.Printf("从intChan读取的数据%d\n",v)
-		 	time.Sleep(time.Second)
-		 case v:=<-stringChan:
-		 	fmt.Printf("从stringChan读取的数据%s\n",v)
-		 	time.Sleep(time.Second)
-		 default:fmt.Printf("都取不到了，不玩了,程序员可以加入逻辑\n")
-		 	time.Sleep(time.Second)
-		 return
-		 //break label
-		 }
-	}
+    value, ok := <-ch
+    if !ok {
+        break
+    }
+    // 处理value
+}
 ```
 
-3) goroutine中使用defer+recover，解决协程中出现panic，导致程序崩溃问题
+### 4. Select多路复用
+
+```go
+select {
+case msg1 := <-ch1:
+    // 处理ch1
+case msg2 := <-ch2:
+    // 处理ch2
+case ch3 <- data:
+    // 发送到ch3
+case <-time.After(timeout):
+    // 超时处理
+default:
+    // 非阻塞操作
+}
+```
+
+### 5. 阻塞行为
+
+- **无缓冲Channel**：发送和接收都会阻塞，直到另一端准备好
+- **缓冲Channel**：发送在缓冲区满时阻塞，接收在缓冲区空时阻塞
+
+### 6. Channel状态
+
+| 操作               | 正常Channel | 已关闭Channel | nil Channel |
+| :----------------- | :---------- | :------------ | :---------- |
+| **发送** ch <- v   | 成功或阻塞  | panic         | 永久阻塞    |
+| **接收** <-ch      | 成功或阻塞  | 收到零值      | 永久阻塞    |
+| **关闭** close(ch) | 成功        | panic         | panic       |
+
+### 7. 最佳实践
+
+**正确关闭Channel：**
+
+```go
+// 只有发送者应该关闭Channel
+func producer(ch chan<- int) {
+    defer close(ch) // 确保关闭
+    for i := 0; i < 10; i++ {
+        ch <- i
+    }
+}
+```
+
+**避免Channel泄漏：**
+
+```go
+// 使用超时防止永久阻塞
+select {
+case result := <-ch:
+    return result
+case <-time.After(5 * time.Second):
+    return errors.New("timeout")
+}
+```
+
+**安全的并发访问：**
+
+```
+// Channel本身是并发安全的，无需额外同步
+```
+
+### 常用模式
+
+### 1. 工作池模式
+
+```go
+func workerPool(jobs <-chan Job, results chan<- Result) {
+    for job := range jobs {
+        results <- process(job)
+    }
+}
+```
+
+### 2. 发布订阅模式
+
+```go
+type Publisher struct {
+    subscribers []chan<- Message
+}
+
+func (p *Publisher) Subscribe() <-chan Message {
+    ch := make(chan Message, 10)
+    p.subscribers = append(p.subscribers, ch)
+    return ch
+}
+```
+
+### 3. 管道模式
+
+```go
+func pipeline(input <-chan int) <-chan int {
+    out := make(chan int)
+    go func() {
+        for n := range input {
+            out <- n * 2
+        }
+        close(out)
+    }()
+    return out
+}
+```
+
+**关键记忆点**：
+
+- `make(chan Type)` - 无缓冲Channel
+- `make(chan Type, size)` - 缓冲Channel
+- `ch <- data` - 发送数据
+- `data := <-ch` - 接收数据
+- `close(ch)` - 关闭Channel
+- `select` - 多路Channel操作
+
+```go
+package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func main() {
+    // 1. 创建Channel
+    fmt.Println("=== 1. Channel创建 ===")
+    var ch1 chan int          // 声明，此时ch1是nil
+    ch2 := make(chan int)     // 无缓冲channel
+    ch3 := make(chan int, 3)  // 缓冲大小为3的channel
+    
+    fmt.Printf("ch1: %v, ch2: %v, ch3: %v\n", ch1, ch2, ch3)
+    
+    // 2. 基本发送接收
+    fmt.Println("\n=== 2. 基本发送接收 ===")
+    go func() {
+        ch2 <- 42 // 发送数据
+        fmt.Println("数据已发送")
+    }()
+    
+    value := <-ch2 // 接收数据
+    fmt.Printf("接收到数据: %d\n", value)
+    time.Sleep(100 * time.Millisecond)
+    
+    // 3. 缓冲Channel演示
+    bufferedChannelDemo()
+    
+    // 4. Channel遍历和关闭
+    channelRangeDemo()
+    
+    // 5. Select多路复用
+    selectDemo()
+    
+    // 6. 单向Channel
+    directionalChannelDemo()
+    
+    // 7. 实际应用模式
+    practicalPatterns()
+}
+
+// 3. 缓冲Channel演示
+func bufferedChannelDemo() {
+    fmt.Println("\n=== 3. 缓冲Channel ===")
+    ch := make(chan string, 2) // 缓冲大小为2
+    
+    // 不会阻塞，因为缓冲区有空位
+    ch <- "第一条消息"
+    ch <- "第二条消息"
+    fmt.Printf("缓冲区状态: %d/%d\n", len(ch), cap(ch))
+    
+    // 如果再发送会阻塞，因为缓冲区已满
+    // ch <- "第三条消息" // 这行会阻塞
+    
+    fmt.Println("接收:", <-ch)
+    fmt.Println("接收:", <-ch)
+    fmt.Printf("接收后缓冲区状态: %d/%d\n", len(ch), cap(ch))
+}
+
+// 4. Channel遍历和关闭
+func channelRangeDemo() {
+    fmt.Println("\n=== 4. Channel遍历和关闭 ===")
+    ch := make(chan int, 3)
+    
+    // 生产者
+    go func() {
+        for i := 1; i <= 3; i++ {
+            ch <- i * 10
+            fmt.Printf("生产: %d\n", i*10)
+        }
+        close(ch) // 重要：关闭channel
+        fmt.Println("Channel已关闭")
+    }()
+    
+    // 消费者 - 使用range自动检测关闭
+    go func() {
+        for value := range ch {
+            fmt.Printf("消费: %d\n", value)
+            time.Sleep(100 * time.Millisecond)
+        }
+        fmt.Println("所有数据已消费")
+    }()
+    
+    time.Sleep(500 * time.Millisecond)
+}
+
+// 5. Select多路复用
+func selectDemo() {
+    fmt.Println("\n=== 5. Select多路复用 ===")
+    ch1 := make(chan string)
+    ch2 := make(chan string)
+    
+    go func() {
+        time.Sleep(50 * time.Millisecond)
+        ch1 <- "来自ch1"
+    }()
+    
+    go func() {
+        time.Sleep(100 * time.Millisecond)
+        ch2 <- "来自ch2"
+    }()
+    
+    // 使用select监听多个channel
+    for i := 0; i < 2; i++ {
+        select {
+        case msg := <-ch1:
+            fmt.Printf("Case 1: %s\n", msg)
+        case msg := <-ch2:
+            fmt.Printf("Case 2: %s\n", msg)
+        case <-time.After(200 * time.Millisecond):
+            fmt.Println("超时!")
+            return
+        }
+    }
+}
+
+// 6. 单向Channel
+func directionalChannelDemo() {
+    fmt.Println("\n=== 6. 单向Channel ===")
+    
+    ch := make(chan int)
+    
+    // 只发送channel
+    go producer(ch)
+    
+    // 只接收channel  
+    go consumer(ch)
+    
+    time.Sleep(300 * time.Millisecond)
+}
+
+// 只发送channel参数
+func producer(ch chan<- int) {
+    for i := 0; i < 3; i++ {
+        ch <- i
+        fmt.Printf("生产者发送: %d\n", i)
+    }
+    close(ch)
+}
+
+// 只接收channel参数
+func consumer(ch <-chan int) {
+    for num := range ch {
+        fmt.Printf("消费者接收: %d\n", num)
+    }
+    fmt.Println("消费者完成")
+}
+
+// 7. 实际应用模式
+func practicalPatterns() {
+    fmt.Println("\n=== 7. 实际应用模式 ===")
+    
+    // 模式1: 完成信号
+    done := make(chan bool)
+    
+    go func() {
+        fmt.Println("正在执行任务...")
+        time.Sleep(200 * time.Millisecond)
+        fmt.Println("任务完成")
+        done <- true
+    }()
+    
+    <-done // 等待任务完成
+    fmt.Println("收到完成信号")
+    
+    // 模式2: 超时控制
+    timeoutDemo()
+    
+    // 模式3: 退出信号
+    quitSignalDemo()
+}
+
+// 超时控制
+func timeoutDemo() {
+    fmt.Println("\n--- 超时控制 ---")
+    ch := make(chan string)
+    
+    go func() {
+        time.Sleep(500 * time.Millisecond) // 模拟耗时操作
+        ch <- "操作结果"
+    }()
+    
+    select {
+    case result := <-ch:
+        fmt.Printf("成功: %s\n", result)
+    case <-time.After(300 * time.Millisecond): // 300ms超时
+        fmt.Println("操作超时!")
+    }
+}
+
+// 退出信号
+func quitSignalDemo() {
+    fmt.Println("\n--- 退出信号 ---")
+    quit := make(chan bool)
+    messages := make(chan string)
+    
+    // 工作goroutine
+    go func() {
+        for i := 0; ; i++ {
+            select {
+            case <-quit:
+                fmt.Println("收到退出信号，清理资源...")
+                return
+            default:
+                messages <- fmt.Sprintf("消息%d", i)
+                time.Sleep(100 * time.Millisecond)
+            }
+        }
+    }()
+    
+    // 主goroutine接收一些消息后发送退出信号
+    go func() {
+        for i := 0; i < 3; i++ {
+            msg := <-messages
+            fmt.Printf("主程序收到: %s\n", msg)
+        }
+        quit <- true // 发送退出信号
+    }()
+    
+    time.Sleep(500 * time.Millisecond)
+}
+
+=== 1. Channel创建 ===
+ch1: <nil>, ch2: 0xc00001a0c0, ch3: 0xc00001a120
+
+=== 2. 基本发送接收 ===
+数据已发送
+接收到数据: 42
+
+=== 3. 缓冲Channel ===
+缓冲区状态: 2/2
+接收: 第一条消息
+接收: 第二条消息
+接收后缓冲区状态: 0/2
+
+=== 4. Channel遍历和关闭 ===
+生产: 10
+生产: 20
+消费: 10
+生产: 30
+Channel已关闭
+消费: 20
+消费: 30
+所有数据已消费
+
+=== 5. Select多路复用 ===
+Case 1: 来自ch1
+Case 2: 来自ch2
+
+=== 6. 单向Channel ===
+生产者发送: 0
+消费者接收: 0
+生产者发送: 1
+消费者接收: 1
+生产者发送: 2
+消费者接收: 2
+消费者完成
+
+=== 7. 实际应用模式 ===
+正在执行任务...
+任务完成
+收到完成信号
+
+--- 超时控制 ---
+操作超时!
+
+--- 退出信号 ---
+主程序收到: 消息0
+主程序收到: 消息1
+主程序收到: 消息2
+收到退出信号，清理资源...
+```
 
 ## 反射
 
@@ -1461,12 +5227,531 @@ Type是类型,Kind是类别，Type和Kind可能是相同的，也可能是不同
 
 3) 通过反射的来修改变量,注意当使用SetXxx方法来设置需要通过对应的指针类型来完成,这样才能改变传入的变量的值,同时需要使用到reflect.Value.Elem()方法
 
-## tcp编程
+```go
+package main
 
-### 网络编程基本介绍
+import (
+	"fmt"
+	"reflect"
+)
 
-网络编程有两种:
+type User struct {
+	Name   string `json:"name"`
+	Age    int    `json:"age"`
+	Email  string `json:"email,omitempty"`
+	secret string // 未导出字段
+}
 
-1) TCP socket编程，是网络编程的主流。之所以叫Tcp socket编程，是因为底层是基于Tcp/ip协议的.比如:QQ聊天[示意图]
+func main() {
+	// 1. 基本类型反射
+	fmt.Println("=== 基本反射 ===")
+	var num float64 = 3.14
+	fmt.Println("类型:", reflect.TypeOf(num))
+	fmt.Println("值:", reflect.ValueOf(num))
+	
+	// 2. 修改值（必须使用指针）
+	v := reflect.ValueOf(&num).Elem()
+	if v.CanSet() {
+		v.SetFloat(6.28)
+		fmt.Println("修改后的值:", num)
+	}
+	
+	// 3. 结构体反射
+	fmt.Println("\n=== 结构体反射 ===")
+	user := User{Name: "Alice", Age: 25, secret: "hidden"}
+	t := reflect.TypeOf(user)
+	vUser := reflect.ValueOf(user)
+	
+	// 遍历结构体字段
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		value := vUser.Field(i)
+		
+		fmt.Printf("字段: %s, 类型: %s", field.Name, field.Type)
+		
+		// 只处理可导出字段
+		if value.CanInterface() {
+			fmt.Printf(", 值: %v", value.Interface())
+		} else {
+			fmt.Printf(", 未导出字段")
+		}
+		
+		// 读取tag
+		if tag := field.Tag.Get("json"); tag != "" {
+			fmt.Printf(", JSON标签: %s", tag)
+		}
+		fmt.Println()
+	}
+	
+	// 4. 动态调用方法
+	fmt.Println("\n=== 方法反射 ===")
+	calc := Calculator{}
+	vCalc := reflect.ValueOf(calc)
+	
+	// 调用Add方法
+	method := vCalc.MethodByName("Add")
+	if method.IsValid() {
+		args := []reflect.Value{
+			reflect.ValueOf(10),
+			reflect.ValueOf(20),
+		}
+		result := method.Call(args)
+		fmt.Printf("方法调用结果: %d\n", result[0].Int())
+	}
+	
+	// 5. 切片反射
+	fmt.Println("\n=== 切片反射 ===")
+	slice := []string{"apple", "banana"}
+	sliceValue := reflect.ValueOf(slice)
+	fmt.Printf("切片长度: %d, 容量: %d\n", sliceValue.Len(), sliceValue.Cap())
+	
+	// 6. 动态创建实例
+	fmt.Println("\n=== 动态创建 ===")
+	newSlice := reflect.MakeSlice(reflect.TypeOf([]string{}), 2, 5)
+	newSlice.Index(0).SetString("动态")
+	newSlice.Index(1).SetString("创建")
+	fmt.Println("动态创建的切片:", newSlice.Interface())
+}
 
-2) b/s结构的http编程，我们使用浏览器去访问服务器时，使用的就是http协议，而http底层依旧是用tcpsocket实现的
+type Calculator struct{}
+
+func (c Calculator) Add(a, b int) int {
+	return a + b
+}
+
+func (c Calculator) Multiply(a, b int) int {
+	return a * b
+}
+
+
+=== 基本反射 ===
+类型: float64
+值: 3.14
+修改后的值: 6.28
+
+=== 结构体反射 ===
+字段: Name, 类型: string, 值: Alice, JSON标签: name
+字段: Age, 类型: int, 值: 25, JSON标签: age
+字段: Email, 类型: string, 值: , JSON标签: email,omitempty
+字段: secret, 类型: string, 未导出字段
+
+=== 方法反射 ===
+方法调用结果: 30
+
+=== 切片反射 ===
+切片长度: 2, 容量: 2
+
+=== 动态创建 ===
+动态创建的切片: [动态 创建]
+```
+
+## 数据结构
+
+### Stack
+
+#### slice实现
+
+```go
+type Stack struct {
+    elements []int
+}
+
+// 创建新栈
+func NewStack() *Stack {
+    return &Stack{elements: make([]int, 0)}
+}
+
+// 入栈
+func (s *Stack) Push(val int) {
+    s.elements = append(s.elements, val)
+}
+
+// 出栈
+func (s *Stack) Pop() int {
+    if s.IsEmpty() {
+        return -1 // 或者根据题目需求返回特定值
+    }
+    lastIndex := len(s.elements) - 1
+    val := s.elements[lastIndex]
+    s.elements = s.elements[:lastIndex]
+    return val
+}
+
+// 查看栈顶元素
+func (s *Stack) Peek() int {
+    if s.IsEmpty() {
+        return -1
+    }
+    return s.elements[len(s.elements)-1]
+}
+
+// 判断栈是否为空
+func (s *Stack) IsEmpty() bool {
+    return len(s.elements) == 0
+}
+
+// 获取栈大小
+func (s *Stack) Size() int {
+    return len(s.elements)
+}
+```
+
+#### 使用示例
+
+```go
+func TestStack() {
+	stack := NewStack()
+	fmt.Printf("栈是否为空: %t\n", stack.IsEmpty())
+	stack.Push(5)
+	stack.Push(3)
+	stack.Push(4)
+	fmt.Printf("弹出栈顶元素是: %d\n", stack.Pop())
+	fmt.Printf("查看栈顶元素是: %d\n", stack.Peek())
+	fmt.Printf("栈大小是: %d\n", stack.Size())
+	fmt.Printf("栈是否为空: %t\n", stack.IsEmpty())
+}
+
+栈是否为空: true
+弹出栈顶元素是: 4
+查看栈顶元素是: 3
+栈大小是: 2
+栈是否为空: false
+```
+
+#### 不封装
+
+```go
+package main
+
+import (
+    "container/list"
+    "fmt"
+)
+
+func main() {
+    // 初始化一个空的整型队列 q
+    q := list.New()
+
+    // 在队尾添加元素
+    q.PushBack(10)
+    q.PushBack(20)
+    q.PushBack(30)
+
+    // 检查队列是否为空，输出：false
+    fmt.Println(q.Len() == 0)
+
+    // 获取队列的大小，输出：3
+    fmt.Println(q.Len())
+
+    // 获取队列的队头元素
+    // 输出：10
+    front := q.Front().Value.(int)
+    fmt.Println(front)
+
+    // 删除队头元素
+    q.Remove(q.Front())
+
+    // 输出新的队头元素：20
+    newFront := q.Front().Value.(int)
+    fmt.Println(newFront)
+}
+```
+
+
+
+### Queue
+
+#### slice
+
+```go
+type Queue struct {
+    elements []int
+}
+
+func NewQueue() *Queue {
+    return &Queue{elements: make([]int, 0)}
+}
+
+// 入队
+func (q *Queue) Enqueue(val int) {
+    q.elements = append(q.elements, val)
+}
+
+// 出队
+func (q *Queue) Dequeue() int {
+    if q.IsEmpty() {
+        return -1
+    }
+    val := q.elements[0]
+    q.elements = q.elements[1:]
+    return val
+}
+
+// 查看队首元素
+func (q *Queue) Front() int {
+    if q.IsEmpty() {
+        return -1
+    }
+    return q.elements[0]
+}
+
+func (q *Queue) IsEmpty() bool {
+    return len(q.elements) == 0
+}
+
+func (q *Queue) Size() int {
+    return len(q.elements)
+}
+```
+
+#### 使用示例
+
+```go
+
+func TestQueue() {
+	q := NewQueue()
+	fmt.Printf("队列是否为空: %t\n", q.IsEmpty())
+	q.Enqueue(2)
+	q.Enqueue(3)
+	q.Enqueue(4)
+	fmt.Printf("队列是否为空: %t\n", q.IsEmpty())
+	fmt.Printf("查看队头元素: %d\n", q.Front())
+	fmt.Printf("队列中元素大小是: %d\n", q.Size())
+	fmt.Printf("出队元素是: %d\n", q.Dequeue())
+
+}
+
+队列是否为空: true
+队列是否为空: false
+查看队头元素: 2
+队列中元素大小是: 3
+出队元素是: 2
+```
+
+#### 双链表
+
+```go
+package main
+
+import (
+    "container/list"
+    "fmt"
+)
+
+func main() {
+    // 初始化一个空的整型队列 q
+    q := list.New()
+
+    // 在队尾添加元素
+    q.PushBack(10)
+    q.PushBack(20)
+    q.PushBack(30)
+
+    // 检查队列是否为空，输出：false
+    fmt.Println(q.Len() == 0)
+
+    // 获取队列的大小，输出：3
+    fmt.Println(q.Len())
+
+    // 获取队列的队头元素
+    // 输出：10
+    front := q.Front().Value.(int)
+    fmt.Println(front)
+
+    // 删除队头元素
+    q.Remove(q.Front())
+
+    // 输出新的队头元素：20
+    newFront := q.Front().Value.(int)
+    fmt.Println(newFront)
+}
+```
+
+### Priority Queue
+
+#### container/heap
+
+```go
+package main
+
+// 使用包装结构体，语义更清晰
+type IntHeap struct {
+	elements []int
+}
+
+// 全部使用指针接收器
+func (h *IntHeap) Len() int {
+	return len(h.elements)
+}
+
+func (h *IntHeap) Less(i, j int) bool {
+	return h.elements[i] < h.elements[j]
+}
+
+func (h *IntHeap) Swap(i, j int) {
+	h.elements[i], h.elements[j] = h.elements[j], h.elements[i]
+}
+
+func (h *IntHeap) Push(x interface{}) {
+	h.elements = append(h.elements, x.(int))
+}
+
+func (h *IntHeap) Pop() interface{} {
+	n := len(h.elements)
+	x := h.elements[n-1]
+	h.elements = h.elements[:n-1]
+	return x
+}
+
+func (h *IntHeap) Peek() interface{} {
+	if h.Len() == 0 {
+		return -1
+	}
+	return h.elements[0]
+}
+```
+
+#### 使用示例
+
+```go
+func TestPriorityQueue() {
+	h := &IntHeap{elements: []int{2, 1, 5}}
+	heap.Init(h)
+
+	heap.Push(h, 3)
+	fmt.Printf("最小值: %d\n", h.Peek())
+
+	for h.Len() > 0 {
+		fmt.Printf("出队列: %d ", heap.Pop(h))
+	}
+}
+
+最小值: 1
+出队列: 1 出队列: 2 出队列: 3 出队列: 5 
+进程 已完成，退出代码为 0
+```
+
+### 双链表
+
+```go
+package main
+
+import (
+    "container/list"
+    "fmt"
+)
+
+func main() {
+    // 初始化链表
+    lst := list.New()
+    lst.PushBack(1)
+    lst.PushBack(2)
+    lst.PushBack(3)
+    lst.PushBack(4)
+    lst.PushBack(5)
+
+    // 检查链表是否为空，输出：false
+    fmt.Println(lst.Len() == 0)
+
+    // 获取链表的大小，输出：5
+    fmt.Println(lst.Len())
+
+    // 在链表头部插入元素 0
+    lst.PushFront(0)
+    // 在链表尾部插入元素 6
+    lst.PushBack(6)
+
+    // 获取链表头部和尾部元素，输出：0 6
+    front := lst.Front().Value.(int)
+    back := lst.Back().Value.(int)
+    fmt.Println(front, back)
+
+    // 删除链表头部元素
+    lst.Remove(lst.Front())
+    // 删除链表尾部元素
+    lst.Remove(lst.Back())
+
+    // 在链表中插入元素
+    // 移动到第三个位置
+    third := lst.Front().Next().Next()
+    lst.InsertBefore(99, third)
+
+    // 删除链表中某个元素
+    second := lst.Front().Next()
+    lst.Remove(second)
+
+    // 遍历链表
+    // 输出：1 99 3 4 5
+    for e := lst.Front(); e != nil; e = e.Next() {
+        fmt.Print(e.Value.(int), " ")
+    }
+    fmt.Println()
+}
+
+
+false
+5
+0 6
+1 99 3 4 5 
+```
+
+### set
+
+Golang 没有内置的哈希集合类型，但可以使用哈希表 `map` 来模拟集合，键为元素，值为 `struct{}` 或 `bool`。
+
+一般会推荐使用 `map[int]struct{}` 来模拟哈希集合，因为 `struct{}` 不会占用额外的内存空间，而 `bool` 类型会占用一个字节的内存空间。
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	// 初始化一个包含一些元素的哈希集合 hashset
+	hashset := map[int]struct{}{
+		1: {},
+		2: {},
+		3: {},
+		4: {},
+	}
+
+	// 检查哈希集合是否为空，输出：false
+	fmt.Println(len(hashset) == 0)
+
+	// 获取哈希集合的大小，输出：4
+	fmt.Println(len(hashset))
+
+	// 查找指定元素是否存在
+	// 输出：Element 3 found.
+	if _, exists := hashset[3]; exists {
+		fmt.Println("Element 3 found.")
+	} else {
+		fmt.Println("Element 3 not found.")
+	}
+
+	// 插入一个新的元素
+	hashset[5] = struct{}{}
+
+	// 删除一个元素
+	delete(hashset, 2)
+	// 输出：Element 2 not found.
+	if _, exists := hashset[2]; exists {
+		fmt.Println("Element 2 found.")
+	} else {
+		fmt.Println("Element 2 not found.")
+	}
+
+	// 遍历哈希集合
+	// 输出（顺序可能不同）：
+	// 1
+	// 3
+	// 4
+	// 5
+	for element := range hashset {
+		fmt.Println(element)
+	}
+}
+```
+

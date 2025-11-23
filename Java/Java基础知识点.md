@@ -4931,3 +4931,355 @@ List<Author> authors1 = getAuthors();
                 .forEach(author -> System.out.println(author.getName()));
 ```
 
+## 基础输入输出工具
+
+Java 中最常用的输入输出工具是 `Scanner` 和 `BufferedReader`：
+
+### Scanner 类
+
+- 优点：使用简单方便
+- 缺点：性能相对较低，不适合处理超大规模数据
+
+```java
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        // 各种输入操作
+    }
+}
+```
+
+### BufferedReader 类
+
+- 优点：性能高，适合处理大规模数据
+- 缺点：使用稍复杂
+
+```java
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        // 各种输入操作
+    }
+}
+```
+
+### 常见输入模式及处理方案
+
+#### 1. 单行输入，空格分隔的多个数字
+
+**输入示例**：`1 2 3 4 5`
+
+#### 方案1：使用 Scanner
+
+```java
+Scanner sc = new Scanner(System.in);
+String[] nums = sc.nextLine().split(" ");
+for (String num : nums) {
+    int n = Integer.parseInt(num);
+    // 处理n
+}
+```
+
+#### 方案2：使用 BufferedReader
+
+```java
+BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+String[] nums = br.readLine().split(" ");
+for (String num : nums) {
+    int n = Integer.parseInt(num);
+    // 处理n
+}
+```
+
+#### 2. 多行输入，每行一个数字
+
+**输入示例**：
+
+```
+5
+1
+2
+3
+4
+5
+```
+
+#### 处理代码：
+
+```java
+Scanner sc = new Scanner(System.in);
+int total = sc.nextInt();
+for (int i = 0; i < total; i++) {
+    int num = sc.nextInt();
+    // 处理num
+}
+```
+
+#### 3. 多行输入，每行多个数据
+
+**输入示例**：
+
+```
+3
+1 2 3
+4 5 6
+7 8 9
+```
+
+#### 处理代码：
+
+```java
+Scanner sc = new Scanner(System.in);
+int rows = sc.nextInt();
+sc.nextLine(); // 消耗换行符
+for (int i = 0; i < rows; i++) {
+    String[] nums = sc.nextLine().split(" ");
+    for (String num : nums) {
+        int n = Integer.parseInt(num);
+        // 处理n
+    }
+}
+```
+
+#### 4. 不定行数输入，直到特定条件
+
+**输入示例**（直到输入0为止）：
+
+```
+1
+2
+3
+0
+```
+
+#### 处理代码：
+
+```java
+Scanner sc = new Scanner(System.in);
+while (true) {
+    int num = sc.nextInt();
+    if (num == 0) break;
+    // 处理num
+}
+```
+
+### 特殊输入情况处理
+
+#### 1. 混合数字和字符串输入
+
+**输入示例**：
+
+```
+3
+John 25
+Alice 30
+Bob 28
+```
+
+#### 处理代码：
+
+```java
+Scanner sc = new Scanner(System.in);
+int n = sc.nextInt();
+sc.nextLine(); // 消耗换行符
+for (int i = 0; i < n; i++) {
+    String line = sc.nextLine();
+    String[] parts = line.split(" ");
+    String name = parts[0];
+    int age = Integer.parseInt(parts[1]);
+    // 处理name和age
+}
+```
+
+#### 2. 读取大整数
+
+**输入示例**：`12345678901234567890`
+
+#### 处理代码：
+
+```java
+Scanner sc = new Scanner(System.in);
+BigInteger bigInt = new BigInteger(sc.next());
+// 处理bigInt
+```
+
+#### 3. 读取浮点数
+
+**输入示例**：`3.1415926`
+
+#### 处理代码：
+
+```java
+Scanner sc = new Scanner(System.in);
+double num = sc.nextDouble();
+// 处理num
+```
+
+### 输出处理技巧
+
+#### 1. 基本输出
+
+```java
+System.out.println("Hello World"); // 输出并换行
+System.out.print("Hello"); // 输出不换行
+```
+
+#### 2. 格式化输出
+
+```java
+double pi = 3.1415926;
+System.out.printf("%.2f\n", pi); // 输出3.14
+System.out.printf("%5d\n", 123); // 输出 "  123"
+```
+
+#### 3. 高性能输出（大量数据时）
+
+```java
+StringBuilder sb = new StringBuilder();
+for (int i = 0; i < 100000; i++) {
+    sb.append(i).append("\n");
+}
+System.out.print(sb.toString());
+```
+
+### 常见问题及解决方案
+
+#### 1. nextInt() 后 nextLine() 读取空字符串问题
+
+**问题代码**：
+
+```java
+Scanner sc = new Scanner(System.in);
+int n = sc.nextInt();
+String s = sc.nextLine(); // 这里会读取到空字符串
+```
+
+**解决方案**：
+
+```java
+Scanner sc = new Scanner(System.in);
+int n = sc.nextInt();
+sc.nextLine(); // 消耗换行符
+String s = sc.nextLine(); // 正常读取
+```
+
+#### 2. 输入结束判断
+
+**处理方式**：
+
+```java
+Scanner sc = new Scanner(System.in);
+while (sc.hasNext()) {
+    int num = sc.nextInt();
+    // 处理num
+}
+```
+
+#### 3. 大数据量输入优化
+
+**推荐方案**：
+
+```java
+BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+String line;
+while ((line = br.readLine()) != null) {
+    // 处理line
+}
+```
+
+### 完整示例
+
+#### 示例1：计算A+B
+
+**输入**：
+
+```
+2
+1 2
+3 4
+```
+
+**输出**：
+
+```
+3
+7
+```
+
+**代码**：
+
+```java
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        for (int i = 0; i < n; i++) {
+            int a = sc.nextInt();
+            int b = sc.nextInt();
+            System.out.println(a + b);
+        }
+    }
+}
+```
+
+#### 示例2：统计单词出现次数
+
+**输入**：
+
+```
+5
+hello world hello java world
+```
+
+**输出**：
+
+```
+hello 2
+world 2
+java 1
+```
+
+**代码**：
+
+```java
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        sc.nextLine(); // 消耗换行符
+        String[] words = sc.nextLine().split(" ");
+        
+        Map<String, Integer> map = new HashMap<>();
+        for (String word : words) {
+            map.put(word, map.getOrDefault(word, 0) + 1);
+        }
+        
+        for (Map.Entry<String, Integer> entry : map.entrySet()) {
+            System.out.println(entry.getKey() + " " + entry.getValue());
+        }
+    }
+}
+```
+
+### 性能对比
+
+| 操作          | Scanner | BufferedReader |
+| :------------ | :------ | :------------- |
+| 读取10万整数  | ~1.5秒  | ~0.3秒         |
+| 读取100万整数 | ~15秒   | ~3秒           |
+| 内存占用      | 较高    | 较低           |
+
+**建议**：对于一般题目使用Scanner即可，对于大数据量题目使用BufferedReader。
+
+
+

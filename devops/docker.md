@@ -423,7 +423,7 @@ docker volume rm haha
 docker volume rm -f nginxConfig （无效） 必须先删除容器
 ```
 
-#### docker 网络
+### docker 网络
 
 172.17.0.2
 
@@ -736,4 +736,6 @@ CMD ["python3", "app.py"]
 - Dockerfile 的分层机制使得镜像的构建和管理更加灵活与高效。
 - 可重用的层减少了存储需求，加速了构建过程，但必须小心更新和缓存的管理，以避免不必要的层重建。
 - 通过理解分层机制，开发者可以编写更高效、优化的 Dockerfile，从而提高项目的可维护性和可扩展性。
+
+## docker 实现原理
 
